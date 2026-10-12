@@ -2,8 +2,9 @@
 // node scripts/build.mjs  →  dist/ (lv saknē, pārējās valodas /en/, /ru/ …)
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = path.join(ROOT, "src"), DIST = path.join(ROOT, "dist"), I18N = path.join(ROOT, "i18n");
 const SITE = "https://wolvesbrotherhoodmc.com";
 export const LANGS = ["lv", "en", "ru", "de", "lt", "et", "no", "fr"];
