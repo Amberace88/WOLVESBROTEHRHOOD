@@ -10,7 +10,7 @@
   ],
   "durable_objects": { "bindings": [ { "name": "ROOMS", "class_name": "Room" } ] },
   "migrations": [ { "tag": "v1", "new_sqlite_classes": ["Room"] } ],
-  "vars": { "ADMIN_EMAIL": "" },
+  "vars": { "ADMIN_EMAIL": "baropsedijs@gmail.com" },
   "routes": [
     { "pattern": "wolvesbrotherhoodmc.com", "custom_domain": true },
     { "pattern": "www.wolvesbrotherhoodmc.com", "custom_domain": true }
