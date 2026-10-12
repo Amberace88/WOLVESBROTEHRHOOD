@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+{{> head}}
+<link rel="stylesheet" href="{{base}}assets/vendor/leaflet/leaflet.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SportsOrganization","name":"Wolves Brotherhood MC","legalName":"Biedrība WBMC","identifier":"40008360087","sport":"Motorcycling","url":"https://wolvesbrotherhoodmc.com","logo":"https://wolvesbrotherhoodmc.com/assets/img/logo.png","address":{"@type":"PostalAddress","streetAddress":"Jaunciema gatve 147-1","addressLocality":"Rīga","postalCode":"LV-1023","addressCountry":"LV"}}</script>
+</head>
+<body data-page="index">
+{{> nav}}
+
+<main id="main">
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="beam" aria-hidden="true"></div>
+  <div class="fog" aria-hidden="true"></div>
+  <canvas class="hero-smoke" id="heroSmoke" aria-hidden="true"></canvas>
+  <div>
+    <h1 class="sr-only">Wolves Brotherhood MC Latvia</h1>
+    <div class="patch" id="patch">
+      <img src="{{base}}assets/img/logo.webp" alt="{{hero.logoAlt}}" width="1206" height="1199" fetchpriority="high">
+      <span class="shine" aria-hidden="true"></span>
+      <span class="eye" aria-hidden="true"></span>
+    </div>
+    <div class="hero-copy">
+      <p class="motto">{{hero.motto}}</p>
+      <div class="cta">
+        <a class="btn" href="{{p.ride}}">{{hero.ctaRide}}</a>
+        <a class="btn ghost" href="#hronika">{{hero.ctaChron}}</a>
+      </div>
+    </div>
+  </div>
+  <span class="scroll-cue" aria-hidden="true"></span>
+</section>
+
+<!-- TODAY -->
+<section id="sodien" class="cluster" aria-label="{{today.title}}">
+  <div class="wrap">
+    <div class="cluster-inner">
+      <div class="cell">
+        <h3>{{today.title}}</h3>
+        <div class="date-big" id="tDate">—<small></small></div>
+      </div>
+      <div class="cell">
+        <h3>{{today.names}}</h3>
+        <div class="names" id="tNames">—</div>
+        <div class="names-ext" id="tNamesExt"></div>
+      </div>
+      <div class="cell">
+        <h3>{{today.ride}}</h3>
+        <div class="gauge-wrap">
+          <svg class="gauge" viewBox="0 0 200 120" aria-hidden="true">
+            <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#E3120B"/><stop offset=".5" stop-color="#d6a23c"/><stop offset="1" stop-color="#ECE8DF"/></linearGradient></defs>
+            <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#2c2b29" stroke-width="14"/>
+            <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="url(#gg)" stroke-width="4"/>
+            <g stroke="#A3A098" stroke-width="2"><line x1="20" y1="100" x2="32" y2="100"/><line x1="43.4" y1="43.4" x2="51.9" y2="51.9"/><line x1="100" y1="20" x2="100" y2="32"/><line x1="156.6" y1="43.4" x2="148.1" y2="51.9"/><line x1="180" y1="100" x2="168" y2="100"/></g>
+            <g class="needle" id="needle"><line x1="100" y1="100" x2="100" y2="32" stroke="#ECE8DF" stroke-width="3" stroke-linecap="round"/><circle cx="100" cy="100" r="8" fill="#ECE8DF"/><circle cx="100" cy="100" r="3" fill="#000"/></g>
+          </svg>
+          <div><div class="gauge-val" id="tIdx">—</div><div class="gauge-txt" id="tIdxTxt">{{today.loading}}</div></div>
+        </div>
+        <div class="wx-row" id="tWx"></div>
+      </div>
+      <div class="cell next-day">
+        <h3>{{today.next}}</h3>
+        <div class="countdown" id="tNext">—</div>
+        <div class="what" id="tNextWhat"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHRONICLE -->
+<section class="block" id="hronika">
+  <div class="wrap">
+    <h2 class="rocker" data-rocker="{{chron.rocker}}">{{chron.title}}</h2>
+    <div class="chron">
+      <figure class="tintype">
+        <img src="{{base}}assets/img/brotherhood.webp" alt="{{chron.photoAlt}}" width="1206" height="877" loading="lazy">
+        <figcaption>{{chron.caption}}</figcaption>
+      </figure>
+      <div>
+        <p class="lead">{{chron.lead}}</p>
+        <ol class="timeline" id="timeline"></ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="stitch">
+
+<!-- DIARY -->
+<section class="block" id="dienasgramata">
+  <div class="wrap">
+    <h2 class="rocker" data-rocker="{{diary.rocker}}">{{diary.title}}</h2>
+    <p class="rocker-sub">{{diary.sub}}</p>
+    <div class="diary">
+      <div class="book-spread" id="book">
+        <article class="page left" id="pL"></article>
+        <article class="page right" id="pR"></article>
+      </div>
+      <div class="diary-ctrl">
+        <button class="icon-btn" id="prevPage" aria-label="{{a11y.prevPage}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="dots" id="dots" aria-hidden="true"></div>
+        <button class="icon-btn" id="nextPage" aria-label="{{a11y.nextPage}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="stitch">
+
+<!-- CLUB EVENTS -->
+<section class="block" id="pasakumi">
+  <div class="wrap">
+    <h2 class="rocker" data-rocker="{{events.rocker}}">{{events.title}}</h2>
+    <ul class="events" id="events"></ul>
+    <div class="eu-teaser" id="euTeaser">
+      <div class="eu-head"><h3>{{eu.teaserTitle}}</h3><a class="btn ghost small" href="{{p.events}}">{{eu.teaserCta}}</a></div>
+      <div class="eu-strip" id="euStrip"></div>
+    </div>
+  </div>
+</section>
+
+<hr class="stitch">
+
+<!-- CALENDAR -->
+<section class="block" id="kalendars">
+  <div class="wrap">
+    <h2 class="rocker" data-rocker="{{cal.rocker}}">{{cal.title}}</h2>
+    <p class="rocker-sub">{{cal.sub}}</p>
+    <div class="cal">
+      <div>
+        <div class="cal-head">
+          <h3 id="calTitle">—</h3>
+          <button class="icon-btn" id="calPrev" aria-label="{{a11y.prevMonth}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button class="btn ghost small" id="calToday">{{cal.today}}</button>
+          <button class="icon-btn" id="calNext" aria-label="{{a11y.nextMonth}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="legend">
+          <span><i class="m-valsts"></i>{{type.valsts}}</span><span><i class="m-atceres"></i>{{type.atceres}}</span><span><i class="m-tradicija"></i>{{type.tradicija}}</span><span><i class="m-moto"></i>{{type.moto}}</span><span><i class="m-klubs"></i>{{type.klubs}}</span>
+        </div>
+      </div>
+      <aside class="cal-side" aria-live="polite">
+        <div class="d" id="sDate">—</div>
+        <div class="muted" style="font-size:.95rem;margin-top:.6rem">{{cal.lvNames}}</div>
+        <div class="names" id="sNames">—</div>
+        <div class="muted" id="sExt" style="font-size:.95rem"></div>
+        <ul id="sList"></ul>
+        <form class="search" id="nameSearch" role="search">
+          <label class="sr-only" for="nameQ">{{cal.searchLabel}}</label>
+          <input id="nameQ" placeholder="{{cal.searchPh}}" autocomplete="off">
+          <button class="btn small" type="submit">{{cal.searchBtn}}</button>
+        </form>
+        <div class="search-res" id="nameRes"></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<hr class="stitch">
+
+<!-- RIDE HQ TEASER -->
+<section class="block" id="marsruti">
+  <div class="wrap">
+    <h2 class="rocker" data-rocker="RIDE HQ">Ride HQ</h2>
+    <p class="rocker-sub">{{ride.sub}}</p>
+    <div class="ride">
+      <ul class="route-list" id="routeList"></ul>
+      <div class="mini-map">
+        <div id="miniMap" style="position:absolute;inset:0"></div>
+        <div class="overlay-cta"><span id="miniInfo" class="muted"></span><a class="btn small" id="miniOpen" href="{{p.ride}}">{{ride.open}}</a></div>
+      </div>
+    </div>
+    <div class="feature-row">
+      <div>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M7 15a5 5 0 1 1 1.6-9.7A6 6 0 0 1 20 9a4 4 0 0 1-1 7.9"/><path d="M9 19l-1 2M13 19l-1 2M17 19l-1 2"/></svg>
+        <h3>{{ride.f1t}}</h3><p>{{ride.f1}}</p>
+      </div>
+      <div>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg>
+        <h3>{{ride.f2t}}</h3><p>{{ride.f2}}</p>
+      </div>
+      <div>
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><circle cx="12" cy="10" r="3"/><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><path d="M4 21h16"/></svg>
+        <h3>{{ride.f3t}}</h3><p>{{ride.f3}}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="stitch">
+
+<!-- GARAGE -->
+<section class="block garage-sec" id="garaza">
+  <div class="wrap">
+    <h2 class="rocker" data-rocker="{{garage.rocker}}">{{garage.title}}</h2>
+    <div class="garage" id="garage">
+      <div class="lamp" aria-hidden="true"><span class="cord"></span><span class="shade"></span><span class="cone"></span></div>
+      {{> bike}}
+      <canvas class="smoke" id="smoke" aria-hidden="true"></canvas>
+      <div class="garage-ui">
+        <div class="tach" aria-hidden="true">
+          <svg viewBox="0 0 120 70"><path d="M10 62 A50 50 0 0 1 110 62" fill="none" stroke="#2c2b29" stroke-width="8"/><path d="M88 22 A50 50 0 0 1 110 62" fill="none" stroke="#E3120B" stroke-width="8" opacity=".7"/><g id="tachNeedle" style="transform-origin:60px 62px;transform:rotate(-90deg);transition:transform .25s"><line x1="60" y1="62" x2="60" y2="20" stroke="#ECE8DF" stroke-width="3" stroke-linecap="round"/></g><circle cx="60" cy="62" r="5" fill="#ECE8DF"/></svg>
+          <span id="rpm">0</span><small>{{garage.rpm}}</small>
+        </div>
+        <div class="garage-btns">
+          <button class="btn" id="ignite" aria-pressed="false" data-on="{{garage.stop}}" data-off="{{garage.start}}">{{garage.start}}</button>
+          <button class="btn ghost" id="burnout" disabled>{{garage.burnout}}</button>
+          <button class="icon-btn" id="mute" aria-label="{{garage.sound}}" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="stitch">
+
+<!-- GALLERY -->
+<section class="block" id="galerija">
+  <div class="wrap">
+    <h2 class="rocker" data-rocker="{{gallery.rocker}}">{{gallery.title}}</h2>
+    <div class="albums" id="albums"></div>
+    <div class="gallery" id="gallery"></div>
+  </div>
+</section>
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="{{gallery.title}}">
+  <button class="icon-btn x" id="lbClose" aria-label="{{a11y.close}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <div><img id="lbImg" alt=""><p id="lbCap"></p></div>
+</div>
+
+<hr class="stitch">
+
+<!-- MEMBERS -->
+<section class="block" id="biedri">
+  <div class="wrap">
+    <h2 class="rocker" data-rocker="{{members.rocker}}">{{members.title}}</h2>
+    <p class="rocker-sub">{{members.sub}}</p>
+    <div class="roster" id="roster"></div>
+    <div class="code">
+      <div><h3>{{code.1t}}</h3><p>{{code.1}}</p></div>
+      <div><h3>{{code.2t}}</h3><p>{{code.2}}</p></div>
+      <div><h3>{{code.3t}}</h3><p>{{code.3}}</p></div>
+    </div>
+  </div>
+</section>
+
+<hr class="stitch">
+
+<!-- MERCH -->
+<section class="block" id="merch">
+  <div class="wrap">
+    <h2 class="rocker" data-rocker="MERCH">Merch</h2>
+    <div class="shop-note">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ECE8DF" stroke-width="1.8" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+      <span><b>{{merch.noteT}}</b> {{merch.note}}</span>
+    </div>
+    <div class="shelf-ctrl">
+      <button class="icon-btn" id="shelfPrev" aria-label="{{a11y.scrollL}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <button class="icon-btn" id="shelfNext" aria-label="{{a11y.scrollR}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+    </div>
+    <div class="shelf" id="shelf"></div>
+  </div>
+</section>
+
+<hr class="stitch">
+
+<!-- DONATE -->
+<section class="block" id="atbalsts">
+  <div class="wrap">
+    <h2 class="rocker" data-rocker="{{don.rocker}}">{{don.title}}</h2>
+    <p class="rocker-sub">{{don.sub}}</p>
+    <div class="donate">
+      <div class="tanks" id="tanks"></div>
+      <form class="donate-card" id="donateForm">
+        <div class="seg" role="tablist" aria-label="{{don.kind}}">
+          <button type="button" class="on" data-mode="once" role="tab" aria-selected="true">{{don.once}}</button>
+          <button type="button" data-mode="monthly" role="tab" aria-selected="false">{{don.monthly}}</button>
+        </div>
+        <div id="onceBox">
+          <fieldset class="amounts"><legend class="sr-only">{{don.amount}}</legend>
+            <label><input type="radio" name="amt" value="10"><span>€10</span></label>
+            <label><input type="radio" name="amt" value="25" checked><span>€25</span></label>
+            <label><input type="radio" name="amt" value="50"><span>€50</span></label>
+            <label><input type="radio" name="amt" value="100"><span>€100</span></label>
+            <label class="custom"><span class="sr-only">{{don.other}}</span><input type="number" name="custom" min="2" step="1" placeholder="{{don.otherPh}}" inputmode="numeric"></label>
+          </fieldset>
+          <label class="field">{{don.goal}}<select name="goal" id="goalSel"></select></label>
+          <p class="fuel-note" id="fuelNote"></p>
+        </div>
+        <div id="monthlyBox" hidden><div class="tiers" id="tiers"></div></div>
+        <label class="field">{{don.who}} <span class="muted">{{don.optional}}</span><input name="who" autocomplete="name" placeholder="{{don.whoPh}}"></label>
+        <button class="btn wide" type="submit" id="donateBtn">€25</button>
+        <div class="pay-panel" id="payPanel" hidden></div>
+        <p class="legal-line" id="legalLine"></p>
+      </form>
+    </div>
+    <div class="wall" id="wall"></div>
+  </div>
+</section>
+
+<hr class="stitch">
+
+<!-- JOIN -->
+<section class="block" id="pievienoties">
+  <div class="wrap join">
+    <div>
+      <h2 style="font-size:clamp(2.6rem,5vw,4.2rem);margin-bottom:var(--s-4)">{{join.title}}</h2>
+      <p class="lead">{{join.lead}}</p>
+      <p class="muted">{{join.more}}</p>
+      <p><a href="mailto:info@wolvesbrotherhoodmc.com">info@wolvesbrotherhoodmc.com</a></p>
+    </div>
+    <form class="form" id="joinForm">
+      <div class="two">
+        <label>{{form.name}}<input name="name" required autocomplete="name"></label>
+        <label>{{form.phone}}<input name="phone" type="tel" autocomplete="tel"></label>
+      </div>
+      <label>{{form.email}}<input name="email" type="email" required autocomplete="email"></label>
+      <div class="two">
+        <label>{{form.topic}}<select name="topic"><option value="ride">{{form.t1}}</option><option value="collab">{{form.t2}}</option><option value="merch">{{form.t3}}</option><option value="other">{{form.t4}}</option></select></label>
+        <label>{{form.bike}}<input name="bike" placeholder="{{form.bikePh}}"></label>
+      </div>
+      <label>{{form.msg}}<textarea name="msg" rows="4"></textarea></label>
+      <button class="btn" type="submit">{{form.send}}</button>
+      <div class="form-ok" id="formOk" role="status">{{form.ok}}</div>
+    </form>
+  </div>
+</section>
+</main>
+
+{{> footer}}
+<script src="{{base}}assets/vendor/leaflet/leaflet.js" defer></script>
+<script src="{{base}}assets/js/namedays.js?v={{ver}}" defer></script>
+<script src="{{base}}assets/js/eu-events.js?v={{ver}}" defer></script>
+<script src="{{base}}assets/js/home.js?v={{ver}}" defer></script>
+<script src="{{base}}assets/js/garage.js?v={{ver}}" defer></script>
+<script src="{{base}}assets/js/donate.js?v={{ver}}" defer></script>
+</body>
+</html>

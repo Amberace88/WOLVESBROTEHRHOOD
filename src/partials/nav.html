@@ -1,0 +1,22 @@
+<a class="sr-only" href="#main">{{a11y.skip}}</a>
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="{{home}}" aria-label="{{a11y.home}}"><img src="{{base}}assets/img/mark-256.png" alt="" width="44" height="44"><span>Wolves Brotherhood</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="{{home}}#hronika" data-sec="hronika">{{nav.club}}</a></li>
+      <li><a href="{{home}}#dienasgramata" data-sec="dienasgramata">{{nav.diary}}</a></li>
+      <li><a href="{{home}}#kalendars" data-sec="kalendars">{{nav.calendar}}</a></li>
+      <li><a href="{{p.events}}" data-page="events">{{nav.europe}}</a></li>
+      <li><a href="{{p.riders}}" data-page="riders">{{nav.riders}}</a></li>
+      <li><a href="{{home}}#galerija" data-sec="galerija">{{nav.gallery}}</a></li>
+      <li><a href="{{home}}#merch" data-sec="merch">{{nav.merch}}</a></li>
+      <li><a href="{{home}}#atbalsts" data-sec="atbalsts">{{nav.support}}</a></li>
+    </ul>
+    <div class="lang" id="lang">
+      <button class="lang-btn" id="langBtn" aria-haspopup="true" aria-expanded="false" aria-label="{{a11y.lang}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></svg><span>{{lang.code}}</span></button>
+      <ul class="lang-menu" id="langMenu" role="menu">{{langswitch}}</ul>
+    </div>
+    <a class="btn small" href="{{p.ride}}" data-page="ride">Ride HQ</a>
+    <button class="burger" id="burger" aria-label="{{a11y.menu}}" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  </div>
+</header>

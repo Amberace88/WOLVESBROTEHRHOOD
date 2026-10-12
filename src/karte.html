@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="{{@lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{meta.karte.title}}</title>
+<meta name="description" content="{{meta.karte.desc}}">
+{{@head}}
+</head>
+<body class="app">
+<a class="skip" href="#panel">{{a11y.skip}}</a>
+{{@nav}}
+<main class="hq" id="hq">
+  <aside class="panel" id="panel" aria-label="Ride HQ">
+    <div class="sheet-grip" id="grip" aria-hidden="true"></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="routes">{{map.tab.routes}}</button>
+      <button role="tab" aria-selected="false" data-tab="plan">{{map.tab.plan}}</button>
+      <button role="tab" aria-selected="false" data-tab="pack">{{map.tab.pack}}</button>
+      <button role="tab" aria-selected="false" data-tab="sos" class="tab-sos">SOS</button>
+    </div>
+
+    <!-- ROUTES -->
+    <section class="tab-pane" data-pane="routes">
+      <p class="muted pane-lead">{{map.routes.lead}}</p>
+      <ul class="hq-routes" id="hqRoutes"></ul>
+    </section>
+
+    <!-- PLAN -->
+    <section class="tab-pane" data-pane="plan" hidden>
+      <form id="planForm" class="plan-form" autocomplete="off">
+        <div class="geo-field">
+          <label for="from">{{map.from}}</label>
+          <div class="geo-wrap"><input id="from" placeholder="{{map.fromPh}}"><button type="button" class="icon-btn mini" id="useMe" aria-label="{{map.useMe}}" title="{{map.useMe}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg></button></div>
+          <ul class="sugg" id="fromSugg" role="listbox"></ul>
+        </div>
+        <div id="vias"></div>
+        <button type="button" class="link-btn" id="addVia">+ {{map.addVia}}</button>
+        <div class="geo-field">
+          <label for="to">{{map.to}}</label>
+          <div class="geo-wrap"><input id="to" placeholder="{{map.toPh}}"><button type="button" class="icon-btn mini" id="swap" aria-label="{{map.swap}}" title="{{map.swap}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4v16M7 4L3 8M7 4l4 4M17 20V4M17 20l-4-4M17 20l4-4"/></svg></button></div>
+          <ul class="sugg" id="toSugg" role="listbox"></ul>
+        </div>
+        <label class="dep">{{map.depart}}<input type="datetime-local" id="dep"></label>
+        <button class="btn wide" type="submit" id="planBtn">{{map.calc}}</button>
+      </form>
+    </section>
+
+    <!-- PACK -->
+    <section class="tab-pane" data-pane="pack" hidden>
+      <p class="muted pane-lead">{{map.pack.lead}}</p>
+      <form id="packForm" class="pack-form">
+        <label>{{map.pack.room}}<input id="room" maxlength="12" placeholder="WOLVES-01" required></label>
+        <label>{{map.pack.name}}<input id="rider" maxlength="24" placeholder="{{map.pack.namePh}}" required></label>
+        <button class="btn wide" type="submit" id="packBtn">{{map.pack.join}}</button>
+      </form>
+      <div id="packLive" hidden>
+        <div class="pack-head"><span class="live">{{js.live}}</span> <b id="packRoom"></b><button class="btn ghost small" id="packLeave">{{map.pack.leave}}</button></div>
+        <p class="muted small" id="packMode"></p>
+        <ul class="riders" id="riders"></ul>
+      </div>
+    </section>
+
+    <!-- SOS -->
+    <section class="tab-pane" data-pane="sos" hidden>
+      <div class="sos-box">
+        <button class="sos-big" id="sosLocate"><span>SOS</span><small>{{map.sos.locate}}</small></button>
+        <div id="sosOut" class="sos-out" hidden>
+          <div class="coords"><span class="muted">{{map.sos.here}}</span><b id="sosCoords"></b><button class="copy" id="sosCopy">{{don.copy}}</button></div>
+          <a class="btn wide danger" href="tel:112">{{map.sos.call}}</a>
+          <a class="btn wide ghost" id="sosSms" href="#">{{map.sos.sms}}</a>
+          <a class="btn wide ghost" id="sosWa" href="#" target="_blank" rel="noopener">WhatsApp</a>
+          <button class="btn wide ghost" id="sosShare" hidden>{{map.sos.share}}</button>
+          <a class="btn wide ghost" href="brali.html#sos">{{map.sos.board}}</a>
+        </div>
+        <ul class="sos-tips"><li>{{map.sos.t1}}</li><li>{{map.sos.t2}}</li><li>{{map.sos.t3}}</li></ul>
+      </div>
+    </section>
+
+    <!-- RESULT (route analysis) -->
+    <section class="result" id="result" hidden aria-live="polite">
+      <div class="res-head">
+        <div><h2 id="resName">—</h2><p class="muted" id="resSub"></p></div>
+        <button class="icon-btn mini" id="resClose" aria-label="{{a11y.close}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="kpis">
+        <div><span>{{map.k.dist}}</span><b id="kDist">—</b></div>
+        <div><span>{{map.k.time}}</span><b id="kTime">—</b></div>
+        <div><span>{{map.k.rain}}</span><b id="kRain">—</b></div>
+        <div><span>{{map.k.score}}</span><b id="kScore">—</b></div>
+      </div>
+      <div class="alerts" id="alerts"></div>
+      <h3 class="sub-h">{{map.rainAlong}}</h3>
+      <div class="rainbar" id="rainbar" role="img" aria-label="{{map.rainAlong}}"></div>
+      <div class="rainbar-axis"><span>0 km</span><span id="rbEnd"></span></div>
+      <h3 class="sub-h">{{map.roadAhead}}</h3>
+      <ol class="segments" id="segments"></ol>
+      <h3 class="sub-h">{{map.fuelOnRoute}}</h3>
+      <ul class="fuel-list" id="fuelList"><li class="muted">{{map.fuelLoading}}</li></ul>
+      <div class="export">
+        <a class="btn small" id="exGmaps" target="_blank" rel="noopener">Google Maps</a>
+        <a class="btn small ghost" id="exWaze" target="_blank" rel="noopener">Waze</a>
+        <button class="btn small ghost" id="exGpx">GPX</button>
+        <button class="btn small ghost" id="exShare">{{map.share}}</button>
+      </div>
+    </section>
+  </aside>
+
+  <div class="map-wrap">
+    <div id="map" aria-label="{{map.mapLabel}}"></div>
+    <div class="layers" id="layers" role="group" aria-label="{{map.layers}}">
+      <button data-layer="radar" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M7 15a5 5 0 1 1 1.6-9.7A6 6 0 0 1 20 9a4 4 0 0 1-1 7.9"/><path d="M9 19l-1 2M13 19l-1 2"/></svg>{{map.l.radar}}</button>
+      <button data-layer="wind" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg>{{map.l.wind}}</button>
+      <button data-layer="fuel" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M14 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V8l-3-3"/><path d="M7 7h4"/></svg>{{map.l.fuel}}</button>
+      <button data-layer="moto" aria-pressed="false"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M15 6h3l2 5M5.5 16.5L9 9h6l3.5 7.5M9 9l-1-3H5"/></svg>{{map.l.moto}}</button>
+      <button data-layer="food" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM17 9h1.5a2.5 2.5 0 0 1 0 5H17M7 3v2M11 3v2M15 3v2"/></svg>{{map.l.food}}</button>
+      <button data-layer="cams" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 11l5-3v8l-5-3"/></svg>{{map.l.cams}}</button>
+      <button data-layer="hazards" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 3L2 20h20zM12 10v4M12 17h.01"/></svg>{{map.l.hazards}}</button>
+    </div>
+    <div class="radar-ctrl" id="radarCtrl" hidden><button class="icon-btn mini" id="radarPlay" aria-label="Play"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg></button><span id="radarTime">—</span></div>
+    <div class="map-toast" id="toast" role="status" hidden></div>
+    <button class="locate-btn" id="locate" aria-label="{{map.useMe}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-8-8 18-2-8z"/></svg></button>
+  </div>
+</main>
+
+<script src="{{@base}}assets/vendor/leaflet/leaflet.js"></script>
+<script src="{{@base}}assets/js/data.js"></script>
+<script src="{{@base}}assets/js/common.js"></script>
+<script src="{{@base}}assets/js/rhr-api.js"></script>
+<script src="{{@base}}assets/js/map.js"></script>
+</body>
+</html>

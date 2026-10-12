@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="{{@lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{meta.brali.title}}</title>
+<meta name="description" content="{{meta.brali.desc}}">
+{{@head}}
+</head>
+<body class="app rhr-body">
+<a class="skip" href="#rhrMain">{{a11y.skip}}</a>
+{{@nav}}
+<div class="rhr" id="rhr">
+  <!-- SIDEBAR -->
+  <aside class="rhr-side" id="rhrSide" aria-label="Riders Help Riders">
+    <div class="rhr-brand">
+      <b>Riders Help Riders</b>
+      <span class="muted small" id="rhrMode"></span>
+    </div>
+    <div class="me-box" id="meBox"></div>
+
+    <nav class="rhr-nav" aria-label="{{rhr.sections}}">
+      <h3>{{rhr.forum}}</h3>
+      <ul id="catList"></ul>
+      <h3>{{rhr.road}}</h3>
+      <ul>
+        <li><a href="#sos" data-view="sos"><span class="ico">🆘</span>{{rhr.sosBoard}}<i class="badge" id="sosBadge" hidden></i></a></li>
+        <li><a href="#hazards" data-view="hazards"><span class="ico">⚠</span>{{rhr.hazards}}</a></li>
+        <li><a href="#helpers" data-view="helpers"><span class="ico">🤝</span>{{rhr.helpers}}</a></li>
+      </ul>
+      <h3>{{rhr.chats}} <span class="lock" title="{{rhr.membersOnly}}">🔒</span></h3>
+      <ul id="roomList"></ul>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="rhr-main" id="rhrMain" tabindex="-1">
+    <div class="rhr-top">
+      <button class="icon-btn mini rhr-back" id="rhrBack" aria-label="{{rhr.back}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div><h1 id="viewTitle">—</h1><p class="muted small" id="viewSub"></p></div>
+      <div class="rhr-top-act" id="viewAct"></div>
+    </div>
+    <div class="rhr-view" id="view"></div>
+  </main>
+</div>
+
+<!-- AUTH DIALOG -->
+<dialog class="dlg" id="authDlg" aria-labelledby="authTitle">
+  <form method="dialog" class="dlg-x"><button class="icon-btn mini" aria-label="{{a11y.close}}">×</button></form>
+  <h2 id="authTitle">{{rhr.auth.title}}</h2>
+  <div class="seg" role="tablist"><button type="button" class="on" data-auth="login">{{rhr.auth.login}}</button><button type="button" data-auth="register">{{rhr.auth.register}}</button></div>
+  <form id="authForm" class="form">
+    <label data-reg hidden>{{rhr.auth.name}}<input name="name" maxlength="32" autocomplete="nickname"></label>
+    <label>{{join.email}}<input name="email" type="email" required autocomplete="email"></label>
+    <label>{{rhr.auth.password}}<input name="password" type="password" minlength="8" required autocomplete="current-password"></label>
+    <label data-reg hidden>{{rhr.auth.invite}} <span class="muted">{{don.optional}}</span><input name="invite" maxlength="24" placeholder="WOLF-XXXX-XXXX" autocomplete="off"></label>
+    <p class="hint" data-reg hidden>{{rhr.auth.inviteHint}}</p>
+    <p class="form-err" id="authErr" role="alert"></p>
+    <button class="btn wide" type="submit" id="authBtn">{{rhr.auth.login}}</button>
+  </form>
+</dialog>
+
+<!-- COMPOSER DIALOG -->
+<dialog class="dlg" id="composeDlg" aria-labelledby="composeTitle">
+  <form method="dialog" class="dlg-x"><button class="icon-btn mini" aria-label="{{a11y.close}}">×</button></form>
+  <h2 id="composeTitle">—</h2>
+  <form id="composeForm" class="form"></form>
+</dialog>
+
+<script src="{{@base}}assets/vendor/leaflet/leaflet.js"></script>
+<script src="{{@base}}assets/js/data.js"></script>
+<script src="{{@base}}assets/js/common.js"></script>
+<script src="{{@base}}assets/js/rhr-api.js"></script>
+<script src="{{@base}}assets/js/brali.js"></script>
+</body>
+</html>

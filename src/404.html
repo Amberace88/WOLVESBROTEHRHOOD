@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="{{@lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{meta.404.title}}</title>
+<meta name="description" content="{{meta.404.desc}}">
+<meta name="robots" content="noindex">
+{{@head}}
+</head>
+<body>
+{{@nav}}
+<main id="main" class="nf">
+  <div class="wrap">
+    <h1 class="rocker" data-rocker="404">404</h1>
+    <p class="lead nf-lead">{{nf.text}}</p>
+    <div class="cta"><a class="btn" href="index.html">{{nf.home}}</a><a class="btn ghost" href="karte.html">Ride HQ</a></div>
+  </div>
+</main>
+{{@footer}}
+<script src="{{@base}}assets/js/data.js" defer></script>
+<script src="{{@base}}assets/js/common.js" defer></script>
+<script>addEventListener("DOMContentLoaded",()=>{WB.initNav();WB.initRockers();});</script>
+</body>
+</html>
