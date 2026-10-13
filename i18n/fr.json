@@ -535,5 +535,15 @@
  "rhr.err.noLoc": "Indiquez le lieu sur la carte",
  "rhr.err.nouser": "Aucun compte avec cet e-mail",
  "rhr.err.generic": "Une erreur est survenue. Réessayez.",
- "rhr.err.notFound": "Sujet introuvable"
+ "rhr.err.notFound": "Sujet introuvable",
+ "mem.desc.President": "Dirige le club, le représente et tient parole.",
+ "mem.desc.VicePresident": "Le bras droit du président. Remplace et soutient.",
+ "mem.desc.SergeantatArms": "Veille à l’ordre, à la sécurité et aux règles.",
+ "mem.desc.RoadCaptain": "Prépare les itinéraires et mène la meute sur la route.",
+ "mem.desc.Secretary": "Chronique du club, journal et réunions.",
+ "mem.desc.Treasurer": "Caisse du club, cotisations et dons.",
+ "mem.desc.Member": "Les frères à part entière qui ont mérité leurs couleurs.",
+ "mem.desc.Prospect": "En route vers les couleurs. Rouler, apprendre, faire ses preuves.",
+ "rhr.menu": "Rubriques",
+ "map.backToList": "Retour à la liste"
 }

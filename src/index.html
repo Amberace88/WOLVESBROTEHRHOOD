@@ -77,7 +77,7 @@
   <div class="wrap">
     <h2 class="rocker" data-rocker="{{chron.rocker}}">{{chron.title}}</h2>
     <div class="chron">
-      <figure class="tintype">
+      <figure class="tintype" data-reveal="0">
         <img src="{{@base}}assets/img/brotherhood.webp" alt="{{chron.photoAlt}}" width="1206" height="877" loading="lazy">
         <figcaption>{{chron.caption}}</figcaption>
       </figure>
@@ -97,7 +97,7 @@
     <h2 class="rocker" data-rocker="{{diary.rocker}}">{{diary.title}}</h2>
     <p class="rocker-sub">{{diary.sub}}</p>
     <div class="diary">
-      <div class="book-spread" id="book">
+      <div class="book-spread" id="book" data-reveal="0">
         <article class="page left" id="pL"></article>
         <article class="page right" id="pR"></article>
       </div>
@@ -117,7 +117,7 @@
   <div class="wrap">
     <h2 class="rocker" data-rocker="{{ev.rocker}}">{{ev.title}}</h2>
     <ul class="events" id="events"></ul>
-    <div class="eu-teaser" id="euTeaser">
+    <div class="eu-teaser" id="euTeaser" data-reveal="0">
       <div class="eu-teaser-head"><h3>{{ev.euTitle}}</h3><a class="btn ghost small" href="eiropa.html">{{ev.euAll}}</a></div>
       <ol class="eu-mini" id="euMini"></ol>
     </div>
@@ -131,7 +131,7 @@
   <div class="wrap">
     <h2 class="rocker" data-rocker="{{cal.rocker}}">{{cal.title}}</h2>
     <p class="rocker-sub">{{cal.sub}}</p>
-    <div class="cal">
+    <div class="cal" data-reveal="0">
       <div>
         <div class="cal-head">
           <h3 id="calTitle">—</h3>
@@ -168,7 +168,7 @@
   <div class="wrap">
     <h2 class="rocker" data-rocker="RIDE HQ">{{ride.title}}</h2>
     <p class="rocker-sub">{{ride.sub}}</p>
-    <div class="ride">
+    <div class="ride" data-reveal="0">
       <ul class="route-list" id="routeList"></ul>
       <div class="mini-map">
         <div id="miniMap" style="position:absolute;inset:0"></div>
@@ -176,15 +176,15 @@
       </div>
     </div>
     <div class="feature-row">
-      <div>
+      <div data-reveal="0">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M7 15a5 5 0 1 1 1.6-9.7A6 6 0 0 1 20 9a4 4 0 0 1-1 7.9"/><path d="M9 19l-1 2M13 19l-1 2M17 19l-1 2"/></svg>
         <h3>{{ride.f1t}}</h3><p>{{ride.f1}}</p>
       </div>
-      <div>
+      <div data-reveal="1">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg>
         <h3>{{ride.f2t}}</h3><p>{{ride.f2}}</p>
       </div>
-      <div>
+      <div data-reveal="2">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><circle cx="12" cy="10" r="3"/><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><path d="M4 21h16"/></svg>
         <h3>{{ride.f3t}}</h3><p>{{ride.f3}}</p>
       </div>
@@ -198,7 +198,7 @@
 <section class="block garage-sec" id="garaza" aria-label="{{gar.title}}">
   <div class="wrap">
     <h2 class="rocker" data-rocker="{{gar.rocker}}">{{gar.title}}</h2>
-    <div class="garage" id="garage">
+    <div class="garage" id="garage" data-reveal="0">
       <div class="lamp" aria-hidden="true"><span class="cord"></span><span class="shade"></span><span class="cone"></span></div>
       {{@include:partials/bike.svg}}
       <canvas class="smoke" id="smoke" aria-hidden="true"></canvas>
@@ -229,7 +229,9 @@
 </section>
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="{{gal.title}}">
   <button class="icon-btn x" id="lbClose" aria-label="{{a11y.close}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-  <div><img id="lbImg" alt=""><p id="lbCap"></p></div>
+  <button class="icon-btn lb-nav prev" id="lbPrev" aria-label="{{a11y.prevPage}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <figure class="lb-fig"><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
+  <button class="icon-btn lb-nav next" id="lbNext" aria-label="{{a11y.nextPage}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
 </div>
 
 <hr class="stitch">
@@ -241,9 +243,9 @@
     <p class="rocker-sub">{{mem.sub}}</p>
     <div class="roster" id="roster"></div>
     <div class="code">
-      <div><h3>{{mem.c1t}}</h3><p>{{mem.c1}}</p></div>
-      <div><h3>{{mem.c2t}}</h3><p>{{mem.c2}}</p></div>
-      <div><h3>{{mem.c3t}}</h3><p>{{mem.c3}}</p></div>
+      <div data-reveal="0"><h3>{{mem.c1t}}</h3><p>{{mem.c1}}</p></div>
+      <div data-reveal="1"><h3>{{mem.c2t}}</h3><p>{{mem.c2}}</p></div>
+      <div data-reveal="2"><h3>{{mem.c3t}}</h3><p>{{mem.c3}}</p></div>
     </div>
   </div>
 </section>
@@ -254,7 +256,7 @@
 <section class="block" id="merch">
   <div class="wrap">
     <h2 class="rocker" data-rocker="MERCH">Merch</h2>
-    <div class="shop-note">
+    <div class="shop-note" data-reveal="0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ECE8DF" stroke-width="1.8" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
       <span><b>{{merch.noteB}}</b> {{merch.note}}</span>
     </div>
@@ -274,8 +276,8 @@
     <h2 class="rocker" data-rocker="{{don.rocker}}">{{don.title}}</h2>
     <p class="rocker-sub">{{don.sub}}</p>
     <div class="donate">
-      <div class="tanks" id="tanks"></div>
-      <form class="donate-card" id="donateForm">
+      <div class="tanks" id="tanks" data-reveal="0"></div>
+      <form class="donate-card" id="donateForm" data-reveal="2">
         <div class="seg" role="tablist" aria-label="{{don.kind}}">
           <button type="button" class="on" data-mode="once" role="tab" aria-selected="true">{{don.once}}</button>
           <button type="button" data-mode="monthly" role="tab" aria-selected="false">{{don.monthly}}</button>
@@ -292,7 +294,7 @@
           <p class="fuel-note" id="fuelNote"></p>
         </div>
         <div id="monthlyBox" hidden><div class="tiers" id="tiers"></div></div>
-        <label class="field">{{don.wallName}} <span class="muted">{{don.optional}}</span><input name="who" autocomplete="name" placeholder="{{don.wallPh}}"></label>
+        <label class="field"><span>{{don.wallName}} <span class="muted">{{don.optional}}</span></span><input name="who" autocomplete="name" placeholder="{{don.wallPh}}"></label>
         <button class="btn wide" type="submit" id="donateBtn">{{don.give}}</button>
         <div class="pay-panel" id="payPanel" hidden></div>
         <p class="legal-line" id="legalLine"></p>
@@ -307,13 +309,13 @@
 <!-- JOIN -->
 <section class="block" id="pievienoties">
   <div class="wrap join">
-    <div>
+    <div data-reveal="0">
       <h2 class="join-h">{{join.title}}</h2>
       <p class="lead">{{join.lead}}</p>
       <p class="muted">{{join.more}}</p>
       <p><a href="mailto:info@wolvesbrotherhoodmc.com">info@wolvesbrotherhoodmc.com</a></p>
     </div>
-    <form class="form" id="joinForm">
+    <form class="form" id="joinForm" data-reveal="2">
       <div class="two">
         <label>{{join.name}}<input name="name" required autocomplete="name"></label>
         <label>{{join.phone}}<input name="phone" type="tel" autocomplete="tel"></label>

@@ -76,19 +76,19 @@ const spokes = (id, cx, cy, r1, r2, n) => {
     h += `<line x1="${(cx + Math.cos(a) * r1).toFixed(1)}" y1="${(cy + Math.sin(a) * r1).toFixed(1)}" x2="${(cx + Math.cos(b) * r2).toFixed(1)}" y2="${(cy + Math.sin(b) * r2).toFixed(1)}"/>`; }
   $("#" + id).innerHTML = h;
 };
-spokes("spokesR", 200, 338, 14, 60, 24); spokes("spokesF", 700, 342, 12, 60, 24);
+spokes("spokesR", 205, 326, 16, 60, 28); spokes("spokesF", 715, 332, 14, 60, 28);
 
 const svg = garage.querySelector(".bike-scene");
 const sm = new Smoke($("#smoke"));
 const toPx = (vx, vy) => { const g = garage.getBoundingClientRect(), s = svg.getBoundingClientRect(); return [s.left - g.left + vx * s.width / 900, s.top - g.top + vy * s.height / 460, s.width / 900]; };
 let on = false, burning = false, rpm = 0, target = 0, puffQueue = 0;
 sm.emitters.push(s => {
-  const [tx, ty, k] = toPx(200, 418);
+  const [tx, ty, k] = toPx(205, 420);
   // rear tire: light smoulder always, heavy on burnout
   if (burning) for (let i = 0; i < 5; i++) s.puff(tx - 10 * k + Math.random() * 30 * k, ty - 6 * k, { vx: -(1 + Math.random() * 2.4) * k, vy: -(.3 + Math.random() * 1.1) * k, s: (18 + Math.random() * 18) * k, gs: .9 * k, a: .55, max: 170 + Math.random() * 90 });
   else if (Math.random() < .08) s.puff(tx + (Math.random() - .5) * 40 * k, ty, { vx: -.15 * k, vy: -.35 * k, s: 10 * k, gs: .25 * k, a: .25, max: 220 });
   // exhaust puffs on firing
-  while (puffQueue > 0) { puffQueue--; const [ex, ey] = toPx(108, 386 + Math.random() * 10); s.puff(ex, ey, { vx: -(1.4 + rpm / 2500) * k, vy: -(.1 + Math.random() * .3) * k, s: 5 * k, gs: (.25 + rpm / 9000) * k, a: .3 + rpm / 14000, max: 70 + Math.random() * 40 }); }
+  while (puffQueue > 0) { puffQueue--; const tip = Math.random() < .5 ? [146, 388] : [158, 364]; const [ex, ey] = toPx(tip[0], tip[1]); s.puff(ex, ey, { vx: -(1.4 + rpm / 2500) * k, vy: -(.1 + Math.random() * .3) * k, s: 5 * k, gs: (.25 + rpm / 9000) * k, a: .3 + rpm / 14000, max: 70 + Math.random() * 40 }); }
   // rpm smoothing + tach
   rpm += (target - rpm) * (target > rpm ? .09 : .05);
   $("#rpm").textContent = Math.round(rpm / 50) * 50;

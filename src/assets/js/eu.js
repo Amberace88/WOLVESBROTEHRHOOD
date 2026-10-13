@@ -63,7 +63,7 @@ const filtered = () => {
 const card = e => {
   const days = WB.daysUntil(e.s), dur = Math.round((e.e2 - e.s) / 864e5) + 1, live = isLive(e);
   const gm = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((e.venue ? e.venue + ", " : "") + e.city)}`;
-  return `<article class="ev-card ${live ? "is-live" : ""}" id="${esc(e.id)}" data-id="${esc(e.id)}">
+  return `<article class="ev-card ${live ? "is-live" : ""}" id="${esc(e.id)}" data-id="${esc(e.id)}" data-reveal="0">
     <div class="ec-date"><b>${e.s.getDate()}</b><span>${esc(WB.monShort(e.s))}</span>${dur > 1 ? `<small>${esc(tp("eu.days", dur))}</small>` : ""}</div>
     <div class="ec-main">
       <div class="ec-tags"><span class="ttag t-${e.type}">${esc(t("eu.type." + e.type))}</span>${e.status === "estimated" ? `<span class="tag sample" title="${esc(e.note || "")}">${esc(t("eu.estimated"))}</span>` : `<span class="tag">${esc(t("eu.confirmed"))}</span>`}${live ? `<span class="live">${esc(t("js.live"))}</span>` : ""}</div>
@@ -76,17 +76,21 @@ const card = e => {
         <div><dt>${esc(t("eu.fromRiga"))}</dt><dd>${e.cc === "EU" ? "—" : "~" + WB.num(Math.round(e.dist * 1.25 / 10) * 10) + " km"}</dd></div>
       </dl>
       <div class="ec-actions">
-        ${e.url ? `<a class="btn small" href="${esc(e.url)}" target="_blank" rel="noopener">${esc(t("eu.site"))}</a>` : ""}
-        <button class="btn small ghost" data-ics>${esc(t("js.addCal"))}</button>
-        ${e.cc !== "EU" ? `<a class="btn small ghost" href="karte.html?to=${e.lat},${e.lon}&name=${encodeURIComponent(e.city)}">${esc(t("eu.plan"))}</a><a class="btn small ghost" href="${gm}" target="_blank" rel="noopener">${esc(t("eu.mapLink"))}</a>` : ""}
-        <button class="btn small ghost save ${saved.has(e.id) ? "on" : ""}" data-save aria-pressed="${saved.has(e.id)}">${esc(t(saved.has(e.id) ? "eu.saved" : "eu.save"))}</button>
-        <button class="btn small ghost" data-share>${esc(t("map.share"))}</button>
+        ${e.url ? `<a class="btn small" href="${esc(e.url)}" target="_blank" rel="noopener">${esc(t("eu.site"))}${WB.icon("ext")}</a>` : ""}
+        ${e.cc !== "EU" ? `<a class="btn small ghost" href="karte.html?to=${e.lat},${e.lon}&name=${encodeURIComponent(e.city)}">${WB.icon("route")}${esc(t("eu.plan"))}</a>` : ""}
+        <span class="ec-tools">
+          <button class="tool" data-ics title="${esc(t("js.addCal"))}" aria-label="${esc(t("js.addCal"))}">${WB.icon("cal")}</button>
+          ${e.cc !== "EU" ? `<a class="tool" href="${gm}" target="_blank" rel="noopener" title="${esc(t("eu.mapLink"))}" aria-label="${esc(t("eu.mapLink"))}">${WB.icon("pin")}</a>` : ""}
+          <button class="tool save ${saved.has(e.id) ? "on" : ""}" data-save aria-pressed="${saved.has(e.id)}" title="${esc(t(saved.has(e.id) ? "eu.saved" : "eu.save"))}" aria-label="${esc(t(saved.has(e.id) ? "eu.saved" : "eu.save"))}">${WB.icon("star")}</button>
+          <button class="tool" data-share title="${esc(t("map.share"))}" aria-label="${esc(t("map.share"))}">${WB.icon("share")}</button>
+        </span>
       </div>
     </div>
     <div class="ec-count">${live ? "" : `<b>${days}</b><small>${esc(tp("eu.daysLeft", days))}</small>`}</div>
   </article>`;
 };
 function renderList(L2){
+  requestAnimationFrame(() => WB.initReveal($("#vList")));
   if (!L2.length) { $("#vList").innerHTML = `<div class="empty-state"><h3>${esc(t("eu.empty"))}</h3><p class="muted">${esc(t("eu.emptySub"))}</p></div>`; return; }
   if (state.sort === "dist") { $("#vList").innerHTML = L2.map(card).join(""); return; }
   let h = "", cur = "";
@@ -96,9 +100,10 @@ function renderList(L2){
 $("#vList").addEventListener("click", async ev => {
   const c = ev.target.closest(".ev-card"); if (!c) return; const e = ALL.find(x => x.id === c.dataset.id);
   if (ev.target.closest("[data-ics]")) WB.ics ? WB.ics(e.name, e.s, e.e2, `${e.venue ? e.venue + ", " : ""}${e.city}, ${e.country}`, TL(e.desc) + " " + (e.url || ""), true) : null;
-  if (ev.target.closest("[data-save]")) { saved.has(e.id) ? saved.delete(e.id) : saved.add(e.id); persist(); render(); }
-  if (ev.target.closest("[data-share]")) { const u = location.href.split("#")[0] + "#" + e.id; try { navigator.share ? await navigator.share({ title: e.name, url: u }) : (await navigator.clipboard.writeText(u), ev.target.textContent = t("map.linkCopied")); } catch (x) {} }
+  if (ev.target.closest("[data-save]")) { const was = saved.has(e.id); was ? saved.delete(e.id) : saved.add(e.id); persist(); render(); toastEu(t(was ? "eu.save" : "eu.saved") + (was ? "" : " ★")); }
+  if (ev.target.closest("[data-share]")) { const u = location.href.split("#")[0] + "#" + e.id; try { navigator.share ? await navigator.share({ title: e.name, url: u }) : (await navigator.clipboard.writeText(u), toastEu(t("map.linkCopied"))); } catch (x) {} }
 });
+function toastEu(msg){ let el = document.getElementById("euToast"); if (!el) { el = document.createElement("div"); el.id = "euToast"; el.className = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); } el.textContent = msg; el.classList.add("show"); clearTimeout(toastEu.t); toastEu.t = setTimeout(() => el.classList.remove("show"), 2200); }
 // .ics helper (same as home)
 WB.ics = WB.ics || ((title, start, end, place, text, allDay) => {
   const fd = d => WB.iso(d).replace(/-/g, ""), now = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");

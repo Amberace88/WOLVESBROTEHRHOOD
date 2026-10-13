@@ -49,7 +49,7 @@ ${alts}
 <link rel="preload" href="${b}assets/fonts/big-shoulders-display-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${b}assets/vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="${b}assets/css/style.css">
-<script>window.LANG="${l}";window.BASE="${b}";window.PAGE="${p}";</script>
+<script>document.documentElement.classList.add("js");window.LANG="${l}";window.BASE="${b}";window.PAGE="${p}";</script>
 <script src="${b}assets/i18n/${l}.js"></script>
 ${p === "index" ? `<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "SportsOrganization", name: "Wolves Brotherhood MC", alternateName: "WBMC", sport: "Motorcycling", url: SITE, logo: SITE + "/assets/img/logo.png", email: "info@wolvesbrotherhoodmc.com", address: { "@type": "PostalAddress", streetAddress: "Jaunciema gatve 147-1", addressLocality: "Rīga", postalCode: "LV-1023", addressCountry: "LV" }, identifier: "40008360087" })}</script>` : ""}`;
 }
@@ -66,7 +66,7 @@ function nav(l, p) {
       ${item(h + "#pasakumi", "nav.events")}
       ${item("eiropa.html", "nav.europe", "eiropa")}
       ${item("karte.html", "nav.ridehq", "karte")}
-      ${item("brali.html", "nav.riders", "brali")}
+      <li class="m-only"><a href="brali.html"${p === "brali" ? ' class="active"' : ""}>${T(l, "nav.riders")}</a></li>
       ${item(h + "#merch", "nav.merch")}
       ${item(h + "#atbalsts", "nav.donate")}
     </ul>
@@ -74,9 +74,10 @@ function nav(l, p) {
       <button class="lang-btn" id="langBtn" aria-haspopup="true" aria-expanded="false" aria-label="${escAttr(T(l, "a11y.lang"))}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg>${l.toUpperCase()}</button>
       <ul class="lang-menu" id="langMenu">${langs}</ul>
     </div>
-    <a class="btn small nav-cta" href="brali.html">${T(l, "nav.cta")}</a>
+    <a class="btn small nav-cta${p === "brali" ? " on" : ""}" href="brali.html"><span class="pulse-dot" aria-hidden="true"></span>${T(l, "nav.cta")}</a>
     <button class="burger" id="burger" aria-label="${escAttr(T(l, "a11y.menu"))}" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
   </div>
+  <span class="nav-progress" id="navProgress" aria-hidden="true"></span>
 </header>`;
 }
 

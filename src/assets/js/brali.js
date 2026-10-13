@@ -2,6 +2,7 @@
 (function(){
 const { $, $$, esc, t, tp, L: TL } = WB;
 WB.initNav();
+document.querySelectorAll("[data-ico]").forEach(e => e.innerHTML = WB.icon(e.dataset.ico));
 const R = window.RHR, view = $("#view");
 let user = null, unsub = null, mainMap = null;
 const rtf = new Intl.RelativeTimeFormat(WB.locale, { numeric: "auto" });
@@ -16,8 +17,8 @@ const OFFERS = ["tools", "garage", "trailer", "bed", "parts", "tow"];
 
 /* ---------- sidebar ---------- */
 function renderSide(){
-  $("#catList").innerHTML = [`<li><a href="#forum/all" data-view="forum/all"><span class="ico">≡</span>${esc(t("rhr.latest"))}</a></li>`, ...R.CATS.map(c => `<li><a href="#forum/${c.id}" data-view="forum/${c.id}"><span class="ico">${c.icon}</span>${esc(t("rhr.cat." + c.id))}</a></li>`)].join("");
-  $("#roomList").innerHTML = R.ROOMS.map(r => { const ok = R.can(user, r.minRole); return `<li><a href="#chat/${r.id}" data-view="chat/${r.id}" class="${ok ? "" : "locked"}"><span class="ico">#</span>${esc(t("rhr.room." + r.id))}${ok ? "" : ' <span class="lock">🔒</span>'}</a></li>`; }).join("");
+  $("#catList").innerHTML = [`<li><a href="#forum/all" data-view="forum/all"><span class="ico">${WB.icon("list")}</span>${esc(t("rhr.latest"))}</a></li>`, ...R.CATS.map(c => `<li><a href="#forum/${c.id}" data-view="forum/${c.id}"><span class="ico">${WB.icon(c.icon)}</span>${esc(t("rhr.cat." + c.id))}</a></li>`)].join("");
+  $("#roomList").innerHTML = R.ROOMS.map(r => { const ok = R.can(user, r.minRole); return `<li><a href="#chat/${r.id}" data-view="chat/${r.id}" class="${ok ? "" : "locked"}"><span class="ico">${WB.icon("hash")}</span>${esc(t("rhr.room." + r.id))}${ok ? "" : ` <span class="lock">${WB.icon("lock")}</span>`}</a></li>`; }).join("");
   $("#meBox").innerHTML = user
     ? `<div class="me"><span class="avatar">${esc(user.name.slice(0, 1).toUpperCase())}</span><div><b>${esc(user.name)}</b>${roleTag(user.role) || `<span class="role">${esc(t("rhr.role.rider"))}</span>`}</div><button class="link-btn" id="logout">${esc(t("rhr.logout"))}</button></div>
        ${R.can(user, "officer") ? `<button class="btn ghost small wide" id="mkInvite">${esc(t("rhr.makeInvite"))}</button><p class="small muted" id="inviteOut"></p>` : ""}`
@@ -61,7 +62,7 @@ async function showForum(cat){
   view.innerHTML = `<div class="loading">…</div>`;
   const list = await R.threads(cat);
   view.innerHTML = list.length ? `<ul class="threads">${list.map(x => `<li><a href="#t/${esc(x.id)}">
-      <span class="th-cat">${(R.CATS.find(c => c.id === x.cat) || {}).icon || ""}</span>
+      <span class="th-cat">${WB.icon((R.CATS.find(c => c.id === x.cat) || {}).icon || "list")}</span>
       <span class="th-main"><b>${x.solved ? `<span class="solved">✓ ${esc(t("rhr.solved"))}</span> ` : ""}${esc(x.title)}</b><small>${esc(x.author)} · ${esc(t("rhr.cat." + x.cat))} · ${esc(ago(x.lastAt))}</small></span>
       <span class="th-n">${x.replies}<small>${esc(tp("rhr.replies", x.replies))}</small></span></a></li>`).join("")}</ul>`
     : `<div class="empty-state"><h3>${esc(t("rhr.noThreads"))}</h3><p class="muted">${esc(t("rhr.noThreadsSub"))}</p></div>`;
@@ -110,7 +111,7 @@ function mapIn(el, items, kind){
   mainMap = L.map(el, { zoomControl: true, scrollWheelZoom: false }).setView([56.95, 24.6], 7);
   WB.darkTiles().addTo(mainMap);
   const g = L.featureGroup().addTo(mainMap);
-  items.forEach(x => L.marker([x.lat, x.lon], { icon: L.divIcon({ className: "pin " + (kind === "sos" ? "sosp" : kind === "haz" ? "haz" : "poi"), html: kind === "sos" ? "🆘" : kind === "haz" ? "⚠" : "🤝", iconSize: [28, 28], iconAnchor: [14, 14] }) }).addTo(g)
+  items.forEach(x => L.marker([x.lat, x.lon], { icon: L.divIcon({ className: "pin " + (kind === "sos" ? "sosp" : kind === "haz" ? "haz" : "poi"), html: WB.icon(kind === "sos" ? "sos" : kind === "haz" ? "warn" : "hands"), iconSize: [28, 28], iconAnchor: [14, 14] }) }).addTo(g)
     .bindPopup(`<b>${esc(x._title)}</b><br>${esc(x.note || "")}`));
   if (items.length) mainMap.fitBounds(g.getBounds().pad(.3), { maxZoom: 11 });
   setTimeout(() => mainMap && mainMap.invalidateSize(), 60);
@@ -162,7 +163,7 @@ function compose(type, opts = {}){
   const locBlock = `<div class="pick"><div class="pick-map" id="pickMap"></div><div class="pick-row"><button type="button" class="btn small ghost" id="pickMe">${esc(t("map.useMe"))}</button><span class="muted small" id="pickTxt">${esc(t("rhr.pickHint"))}</span></div></div>`;
   let title = "", html = "";
   if (type === "thread") { title = t("rhr.newThread");
-    html = `<label>${esc(t("rhr.category"))}<select name="cat">${R.CATS.map(c => `<option value="${c.id}" ${c.id === opts.cat ? "selected" : ""}>${c.icon} ${esc(t("rhr.cat." + c.id))}</option>`).join("")}</select></label>
+    html = `<label>${esc(t("rhr.category"))}<select name="cat">${R.CATS.map(c => `<option value="${c.id}" ${c.id === opts.cat ? "selected" : ""}>${esc(t("rhr.cat." + c.id))}</option>`).join("")}</select></label>
       <label>${esc(t("rhr.title"))}<input name="title" maxlength="140" required></label><label>${esc(t("rhr.text"))}<textarea name="body" rows="6" maxlength="8000" required></textarea></label>`; }
   if (type === "sos") { title = t("rhr.askHelp");
     html = `<label>${esc(t("rhr.whatHappened"))}${sel("kind", KINDS_SOS, "rhr.sos.")}</label><label>${esc(t("rhr.text"))}<textarea name="note" rows="3" maxlength="500"></textarea></label>

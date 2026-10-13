@@ -528,5 +528,15 @@
  "rhr.err.noLoc": "Marker stedet på kartet",
  "rhr.err.nouser": "Fant ingen konto med den e-posten",
  "rhr.err.generic": "Noe gikk galt. Prøv igjen.",
- "rhr.err.notFound": "Fant ikke tråden"
+ "rhr.err.notFound": "Fant ikke tråden",
+ "mem.desc.President": "Leder klubben, representerer den og holder ord.",
+ "mem.desc.VicePresident": "Presidentens høyre hånd. Stiller opp og støtter.",
+ "mem.desc.SergeantatArms": "Holder orden, sikkerhet og regler.",
+ "mem.desc.RoadCaptain": "Planlegger rutene og leder flokken på veien.",
+ "mem.desc.Secretary": "Klubbens krønike, dagbok og møter.",
+ "mem.desc.Treasurer": "Klubbkassen, kontingent og gaver.",
+ "mem.desc.Member": "Fullverdige brødre som har fortjent fargene.",
+ "mem.desc.Prospect": "På vei mot fargene. Kjører, lærer, beviser.",
+ "rhr.menu": "Seksjoner",
+ "map.backToList": "Tilbake til listen"
 }

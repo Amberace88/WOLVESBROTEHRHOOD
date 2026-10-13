@@ -535,5 +535,15 @@
  "meta.404.title": "Ceļš beidzas šeit · Wolves Brotherhood MC",
  "meta.404.desc": "Lapa nav atrasta.",
  "nf.text": "Šis ceļš ved nekurienē. Pagriezies atpakaļ — bars gaida.",
- "nf.home": "Uz sākumu"
+ "nf.home": "Uz sākumu",
+ "mem.desc.President": "Vada klubu, pārstāv to un tur doto vārdu.",
+ "mem.desc.VicePresident": "Prezidenta labā roka. Aizvieto un atbalsta.",
+ "mem.desc.SergeantatArms": "Rūpējas par kārtību, drošību un noteikumiem.",
+ "mem.desc.RoadCaptain": "Plāno maršrutus un vada bara braucienus.",
+ "mem.desc.Secretary": "Kluba hronika, dienasgrāmata un sapulces.",
+ "mem.desc.Treasurer": "Kluba kase, biedru naudas un ziedojumi.",
+ "mem.desc.Member": "Pilntiesīgi brāļi ar nopelnītām krāsām.",
+ "mem.desc.Prospect": "Ceļā uz krāsām. Brauc, mācās, pierāda.",
+ "rhr.menu": "Sadaļas",
+ "map.backToList": "Atpakaļ uz sarakstu"
 }

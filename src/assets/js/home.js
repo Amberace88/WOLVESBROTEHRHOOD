@@ -42,8 +42,8 @@ if (img.complete) light(); else { img.addEventListener("load", light); setTimeou
 })();
 
 /* ---------- chronicle ---------- */
-$("#timeline").innerHTML = (window.HISTORY || []).map(h => `
-  <li><div class="yr">${esc(TL(h.year))}</div><h3>${esc(TL(h.title))}</h3><p class="muted">${esc(TL(h.text))}</p>${h.sample ? `<span class="tag sample">${esc(t("js.sample"))}</span>` : ""}</li>`).join("");
+$("#timeline").innerHTML = (window.HISTORY || []).map((h, k) => `
+  <li data-reveal="${k}"><div class="yr">${esc(TL(h.year))}</div><h3>${esc(TL(h.title))}</h3><p class="muted">${esc(TL(h.text))}</p>${h.sample ? `<span class="tag sample">${esc(t("js.sample"))}</span>` : ""}</li>`).join("");
 
 /* ---------- diary ---------- */
 (function diary(){
@@ -89,7 +89,7 @@ WB.ics = (title, start, end, place, text, allDay) => {
   const up = E.filter(e => e.d >= t0), past = E.filter(e => e.d < t0).slice(-2).reverse();
   $("#events").innerHTML = [...up, ...past].map((e, k) => {
     const days = WB.daysUntil(e.d), isPast = e.d < t0;
-    return `<li class="ev ${k === 0 && !isPast ? "next" : ""} ${isPast ? "past" : ""}">
+    return `<li class="ev ${k === 0 && !isPast ? "next" : ""} ${isPast ? "past" : ""}" data-reveal="${Math.min(k, 4)}">
       <div class="ev-date"><b>${e.d.getDate()}</b><span>${esc(WB.monShort(e.d))}</span></div>
       <div><h3>${esc(TL(e.title))}</h3><div class="where"><span>${esc(TL(e.place))}</span>${e.time ? `<span>${esc(t("js.start"))} ${esc(e.time)}</span>` : ""}${e.sample ? `<span class="tag sample">${esc(t("js.sample"))}</span>` : ""}</div>
         <p class="muted">${esc(TL(e.text))}</p>
@@ -201,18 +201,26 @@ WB.ics = (title, start, end, place, text, allDay) => {
   const render = () => {
     $("#albums").innerHTML = albums.map(a => `<button class="chip ${a === cur ? "on" : ""}" data-a="${esc(a)}">${esc(t("gal.album." + a))}</button>`).join("");
     $("#gallery").innerHTML = G.filter(g => cur === "all" || g.album === cur).map(g => `
-      <figure tabindex="0" class="${g.patch ? "patch-tile" : ""}" data-src="${esc(B + g.src)}" data-alt="${esc(TL(g.alt))}"><img src="${esc(B + g.src)}" alt="${esc(TL(g.alt))}" loading="lazy"><figcaption>${esc(TL(g.alt))}</figcaption></figure>`).join("")
-      + `<div class="add-photo"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#A3A098" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg><span>${esc(t("js.morePhotos"))}</span></div>`;
+      <figure tabindex="0" class="${g.patch ? "patch-tile" : ""} ${g.span ? "g-" + g.span : ""}" data-reveal="${G.indexOf(g) % 4}" data-src="${esc(B + g.src)}" data-alt="${esc(TL(g.alt))}"><img src="${esc(B + g.src)}" alt="${esc(TL(g.alt))}" width="${g.w || 900}" height="${g.h || 600}" loading="lazy" decoding="async"><figcaption>${esc(TL(g.alt))}</figcaption></figure>`).join("");
+    if (!$("#galleryMore")) $("#gallery").insertAdjacentHTML("afterend", `<div id="galleryMore">` + `<div class="add-photo"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#A3A098" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/></svg><span>${esc(t("js.morePhotos"))}</span></div>` + `</div>`);
   };
-  $("#albums").addEventListener("click", e => { const b = e.target.closest("[data-a]"); if (b) { cur = b.dataset.a; render(); } });
-  const lb = $("#lightbox");
-  const open = f => { $("#lbImg").src = f.dataset.src; $("#lbImg").alt = f.dataset.alt; $("#lbCap").textContent = f.dataset.alt; lb.classList.add("open"); $("#lbClose").focus(); };
+  $("#albums").addEventListener("click", e => { const b = e.target.closest("[data-a]"); if (b) { cur = b.dataset.a; render(); WB.initReveal($("#gallery")); } });
+  const lb = $("#lightbox"); let idx = 0, last = null;
+  const figs = () => $$("#gallery figure");
+  const show = i => { const F = figs(); idx = (i + F.length) % F.length; const f = F[idx];
+    const im = $("#lbImg"); im.classList.remove("in"); im.src = f.dataset.src; im.alt = f.dataset.alt; $("#lbCap").textContent = f.dataset.alt;
+    im.onload = () => im.classList.add("in"); };
+  const open = f => { last = f; show(figs().indexOf(f)); lb.classList.add("open"); document.body.style.overflow = "hidden"; $("#lbClose").focus(); };
+  const close = () => { lb.classList.remove("open"); document.body.style.overflow = ""; last && last.focus(); };
   $("#gallery").addEventListener("click", e => { const f = e.target.closest("figure"); f && open(f); });
   $("#gallery").addEventListener("keydown", e => { if (e.key === "Enter") { const f = e.target.closest("figure"); f && open(f); } });
-  const close = () => lb.classList.remove("open");
   $("#lbClose").addEventListener("click", close);
+  $("#lbPrev").addEventListener("click", () => show(idx - 1));
+  $("#lbNext").addEventListener("click", () => show(idx + 1));
   lb.addEventListener("click", e => { if (e.target === lb) close(); });
-  addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+  addEventListener("keydown", e => { if (!lb.classList.contains("open")) return; if (e.key === "Escape") close(); if (e.key === "ArrowLeft") show(idx - 1); if (e.key === "ArrowRight") show(idx + 1); });
+  let tx = null; lb.addEventListener("touchstart", e => tx = e.touches[0].clientX, { passive: true });
+  lb.addEventListener("touchend", e => { if (tx == null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) show(idx + (dx < 0 ? 1 : -1)); tx = null; });
   render();
 })();
 
@@ -221,10 +229,14 @@ WB.ics = (title, start, end, place, text, allDay) => {
   const tab = txt => { const fs = Math.min(40, 340 / Math.max(txt.length, 5));
     return `<svg viewBox="0 0 240 70" aria-hidden="true"><rect x="3" y="3" width="234" height="64" rx="6" fill="#000" stroke="#ECE8DF" stroke-width="4"/><rect x="10" y="10" width="220" height="50" rx="3" fill="none" stroke="#ECE8DF" stroke-width="1.2" opacity=".5"/><text x="120" y="37" text-anchor="middle" dominant-baseline="middle" font-family="WB Display, Impact, sans-serif" font-weight="900" font-size="${fs}" fill="#ECE8DF" letter-spacing="1.5">${esc(txt.toUpperCase())}</text></svg>`; };
   const officers = ["President","Vice President","Sergeant at Arms","Road Captain","Secretary","Treasurer"];
-  $("#roster").innerHTML = (window.MEMBERS || []).map(m => `
-    <div class="member ${officers.includes(m.role) ? "officer" : ""}">${tab(m.role)}
-      <div class="who">${m.road ? esc(m.road) : m.name ? esc(m.name) : `<span class="empty">${m.count ? esc(tp("js.brothers", m.count)) : esc(t("js.nameSoon"))}</span>`}</div>
-      <div class="lvr">${esc(t("mem.role." + m.role.replace(/\s/g, "")))}</div></div>`).join("");
+  $("#roster").innerHTML = (window.MEMBERS || []).map((m, i) => {
+    const key = m.role.replace(/\s/g, "");
+    const who = m.road || m.name || (m.count ? tp("js.brothers", m.count) : "");
+    return `<div class="member ${officers.includes(m.role) ? "officer" : ""}" data-reveal="${i % 4}">${tab(m.role)}
+      <div class="lvr">${esc(t("mem.role." + key))}</div>
+      ${who ? `<div class="who">${esc(who)}</div>` : ""}
+      <p class="desc">${esc(t("mem.desc." + key))}</p></div>`;
+  }).join("");
 })();
 
 /* ---------- merch ---------- */
@@ -247,7 +259,7 @@ WB.ics = (title, start, end, place, text, allDay) => {
     return `<svg viewBox="0 0 300 300" role="img" aria-label="${esc(TL(p.name))}"><g fill="${color}" stroke="${light ? "#bbb" : "#3a3936"}" stroke-width="1.5" color="${color}">${garment[p.type]}</g>${art}</svg>`;
   };
   $("#shelf").innerHTML = P.map(p => `
-    <article class="product" data-id="${p.id}"><div class="shot">${shot(p, p.colors[0])}</div>
+    <article class="product" data-id="${p.id}" data-reveal="${Math.min(P.indexOf(p), 3)}"><div class="shot">${shot(p, p.colors[0])}</div>
       <div class="info"><div class="pn">${esc(TL(p.name))}</div>
         <div class="swatches">${p.colors.map((c, k) => `<i role="button" tabindex="0" aria-label="${esc(t("js.color"))} ${k + 1}" data-c="${c}" style="background:${c}"></i>`).join("")}</div>
         <div class="row"><span class="price">${esc(WB.eur(p.price))}</span><button class="btn small" data-buy="${p.id}">${esc(t("js.soon"))}</button></div></div>
@@ -271,4 +283,5 @@ $("#joinForm").addEventListener("submit", e => {
   location.href = `mailto:${(window.CLUB && CLUB.email) || "info@wolvesbrotherhoodmc.com"}?subject=${encodeURIComponent("[" + sel.options[sel.selectedIndex].text + "] " + f.get("name"))}&body=${encodeURIComponent(body)}`;
   $("#formOk").style.display = "block";
 });
+WB.initReveal();
 })();

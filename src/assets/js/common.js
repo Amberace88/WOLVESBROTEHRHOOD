@@ -147,23 +147,57 @@ W.rocker = el => {
   const text = el.dataset.rocker; if (!text) return;
   const down = el.dataset.dir === "down", id = "rk" + (rid++);
   // koncentriski loki — īsta uzšuves "rocker" forma
-  const Ro = 1080, Ri = 990, Rt = 1035, th = Math.asin(470 / Ro), cx = 500, cy = down ? -880 : 1100, sg = down ? 1 : -1;
+  const n = [...text].length, fs = Math.min(58, 1450 / Math.max(n, 6));
+  // teksta bāzes līnija pusē zem joslas vidus, lai lielie burti stāv tieši centrā
+  const Ro = 1080, Ri = 990, Rt = 1035 + (down ? 1 : -1) * 0.34 * fs, th = Math.asin(470 / Ro), cx = 500, cy = down ? -880 : 1100, sg = down ? 1 : -1;
   const P = (r, s) => [(cx + s * r * Math.sin(th)).toFixed(1), (cy + sg * r * Math.cos(th)).toFixed(1)];
   const [oL, oR, iL, iR, tL, tR] = [P(Ro, -1), P(Ro, 1), P(Ri, -1), P(Ri, 1), P(Rt, -1), P(Rt, 1)];
   const shape = down
     ? `M ${oL} A ${Ro} ${Ro} 0 0 0 ${oR} L ${iR} A ${Ri} ${Ri} 0 0 1 ${iL} Z`
     : `M ${oL} A ${Ro} ${Ro} 0 0 1 ${oR} L ${iR} A ${Ri} ${Ri} 0 0 0 ${iL} Z`;
   const tp = `M ${tL} A ${Rt} ${Rt} 0 0 ${down ? 0 : 1} ${tR}`;
-  const n = [...text].length, fs = Math.min(60, 1500 / Math.max(n, 6));
   const vb = down ? "0 0 1000 214" : "0 8 1000 214";
   el.innerHTML = `<span class="sr-only">${W.esc(el.textContent.trim() || text)}</span>
   <svg viewBox="${vb}" aria-hidden="true" focusable="false">
     <defs><path id="${id}" d="${tp}"/></defs>
     <path class="r-shape" d="${shape}"/>
-    <text font-size="${fs}" text-anchor="middle" dominant-baseline="central"><textPath href="#${id}" startOffset="50%">${W.esc(text)}</textPath></text>
+    <text font-size="${fs}" text-anchor="middle"><textPath href="#${id}" startOffset="50%">${W.esc(text)}</textPath></text>
   </svg>`;
   const p = el.querySelector(".r-shape");
   try { el.style.setProperty("--len", Math.ceil(p.getTotalLength())); } catch(e) { el.style.setProperty("--len", 3000); }
+};
+/* ---------- ikonas (vienots līniju stils) ---------- */
+const IC = {
+  wrench: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  route: '<circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H17a3.5 3.5 0 0 0 0-7H7a3.5 3.5 0 0 1 0-7h8.5"/>',
+  jacket: '<path d="M8 3l4 3 4-3 4 3-2 5h-2v10H8V11H6L4 6z"/><path d="M12 6v15"/>',
+  swap: '<path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/>',
+  fire: '<path d="M12 22c4 0 7-2.8 7-7 0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-2 2-5 5-5 8 0 4.2 3 7 7 7z"/><path d="M12 22c-1.7 0-3-1.3-3-3 0-2 3-4 3-4s3 2 3 4c0 1.7-1.3 3-3 3z"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  sos: '<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5h.01"/>',
+  warn: '<path d="M12 3L2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
+  hands: '<path d="M2 12l5-5 4 2 3-2 4 1 4 4-3 3"/><path d="M7 7l-1 6 4 4 3-2 3 2 3-2-5-5-3 2-3-2"/>',
+  hash: '<path d="M4 9h16M4 15h16M10 3L8 21M16 3l-2 18"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  pin: '<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  nav: '<path d="M3 11l18-8-8 18-2-8z"/>',
+  star: '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2-5.5-2.9-5.5 2.9 1-6.2L3 9.6l6.2-.9z"/>',
+  share: '<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.5M8.2 13.2l7.6 4.5"/>',
+  ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  menu: '<path d="M4 6h16M4 12h16M4 18h10"/>',
+  back: '<path d="M15 18l-6-6 6-6"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>'
+};
+W.icon = (n, cls = "") => `<svg class="ico-svg ${cls}" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n] || ""}</svg>`;
+
+/* ---------- parādīšanās animācija (vienreiz, ievēro reduced-motion) ---------- */
+W.initReveal = (root = document) => {
+  const els = W.$$("[data-reveal]", root).filter(e => !e.classList.contains("rv-in"));
+  if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return els.forEach(e => e.classList.add("rv-in"));
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("rv-in"); io.unobserve(e.target); } }), { threshold: .12, rootMargin: "0px 0px -6% 0px" });
+  els.forEach((e, i) => { e.style.setProperty("--rv-d", (+(e.dataset.reveal || 0)) * 70 + "ms"); io.observe(e); });
 };
 W.cap = s => s ? s.charAt(0).toLocaleUpperCase(LOCALE) + s.slice(1) : s;
 W.initRockers = () => {
@@ -177,7 +211,11 @@ W.initRockers = () => {
 W.initNav = () => {
   const nav = W.$("#nav"); if (!nav) return;
   const burger = W.$("#burger");
-  const onScroll = () => nav.classList.toggle("solid", scrollY > 40 || nav.classList.contains("open") || document.body.classList.contains("app"));
+  const bar = W.$("#navProgress");
+  const onScroll = () => {
+    nav.classList.toggle("solid", scrollY > 40 || nav.classList.contains("open") || document.body.classList.contains("app"));
+    if (bar) { const h = document.documentElement.scrollHeight - innerHeight; bar.style.transform = `scaleX(${h > 0 ? Math.min(1, scrollY / h) : 0})`; }
+  };
   addEventListener("scroll", onScroll, { passive: true }); onScroll();
   burger && burger.addEventListener("click", () => { const o = nav.classList.toggle("open"); burger.setAttribute("aria-expanded", o); onScroll(); });
   W.$$(".nav-links a").forEach(a => a.addEventListener("click", () => { nav.classList.remove("open"); burger && burger.setAttribute("aria-expanded", false); }));

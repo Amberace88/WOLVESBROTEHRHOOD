@@ -6,8 +6,8 @@ const LS = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 const now = () => Date.now();
 const CATS = [
-  { id: "roadhelp", icon: "🛠" }, { id: "tech", icon: "⚙" }, { id: "routes", icon: "🗺" },
-  { id: "gear", icon: "🧥" }, { id: "market", icon: "🔁" }, { id: "general", icon: "🔥" }
+  { id: "roadhelp", icon: "wrench" }, { id: "tech", icon: "gear" }, { id: "routes", icon: "route" },
+  { id: "gear", icon: "jacket" }, { id: "market", icon: "swap" }, { id: "general", icon: "fire" }
 ];
 const ROOMS = [
   { id: "club", minRole: "member" }, { id: "rides", minRole: "member" }, { id: "officers", minRole: "officer" }

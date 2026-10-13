@@ -58,7 +58,7 @@ p{margin:0 0 1em}
 .tag.sample{border-style:dashed;color:#7d7a73}
 
 /* ---------- rocker headings (signature) ---------- */
-.rocker{position:relative;margin:0 auto var(--s-6);max-width:760px;text-align:center}
+.rocker{position:relative;margin:0 auto var(--s-5);max-width:600px;text-align:center}
 .rocker svg{width:100%;height:auto;display:block;overflow:visible}
 .rocker .r-shape{fill:var(--black);stroke:var(--bone);stroke-width:5;stroke-linejoin:round}
 .rocker .r-inner{fill:none;stroke:var(--bone);stroke-width:1.5;opacity:.55}
@@ -67,7 +67,7 @@ p{margin:0 0 1em}
 .rocker.in text{opacity:0;animation:fadein .6s .5s forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 @keyframes fadein{to{opacity:1}}
-.rocker-sub{text-align:center;color:var(--silver);max-width:52ch;margin:calc(var(--s-5) * -1) auto var(--s-7)}
+.rocker-sub{text-align:center;color:var(--silver);max-width:54ch;margin:calc(var(--s-3) * -1) auto var(--s-6);font-size:1.08rem;text-wrap:balance}
 
 /* ---------- buttons ---------- */
 .btn{display:inline-flex;align-items:center;gap:.6rem;padding:.85rem 1.4rem;font-family:var(--f-display);font-weight:800;font-size:1.15rem;letter-spacing:.04em;
@@ -135,7 +135,7 @@ p{margin:0 0 1em}
 @keyframes cue{0%{opacity:0;transform:translateY(0)}40%{opacity:1}100%{opacity:0;transform:translateY(14px)}}
 
 /* ---------- sections ---------- */
-section.block{padding:var(--s-9) 0;position:relative}
+section.block{padding:clamp(3.5rem,7vw,5.5rem) 0;position:relative}
 section.block.tight{padding:var(--s-8) 0}
 .stitch{border:0;height:0;margin:0;border-top:2px dashed var(--steel-2)}
 
@@ -158,15 +158,15 @@ section.block.tight{padding:var(--s-8) 0}
 .gauge-txt{font-size:1rem;color:var(--silver)}
 .wx-row{display:flex;gap:var(--s-4);flex-wrap:wrap;font-size:.98rem;color:var(--silver);margin-top:var(--s-2)}
 .wx-row b{color:var(--bone);font-weight:700}
-.next-day .countdown{font-family:var(--f-display);font-weight:900;font-size:2.6rem;line-height:1}
+.next-day .countdown{font-family:var(--f-display);font-weight:900;font-size:2.2rem;line-height:1}
 .next-day .what{font-weight:600;margin-top:.3rem}
 @media (max-width:1080px){.cluster-inner{grid-template-columns:1fr 1fr}.cell:nth-child(2){border-right:0}.cell:nth-child(-n+2){border-bottom:1px solid var(--steel-2)}}
 @media (max-width:620px){.cluster-inner{grid-template-columns:1fr}.cell{border-right:0;border-bottom:1px solid var(--steel-2)}.cell:last-child{border-bottom:0}.date-big{font-size:3.4rem}}
 
 /* ---------- chronicle ---------- */
-.chron{display:grid;grid-template-columns:1.15fr 1fr;gap:var(--s-8);align-items:start}
+.chron{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(2rem,5vw,4rem);align-items:center}
 .tintype{position:relative;border-radius:4px;overflow:hidden;background:#000}
-.tintype img{width:100%;filter:grayscale(1) contrast(1.05);
+.tintype img{width:100%;aspect-ratio:4/3;object-fit:cover;object-position:50% 64%;filter:grayscale(1) contrast(1.05);
   -webkit-mask-image:radial-gradient(ellipse 72% 70% at 50% 50%,#000 60%,transparent 100%);mask-image:radial-gradient(ellipse 72% 70% at 50% 50%,#000 60%,transparent 100%)}
 .tintype figcaption{font-family:var(--f-book);font-style:italic;color:var(--silver);font-size:1rem;margin-top:var(--s-3)}
 .timeline{list-style:none;margin:var(--s-6) 0 0;padding:0;border-left:2px solid var(--steel-2)}
@@ -829,3 +829,178 @@ body.app::after{opacity:.04}
 .nf .cta{display:flex;gap:var(--s-3);justify-content:center;flex-wrap:wrap}
 .lang-hint{bottom:auto;top:calc(var(--nav-h) + 10px);left:auto;right:16px;transform:none}
 @media (max-width:860px){.locate-btn{bottom:auto;top:62px;right:8px}}
+
+/* =========================================================
+   Pieslīpēšana v2 — ritms, mikrointerakcijas, parādīšanās
+   ========================================================= */
+html.js [data-reveal]{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease) var(--rv-d,0ms),transform .8s var(--ease) var(--rv-d,0ms)}
+html.js [data-reveal].rv-in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){html.js [data-reveal]{opacity:1;transform:none;transition:none}}
+
+/* nav */
+.nav-progress{position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--eye),var(--bone));transform-origin:0 50%;transform:scaleX(0);pointer-events:none}
+.nav:not(.solid) .nav-progress{opacity:0}
+.nav-links a{transition:color .2s}
+.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--bone);transform:scaleX(0);transform-origin:0 50%;transition:transform .3s var(--ease)}
+.nav-links a:hover::after,.nav-links a.active::after{transform:scaleX(1)}
+.nav-cta{gap:.5rem}
+.nav-cta.on{background:transparent;color:var(--bone)}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--eye);box-shadow:0 0 0 0 rgba(227,18,11,.6);animation:pd 2s infinite}
+@keyframes pd{70%{box-shadow:0 0 0 7px rgba(227,18,11,0)}100%{box-shadow:0 0 0 0 rgba(227,18,11,0)}}
+.m-only{display:none}
+@media (max-width:1080px){.m-only{display:block}}
+
+/* hero: mīksta pāreja uz melnu */
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:28%;z-index:-1;background:linear-gradient(transparent,#000);pointer-events:none}
+.hero-copy .motto{text-shadow:0 2px 30px rgba(0,0,0,.8)}
+
+/* pogas: vienots fokuss un spiediens */
+.btn:active{transform:translateY(1px) scale(.98)}
+.btn.ghost{border-color:rgba(236,232,223,.55)}
+.btn.ghost:hover{border-color:var(--bone)}
+.icon-btn{transition:border-color .2s,background .2s}
+.icon-btn:hover{background:#151514}
+.icon-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* today panelis */
+.cluster-inner{background:linear-gradient(180deg,#141413,#0d0d0c)}
+.cell h3{font-size:.92rem;letter-spacing:.03em}
+.names{font-size:1.75rem}
+.gauge-val{font-size:2.2rem}
+
+/* hronika */
+.tintype{border:1px solid var(--steel-2);box-shadow:0 30px 70px rgba(0,0,0,.6)}
+.timeline li{padding-bottom:var(--s-5)}
+.timeline li:last-child{padding-bottom:0}
+.timeline .tag{margin-top:.3rem}
+
+/* dienasgrāmata */
+.book-spread{min-height:380px}
+
+/* pasākumi */
+.ev{padding:var(--s-5) var(--s-4);border-radius:4px;transition:background .25s}
+.ev:hover{background:rgba(236,232,223,.03)}
+.ev .count{font-size:1.15rem;padding:.35rem .8rem;border:1px solid var(--steel);border-radius:999px;align-self:center}
+.ev.next .count{background:var(--bone);color:#000;border-color:var(--bone)}
+.ev.past .count{border-style:dashed}
+
+/* biedri */
+.member{display:flex;flex-direction:column;align-items:center;gap:.35rem;transition:border-color .25s,transform .25s}
+.member:hover{border-color:var(--steel);transform:translateY(-2px)}
+.member .desc{color:var(--silver);font-size:.98rem;line-height:1.4;max-width:26ch}
+.member .who{min-height:1.2em}
+
+/* galerija */
+.gallery img{aspect-ratio:auto}
+.gallery figure{transition:transform .4s var(--ease)}
+
+/* garāža */
+.garage{padding-top:var(--s-6)}
+.garage-ui{padding:0 var(--s-3) var(--s-2)}
+
+/* ziedojumi */
+.tank{transition:border-color .25s,background .25s}
+.tank:hover{background:#171716}
+
+/* footer */
+footer{background:radial-gradient(ellipse 50% 80% at 50% 0,rgba(236,232,223,.05),transparent 70%)}
+
+/* ikonas */
+.ico-svg{flex:none;display:inline-block;vertical-align:-3px}
+.btn .ico-svg{width:16px;height:16px}
+
+/* Eiropa: kartītes darbības */
+.ec-actions{align-items:center}
+.ec-tools{display:inline-flex;gap:4px;margin-left:auto}
+.tool{width:40px;height:40px;display:inline-grid;place-items:center;border:1px solid var(--steel-2);border-radius:999px;background:transparent;color:var(--silver);cursor:pointer;transition:color .2s,border-color .2s,background .2s}
+.tool:hover{color:var(--bone);border-color:var(--bone)}
+.tool.save.on{color:#000;background:var(--bone);border-color:var(--bone)}
+.tool.save.on svg{fill:currentColor}
+.ev-card{transition:border-color .3s,box-shadow .3s,transform .3s}
+.ev-card:hover{border-color:var(--steel)}
+.ec-facts{background:rgba(0,0,0,.35);border:1px solid var(--steel-2);border-radius:4px;padding:.6rem .9rem;display:flex;flex-wrap:wrap;gap:.4rem 2rem;width:fit-content}
+.toast{position:fixed;left:50%;bottom:24px;z-index:400;transform:translate(-50%,20px);opacity:0;background:#0d0d0c;border:1px solid var(--steel);border-radius:999px;padding:.55rem 1.1rem;font-weight:600;transition:opacity .25s,transform .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:720px){.ec-tools{margin-left:0}}
+
+/* Ride HQ: rezultāta skats */
+.panel.has-result .tab-pane{display:none!important}
+.panel.has-result .tabs{display:none}
+.panel.has-result .result{border-top:0;order:-1}
+.back-btn{display:inline-flex;align-items:center;gap:.35rem;margin-bottom:var(--s-3);font-size:.98rem}
+.result .res-head h2{font-size:2rem}
+@media (min-width:861px){.layers button{font-size:.9rem;padding:.4rem .65rem}}
+.layers button:hover{color:var(--bone);border-color:var(--steel)}
+.hq-routes button{transition:border-color .2s,background .2s}
+.hq-routes button:hover{background:#151514}
+
+/* Riders Help Riders */
+.rhr-nav .ico{display:inline-grid;place-items:center;width:1.4rem;color:var(--silver)}
+.rhr-nav a.on .ico,.rhr-nav a:hover .ico{color:var(--bone)}
+.rhr-nav h3 .lock svg{width:13px;height:13px;vertical-align:-1px}
+.rhr-nav .lock svg{width:14px;height:14px}
+.th-cat{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--steel-2);color:var(--silver)}
+.threads a:hover .th-cat{color:var(--bone);border-color:var(--steel)}
+.pin.sosp,.pin.haz,.pin.poi{color:var(--bone)}
+.pin.sosp svg{color:#ff6b62}
+.pin.haz svg{color:var(--warn)}
+.rhr-back .b-back{display:none}
+.rhr-back span{display:inline-flex;align-items:center;gap:.4rem}
+.rhr.in-thread .rhr-back .b-back{display:inline-flex}
+.rhr.in-thread .rhr-back .b-menu{display:none}
+.rhr-back{display:none}
+@media (max-width:860px){.rhr-back{display:inline-flex}}
+@media (min-width:861px){.rhr.in-thread .rhr-back{display:inline-flex}}
+.post{transition:border-color .2s}
+.post:hover{border-color:var(--steel)}
+
+/* hronika foto */
+.tintype img{height:auto}
+.tintype{border:0;box-shadow:none}
+
+/* galerija — bento režģis */
+.gallery{columns:auto;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:clamp(150px,16vw,220px);gap:10px;grid-auto-flow:dense}
+.gallery figure{margin:0;height:100%}
+.gallery figure img{width:100%;height:100%;object-fit:cover}
+.gallery .g-big{grid-column:span 2;grid-row:span 2}
+.gallery .g-wide{grid-column:span 2}
+.gallery .g-tall{grid-row:span 2}
+.gallery figure.patch-tile{padding:var(--s-4)}
+.gallery figure.patch-tile img{object-fit:contain}
+.add-photo{margin:10px 0 0;padding:var(--s-4);flex-direction:row;display:flex;justify-content:center;align-items:center;gap:.8rem}
+@media (max-width:720px){.gallery{grid-template-columns:repeat(2,1fr);grid-auto-rows:150px}.gallery .g-big{grid-column:1/-1}}
+
+/* formas */
+.field > span{display:block}
+.form > .btn{justify-content:center}
+.donate-card .field{gap:.4rem}
+
+/* lightbox */
+.lightbox{grid-template-columns:auto 1fr auto;gap:var(--s-4);align-items:center;backdrop-filter:blur(6px)}
+.lb-fig{margin:0;display:grid;justify-items:center;gap:.8rem}
+.lb-fig img{max-height:80vh;max-width:min(1200px,80vw);opacity:0;transform:scale(.985);transition:opacity .35s,transform .35s var(--ease)}
+.lb-fig img.in{opacity:1;transform:none}
+.lb-fig figcaption{color:var(--silver);font-family:var(--f-book);font-style:italic}
+.lb-nav{width:52px;height:52px;border-radius:50%}
+@media (max-width:720px){.lightbox{grid-template-columns:1fr;padding:var(--s-4)}.lb-nav{position:absolute;bottom:20px}.lb-nav.prev{left:20px}.lb-nav.next{right:20px}.lb-fig img{max-width:92vw}}
+
+/* Eiropa rīkjosla — kompakta */
+.eu-toolbar{padding:var(--s-3) 0;gap:var(--s-3)}
+.chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;-webkit-mask:linear-gradient(90deg,#000 92%,transparent);mask:linear-gradient(90deg,#000 92%,transparent)}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;flex:none}
+.eu-filters .views{margin-left:auto;width:auto;max-width:none;display:inline-grid;grid-template-columns:repeat(3,auto)}
+.eu-filters .views button{padding:.45rem .9rem}
+.kpis b{white-space:nowrap;font-size:1.3rem}
+@media (max-width:900px){.eu-filters .views{margin-left:0;width:100%;grid-template-columns:repeat(3,1fr)}}
+
+.sheet-grip{order:-2}
+@media (max-width:720px){
+  .ev .count{justify-self:start;font-size:1rem}
+  .roster{grid-template-columns:repeat(2,1fr);gap:var(--s-3)}
+  .member{padding:var(--s-4) var(--s-3)}
+  .member svg{max-width:170px}
+  .member .desc{font-size:.9rem}
+  .rocker{max-width:92%}
+  .ev-actions .btn{font-size:.95rem}
+}

@@ -34,12 +34,13 @@
         <select id="euSort"><option value="date">{{eu.sortDate}}</option><option value="dist">{{eu.sortDist}}</option></select>
         <label class="toggle"><input type="checkbox" id="euNear"><span>{{eu.near}}</span></label>
         <label class="toggle"><input type="checkbox" id="euMine"><span>{{eu.mine}}</span></label>
-      </div>
-      <div class="seg views" role="tablist" aria-label="{{eu.view}}">
+  <div class="seg views" role="tablist" aria-label="{{eu.view}}">
         <button type="button" class="on" data-view="list" role="tab" aria-selected="true">{{eu.vList}}</button>
         <button type="button" data-view="map" role="tab" aria-selected="false">{{eu.vMap}}</button>
         <button type="button" data-view="time" role="tab" aria-selected="false">{{eu.vTime}}</button>
       </div>
+      </div>
+
     </div>
     <p class="eu-count muted" id="euCount" aria-live="polite"></p>
 

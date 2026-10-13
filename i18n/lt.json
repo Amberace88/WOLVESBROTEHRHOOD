@@ -542,5 +542,15 @@
  "rhr.err.noLoc": "Pažymėk vietą žemėlapyje",
  "rhr.err.nouser": "Paskyra su šiuo el. paštu nerasta",
  "rhr.err.generic": "Kažkas nepavyko. Bandyk dar kartą.",
- "rhr.err.notFound": "Tema nerasta"
+ "rhr.err.notFound": "Tema nerasta",
+ "mem.desc.President": "Vadovauja klubui, jam atstovauja ir laikosi žodžio.",
+ "mem.desc.VicePresident": "Dešinioji prezidento ranka. Pavaduoja ir palaiko.",
+ "mem.desc.SergeantatArms": "Rūpinasi tvarka, saugumu ir taisyklėmis.",
+ "mem.desc.RoadCaptain": "Planuoja maršrutus ir veda gaują kelyje.",
+ "mem.desc.Secretary": "Klubo kronika, dienoraštis ir susirinkimai.",
+ "mem.desc.Treasurer": "Klubo kasa, nario mokesčiai ir aukos.",
+ "mem.desc.Member": "Pilnateisiai broliai, užsitarnavę spalvas.",
+ "mem.desc.Prospect": "Kelyje į spalvas. Važiuoja, mokosi, įrodo.",
+ "rhr.menu": "Skyriai",
+ "map.backToList": "Atgal į sąrašą"
 }

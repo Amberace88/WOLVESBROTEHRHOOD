@@ -115,7 +115,7 @@ const rainColor = p => p >= 60 ? "#E3120B" : p >= 30 ? "#d6a23c" : "#ECE8DF";
 const fmtDur = s => { const h = Math.floor(s / 3600), m = Math.round(s % 3600 / 60); return h ? `${h} h ${m} min` : `${m} min`; };
 
 async function analyse(pts, name, sub){
-  $("#result").hidden = false; $("#resName").textContent = name; $("#resSub").textContent = t("map.calcing");
+  $("#result").hidden = false; $("#panel").classList.add("has-result"); $("#panel").scrollTop = 0; $("#resName").textContent = name; $("#resSub").textContent = t("map.calcing");
   ["#kDist", "#kTime", "#kRain", "#kScore"].forEach(s => $(s).textContent = "…");
   $("#segments").innerHTML = ""; $("#rainbar").innerHTML = ""; $("#alerts").innerHTML = ""; $("#fuelList").innerHTML = `<li class="muted">${esc(t("map.fuelLoading"))}</li>`;
   routeLayer.clearLayers(); fuelRouteLayer.clearLayers();
@@ -125,7 +125,7 @@ async function analyse(pts, name, sub){
   const geo = route.geometry.coordinates.map(c => [c[1], c[0]]);
   // cumulative distance
   const cum = [0]; for (let i = 1; i < geo.length; i++) cum.push(cum[i - 1] + WB.hav(geo[i - 1], geo[i]));
-  const total = cum[cum.length - 1], dur = route.duration;
+  const total = Math.max(cum[cum.length - 1], 0.001), dur = Math.max(route.duration, 1);
   const depT = new Date(dep.value || Date.now());
   // base line + endpoints
   L.polyline(geo, { color: "#000", weight: 9, opacity: .9 }).addTo(routeLayer);
@@ -220,7 +220,7 @@ async function analyse(pts, name, sub){
   fuelAlong(geo, cum);
 }
 const gearTip = (tMin, rain) => tMin < 10 ? t("map.gear.cold") : rain >= 40 ? t("map.gear.rain") : tMin > 25 ? t("map.gear.hot") : t("map.gear.ok");
-$("#resClose").addEventListener("click", () => { $("#result").hidden = true; routeLayer.clearLayers(); fuelRouteLayer.clearLayers(); current = null; $$("#hqRoutes button").forEach(b => b.classList.remove("on")); });
+$("#resClose").addEventListener("click", () => { $("#result").hidden = true; $("#panel").classList.remove("has-result"); routeLayer.clearLayers(); fuelRouteLayer.clearLayers(); current = null; $$("#hqRoutes button").forEach(b => b.classList.remove("on")); });
 
 /* ---------- export ---------- */
 function exportLinks(pts, geo, name){

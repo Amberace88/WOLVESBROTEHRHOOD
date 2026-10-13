@@ -119,12 +119,12 @@ window.ROUTES = [
 
 /* ---------------- Galerija ---------------- */
 window.GALLERY = [
-  { src: "assets/img/brotherhood.jpg", album: "pack", alt: { lv: "Brāļi ar motocikliem, slapjā kolodija fotogrāfija", en: "The brothers with their bikes, wet-plate collodion photo", ru: "Братья с мотоциклами, фото мокрым коллодием", de: "Die Brüder mit ihren Maschinen, Nassplatten-Kollodium-Foto" } },
-  { src: "assets/img/g-bikes.jpg", album: "pack", alt: { lv: "Motocikli pie kluba sienas", en: "Bikes by the clubhouse wall", ru: "Мотоциклы у стены клуба", de: "Maschinen an der Clubhauswand" } },
-  { src: "assets/img/g-pack.jpg", album: "pack", alt: { lv: "Brāļi stāv rindā", en: "The brothers lined up", ru: "Братья в ряд", de: "Die Brüder in einer Reihe" } },
-  { src: "assets/img/g-factory.jpg", album: "places", alt: { lv: "Rūpnīcas jumti virs kluba vietas", en: "Factory roofs above the club grounds", ru: "Крыши завода над территорией клуба", de: "Fabrikdächer über dem Clubgelände" } },
-  { src: "assets/img/g-rider.jpg", album: "pack", alt: { lv: "Brālis uz motocikla", en: "A brother on his bike", ru: "Брат на мотоцикле", de: "Ein Bruder auf seiner Maschine" } },
-  { src: "assets/img/logo-600.png", album: "colors", patch: true, alt: { lv: "Kluba uzšuve", en: "Club patch", ru: "Нашивка клуба", de: "Club-Patch" } }
+  { src: "assets/img/brotherhood.jpg", span: "big", w: 1206, h: 877, album: "pack", alt: { lv: "Brāļi ar motocikliem, slapjā kolodija fotogrāfija", en: "The brothers with their bikes, wet-plate collodion photo", ru: "Братья с мотоциклами, фото мокрым коллодием", de: "Die Brüder mit ihren Maschinen, Nassplatten-Kollodium-Foto" } },
+  { src: "assets/img/g-bikes.jpg", span: "wide", w: 900, h: 391, album: "pack", alt: { lv: "Motocikli pie kluba sienas", en: "Bikes by the clubhouse wall", ru: "Мотоциклы у стены клуба", de: "Maschinen an der Clubhauswand" } },
+  { src: "assets/img/g-pack.jpg", w: 900, h: 627, album: "pack", alt: { lv: "Brāļi stāv rindā", en: "The brothers lined up", ru: "Братья в ряд", de: "Die Brüder in einer Reihe" } },
+  { src: "assets/img/g-factory.jpg", span: "wide", w: 900, h: 298, album: "places", alt: { lv: "Rūpnīcas jumti virs kluba vietas", en: "Factory roofs above the club grounds", ru: "Крыши завода над территорией клуба", de: "Fabrikdächer über dem Clubgelände" } },
+  { src: "assets/img/g-rider.jpg", span: "tall", w: 600, h: 646, album: "pack", alt: { lv: "Brālis uz motocikla", en: "A brother on his bike", ru: "Брат на мотоцикле", de: "Ein Bruder auf seiner Maschine" } },
+  { src: "assets/img/logo-600.png", w: 600, h: 597, album: "colors", patch: true, alt: { lv: "Kluba uzšuve", en: "Club patch", ru: "Нашивка клуба", de: "Club-Patch" } }
 ];
 
 /* ---------------- Merch ----------------

@@ -528,5 +528,15 @@
  "rhr.err.noLoc": "Ort auf der Karte markieren",
  "rhr.err.nouser": "Kein Konto mit dieser E-Mail",
  "rhr.err.generic": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
- "rhr.err.notFound": "Thema nicht gefunden"
+ "rhr.err.notFound": "Thema nicht gefunden",
+ "mem.desc.President": "Führt den Club, vertritt ihn und hält sein Wort.",
+ "mem.desc.VicePresident": "Die rechte Hand des Präsidenten. Vertritt und unterstützt.",
+ "mem.desc.SergeantatArms": "Sorgt für Ordnung, Sicherheit und Regeln.",
+ "mem.desc.RoadCaptain": "Plant die Routen und führt das Rudel auf der Straße.",
+ "mem.desc.Secretary": "Clubchronik, Tagebuch und Versammlungen.",
+ "mem.desc.Treasurer": "Clubkasse, Beiträge und Spenden.",
+ "mem.desc.Member": "Vollmitglieder, die sich ihre Farben verdient haben.",
+ "mem.desc.Prospect": "Auf dem Weg zu den Farben. Fahren, lernen, beweisen.",
+ "rhr.menu": "Bereiche",
+ "map.backToList": "Zurück zur Liste"
 }

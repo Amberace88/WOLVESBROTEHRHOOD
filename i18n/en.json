@@ -528,5 +528,15 @@
  "rhr.err.noLoc": "Mark the place on the map",
  "rhr.err.nouser": "No account with that email",
  "rhr.err.generic": "Something went wrong. Please try again.",
- "rhr.err.notFound": "Topic not found"
+ "rhr.err.notFound": "Topic not found",
+ "mem.desc.President": "Leads the club, represents it and keeps its word.",
+ "mem.desc.VicePresident": "The President's right hand. Stands in and backs up.",
+ "mem.desc.SergeantatArms": "Keeps order, safety and the rules.",
+ "mem.desc.RoadCaptain": "Plans the routes and leads the pack on the road.",
+ "mem.desc.Secretary": "Club chronicle, diary and meetings.",
+ "mem.desc.Treasurer": "Club funds, dues and donations.",
+ "mem.desc.Member": "Full-patch brothers who earned their colours.",
+ "mem.desc.Prospect": "On the road to colours. Riding, learning, proving.",
+ "rhr.menu": "Sections",
+ "map.backToList": "Back to list"
 }

@@ -528,5 +528,15 @@
  "rhr.err.noLoc": "Märgi koht kaardil",
  "rhr.err.nouser": "Selle e-postiga kontot ei leitud",
  "rhr.err.generic": "Midagi läks valesti. Proovi uuesti.",
- "rhr.err.notFound": "Teemat ei leitud"
+ "rhr.err.notFound": "Teemat ei leitud",
+ "mem.desc.President": "Juhib klubi, esindab seda ja peab sõna.",
+ "mem.desc.VicePresident": "Presidendi parem käsi. Asendab ja toetab.",
+ "mem.desc.SergeantatArms": "Hoiab korda, turvalisust ja reegleid.",
+ "mem.desc.RoadCaptain": "Planeerib marsruudid ja juhib karja teel.",
+ "mem.desc.Secretary": "Klubi kroonika, päevik ja koosolekud.",
+ "mem.desc.Treasurer": "Klubi kassa, liikmemaksud ja annetused.",
+ "mem.desc.Member": "Täisliikmed, kes on oma värvid välja teeninud.",
+ "mem.desc.Prospect": "Teel värvideni. Sõidab, õpib, tõestab.",
+ "rhr.menu": "Jaotised",
+ "map.backToList": "Tagasi nimekirja"
 }
