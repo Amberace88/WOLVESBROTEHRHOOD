@@ -1,8 +1,8 @@
 # Wolves Brotherhood MC — wolvesbrotherhoodmc.com
 
-Kluba mājaslapa 8 valodās (LV, EN, RU, DE, LT, ET, NO, FR) + Ride HQ karte, Eiropas moto pasākumu kalendārs, Riders Help Riders (forums, SOS, brīdinājumi, palīdzības punkti, kluba čati) un ziedojumi.
+Kluba mājaslapa 8 valodās (LV, EN, RU, DE, LT, ET, NO, FR) + Ride HQ karte, Eiropas moto pasākumu kalendārs, Riders Help Riders (forums, SOS, brīdinājumi, palīdzības punkti, kluba čati), kluba šaha galds un ziedojumi.
 
-Viss darbojas uz **viena Cloudflare Worker** (Workers Paid plāns): statiskā lapa + `/api` (D1 datubāze + Durable Objects reāllaika čatiem un "bara" atrašanās vietai).
+Viss darbojas uz **viena Cloudflare Worker** (Workers Paid plāns): statiskā lapa + `/api` (D1 datubāze + Durable Objects reāllaika čatiem, "bara" atrašanās vietai un šaha partijām).
 
 ## Struktūra
 
@@ -13,7 +13,9 @@ Viss darbojas uz **viena Cloudflare Worker** (Workers Paid plāns): statiskā la
 | `src/assets/js/eu-events.json` | Eiropas moto pasākumi (58 ieraksti, ar avotiem) |
 | `i18n/*.json` | Saskarnes tulkojumi 8 valodās |
 | `scripts/build.mjs` | Būvē `dist/` — LV saknē, pārējās valodas `/en/`, `/ru/` … + sitemap.xml, hreflang |
-| `worker/src/index.js` | API: auth, forums, čati, SOS, brīdinājumi, palīdzības punkti, bars |
+| `src/assets/js/chess-engine.js` | Šaha dzinējs: FIDE noteikumi, SAN/PGN, dators (alfa-beta). Tas pats fails pārbauda gājienus serverī |
+| `src/assets/js/chess.js` | Šaha galds: pret Vilku (4 līmeņi), divatā, tiešsaistē ar brāli |
+| `worker/src/index.js` | API: auth, forums, čati, SOS, brīdinājumi, palīdzības punkti, bars, šahs (`/api/chess/*`) |
 | `worker/schema.sql` | D1 tabulas |
 
 ## Lokāli
@@ -38,6 +40,12 @@ Bez Worker (`dist/index.html` atverot tieši) Riders Help Riders un bars strād�
 7. Lapā **Riders Help Riders → Reģistrēties** ar ADMIN_EMAIL → "Izveidot biedra ielūgumu" → kodus izsniedz brāļiem.
 
 Turpmāk: rediģē `data.js` / tulkojumus → `npm run deploy` (labāk vairākas izmaiņas vienā reizē).
+
+## Šaha galds
+
+- **Pret Vilku** — dators pārlūkā (Web Worker), līmeņi Prospekts ≈600 · Biedrs ≈1100 · Road Captain ≈1600 · Prezidents ≈2000; padoms, atsaukšana, pulkstenis.
+- **Divatā** — viens ekrāns, pēc izvēles ar pulksteni.
+- **Tiešsaistē** — jāienāk ar Brāļi online kontu. Izaicinājums ar laika kontroli (3+2 … 30+0 vai bez laika), saite brālim, skatītāji, neizšķirta piedāvājums, padošanās, revanšs. Serveris (Durable Object) pārbauda katru gājienu un pulksteni; rezultāts un **Elo reitings** (sāk ar 1200) glabājas D1 (`chess_games`, `chess_ratings`).
 
 ## Kas jāaizpilda (`src/assets/js/data.js`)
 

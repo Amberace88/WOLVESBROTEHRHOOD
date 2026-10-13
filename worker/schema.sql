@@ -18,6 +18,12 @@ CREATE INDEX IF NOT EXISTS hazards_created ON hazards(created DESC);
 CREATE TABLE IF NOT EXISTS helpers (user_id TEXT PRIMARY KEY, city TEXT, offers TEXT, note TEXT, contact TEXT, lat REAL, lon REAL, updated INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS rate (k TEXT NOT NULL, win INTEGER NOT NULL, n INTEGER NOT NULL, PRIMARY KEY (k, win));
 
+-- Šaha galds: partijas un kluba reitings (Elo)
+CREATE TABLE IF NOT EXISTS chess_games (id TEXT PRIMARY KEY, white TEXT, black TEXT, creator TEXT NOT NULL, tc_base INTEGER NOT NULL, tc_inc INTEGER NOT NULL, rated INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL, result TEXT, reason TEXT, moves TEXT, created INTEGER NOT NULL, ended INTEGER, w_elo INTEGER, b_elo INTEGER, w_diff INTEGER, b_diff INTEGER);
+CREATE INDEX IF NOT EXISTS chess_status ON chess_games(status, created DESC);
+CREATE INDEX IF NOT EXISTS chess_ended ON chess_games(ended DESC);
+CREATE TABLE IF NOT EXISTS chess_ratings (user_id TEXT PRIMARY KEY, elo INTEGER NOT NULL DEFAULT 1200, best INTEGER NOT NULL DEFAULT 1200, games INTEGER NOT NULL DEFAULT 0, wins INTEGER NOT NULL DEFAULT 0, losses INTEGER NOT NULL DEFAULT 0, draws INTEGER NOT NULL DEFAULT 0, updated INTEGER);
+
 -- Sākuma saturs forumam (izpildās droši atkārtoti)
 INSERT OR IGNORE INTO users (id, email, name, role, pass, salt, created) VALUES ('wbmc-system', 'system@wolvesbrotherhoodmc.com', 'Wolves Brotherhood MC', 'officer', '!', '00', 1791900000000);
 INSERT OR IGNORE INTO threads (id, cat, title, author, created, last_at, solved, replies) VALUES

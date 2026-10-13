@@ -33,7 +33,7 @@ $("#rhrBack").addEventListener("click", () => { if (location.hash.startsWith("#t
 $("#rhrSide").addEventListener("click", e => { if (e.target.closest("a")) $("#rhr").classList.remove("side-open"); });
 
 /* ---------- auth ---------- */
-const authDlg = $("#authDlg"); let authMode = "login";
+const authDlg = $("#authDlg"); let authMode = "login"; const Q = new URLSearchParams(location.search);
 function openAuth(){ $("#authErr").textContent = ""; authDlg.showModal(); }
 $$("[data-auth]").forEach(b => b.addEventListener("click", () => {
   authMode = b.dataset.auth; $$("[data-auth]").forEach(x => x.classList.toggle("on", x === b));
@@ -46,6 +46,7 @@ $("#authForm").addEventListener("submit", async e => {
   try {
     user = authMode === "login" ? await R.login(f.email.value, f.password.value) : await R.register({ name: f.name.value.trim(), email: f.email.value.trim(), password: f.password.value, invite: f.invite.value.trim() });
     authDlg.close(); renderSide(); route();
+    if (Q.get("back") === "chess") location.href = "./#spele";
   } catch (err) { $("#authErr").textContent = err.message || t("rhr.err.generic"); }
 });
 const needUser = () => { if (!user) { openAuth(); return false; } return true; };
@@ -219,5 +220,6 @@ async function route(){
 }
 addEventListener("hashchange", route);
 (async () => { await R.probe(); $("#rhrMode").textContent = R.mode === "live" ? t("rhr.modeLive") : t("rhr.modeDemo"); user = await R.init(); renderSide(); route();
+  if (Q.get("auth") && !user) { const b = $(`[data-auth="${Q.get("auth") === "register" ? "register" : "login"}"]`); b && b.click(); openAuth(); }
   R.sos().then(l => { const n = l.filter(s => !s.resolved).length; const b = $("#sosBadge"); b.hidden = !n; b.textContent = n; }).catch(() => {}); })();
 })();

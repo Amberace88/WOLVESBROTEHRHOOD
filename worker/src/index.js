@@ -1,7 +1,9 @@
 /* Wolves Brotherhood MC — Cloudflare Worker
    Apkalpo statisko lapu (dist/) un /api/* : auth, forums, čati, SOS, brīdinājumi,
-   palīdzības punkti, bara (pack) reāllaika istabas. D1 + Durable Objects. */
+   palīdzības punkti, bara (pack) reāllaika istabas, šaha galds (partijas + Elo). D1 + Durable Objects. */
 import { DurableObject } from "cloudflare:workers";
+import "../../src/assets/js/chess-engine.js"; // globalThis.WBChess — tie paši noteikumi kā pārlūkā
+const { Game: ChessGame } = globalThis.WBChess;
 
 const json = (data, status = 200, headers = {}) => new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...headers } });
 const err = (msg, status = 400) => json({ error: msg }, status);
@@ -234,13 +236,75 @@ async function api(req, env, url){
     const h = new Headers(req.headers); h.set("X-User", JSON.stringify({ id: clip(url.searchParams.get("id"), 24) || id(), name: clip(url.searchParams.get("name"), 24) || "Rider", pack: true }));
     return stub.fetch(new Request("https://room/connect", { headers: h }));
   }
+
+  // ---- šaha galds (lasīt var visi, spēlēt — reģistrēti braucēji)
+  if (p === "/chess/lobby" && m === "GET") {
+    const sel = "SELECT g.*, wu.name AS wn, bu.name AS bn, wr.elo AS we, br.elo AS be FROM chess_games g LEFT JOIN users wu ON wu.id = g.white LEFT JOIN users bu ON bu.id = g.black LEFT JOIN chess_ratings wr ON wr.user_id = g.white LEFT JOIN chess_ratings br ON br.user_id = g.black ";
+    const [act, fin, top] = await env.DB.batch([
+      env.DB.prepare(sel + "WHERE g.status IN ('open','live') AND g.created > ? ORDER BY g.created DESC LIMIT 40").bind(now() - 12 * 36e5),
+      env.DB.prepare(sel + "WHERE g.status = 'over' AND g.reason != 'abort' ORDER BY g.ended DESC LIMIT 10"),
+      env.DB.prepare("SELECT r.*, u.name FROM chess_ratings r JOIN users u ON u.id = r.user_id WHERE r.games > 0 ORDER BY r.elo DESC, r.games DESC LIMIT 12")
+    ]);
+    const g = r => ({ id: r.id, status: r.status, tc: [r.tc_base / 60000, r.tc_inc / 1000], rated: !!r.rated, created: r.created, ended: r.ended, result: r.result, reason: r.reason,
+      creator: r.creator, white: r.white ? { id: r.white, name: r.wn, elo: r.we || 1200 } : null, black: r.black ? { id: r.black, name: r.bn, elo: r.be || 1200 } : null, wDiff: r.w_diff, bDiff: r.b_diff });
+    let me = null;
+    if (user) { const r = await env.DB.prepare("SELECT * FROM chess_ratings WHERE user_id = ?").bind(user.id).first(); me = { ...pub(user), elo: r ? r.elo : 1200, games: r ? r.games : 0, wins: r ? r.wins : 0, losses: r ? r.losses : 0, draws: r ? r.draws : 0, best: r ? r.best : 1200 }; }
+    return json({ me, open: act.results.filter(r => r.status === "open").map(g), live: act.results.filter(r => r.status === "live").map(g), recent: fin.results.map(g),
+      top: top.results.map(r => ({ id: r.user_id, name: r.name, elo: r.elo, games: r.games, wins: r.wins, losses: r.losses, draws: r.draws })) });
+  }
+  if (p === "/chess/games" && m === "POST") {
+    need("rider"); if (await limited(env, "chess:" + user.id, 8)) return err("Slow down", 429);
+    const b = await body();
+    const TCS = { "3+2": [3, 2], "5+3": [5, 3], "10+5": [10, 5], "15+10": [15, 10], "30+0": [30, 0], "0+0": [0, 0] };
+    const tc = TCS[b.tc] || TCS["10+5"];
+    const color = b.color === "w" || b.color === "b" ? b.color : (crypto.getRandomValues(new Uint8Array(1))[0] & 1 ? "w" : "b");
+    const gid = id();
+    await env.DB.batch([
+      env.DB.prepare("UPDATE chess_games SET status = 'cancelled' WHERE creator = ? AND status = 'open'").bind(user.id),
+      env.DB.prepare("INSERT INTO chess_games (id, white, black, creator, tc_base, tc_inc, rated, status, created) VALUES (?, ?, ?, ?, ?, ?, ?, 'open', ?)")
+        .bind(gid, color === "w" ? user.id : null, color === "b" ? user.id : null, user.id, tc[0] * 60000, tc[1] * 1000, b.rated === false ? 0 : 1, now())
+    ]);
+    return json({ id: gid, color });
+  }
+  if ((mm = p.match(/^\/chess\/games\/([\w]{6,32})\/cancel$/)) && m === "POST") {
+    need("rider");
+    await env.DB.prepare("UPDATE chess_games SET status = 'cancelled' WHERE id = ? AND creator = ? AND status = 'open'").bind(mm[1], user.id).run();
+    const stub = env.ROOMS.get(env.ROOMS.idFromName("chess:" + mm[1]));
+    await stub.fetch("https://room/chess-cancel", { method: "POST" });
+    return json({ ok: true });
+  }
+  if ((mm = p.match(/^\/chess\/games\/([\w]{6,32})\/ws$/))) {
+    if (req.headers.get("Upgrade") !== "websocket") return err("Expected websocket", 426);
+    const stub = env.ROOMS.get(env.ROOMS.idFromName("chess:" + mm[1]));
+    const h = new Headers(req.headers); h.set("X-User", JSON.stringify(user ? pub(user) : null)); h.set("X-Game", mm[1]);
+    return stub.fetch(new Request("https://room/chess", { headers: h }));
+  }
   return err("Not found", 404);
+}
+
+/* ---------- Šaha partija (Durable Object stāvoklis) ---------- */
+const CHESS_WIN = { "1-0": "w", "0-1": "b" };
+async function chessRatings(env, g){
+  // Elo: K=40 pirmās 20 partijas, tad 24
+  const ids = [g.white.id, g.black.id];
+  const rows = await Promise.all(ids.map(u => env.DB.prepare("SELECT * FROM chess_ratings WHERE user_id = ?").bind(u).first()));
+  const [rw, rb] = rows.map(r => r || { elo: 1200, best: 1200, games: 0, wins: 0, losses: 0, draws: 0 });
+  const sw = g.result === "1-0" ? 1 : g.result === "0-1" ? 0 : .5;
+  const ew = 1 / (1 + Math.pow(10, (rb.elo - rw.elo) / 400));
+  const kw = rw.games < 20 ? 40 : 24, kb = rb.games < 20 ? 40 : 24;
+  const dw = Math.round(kw * (sw - ew)), db = Math.round(kb * ((1 - sw) - (1 - ew)));
+  const up = (uid, r, d, s) => env.DB.prepare("INSERT INTO chess_ratings (user_id, elo, best, games, wins, losses, draws, updated) VALUES (?, ?, ?, 1, ?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET elo = excluded.elo, best = MAX(best, excluded.elo), games = games + 1, wins = wins + excluded.wins, losses = losses + excluded.losses, draws = draws + excluded.draws, updated = excluded.updated")
+    .bind(uid, r.elo + d, Math.max(r.best, r.elo + d), s === 1 ? 1 : 0, s === 0 ? 1 : 0, s === .5 ? 1 : 0, now());
+  await env.DB.batch([up(g.white.id, rw, dw, sw), up(g.black.id, rb, db, 1 - sw)]);
+  return { w: dw, b: db, we: rw.elo + dw, be: rb.elo + db };
 }
 
 /* ---------- Durable Object: WebSocket istaba (čats vai bars) ---------- */
 export class Room extends DurableObject {
   async fetch(req){
     const url = new URL(req.url);
+    if (url.pathname === "/chess") return this.chessConnect(req);
+    if (url.pathname === "/chess-cancel") { const g = await this.chessLoad(); if (g && g.status === "open") { g.status = "cancelled"; await this.chessSave(g); this.chessCast({ type: "cancelled" }); } return new Response("ok"); }
     if (url.pathname === "/broadcast") { const msg = await req.text(); for (const ws of this.ctx.getWebSockets()) { try { ws.send(msg); } catch (e) {} } return new Response("ok"); }
     if (url.pathname === "/connect") {
       const pair = new WebSocketPair(); const [client, server] = Object.values(pair);
@@ -251,8 +315,122 @@ export class Room extends DurableObject {
     }
     return new Response("not found", { status: 404 });
   }
+  /* ===== šahs ===== */
+  async chessLoad(gid){
+    if (this.g) return this.g;
+    let g = await this.ctx.storage.get("g");
+    if (!g && gid) {
+      const r = await this.env.DB.prepare("SELECT g.*, wu.name AS wn, bu.name AS bn, wr.elo AS we, br.elo AS be FROM chess_games g LEFT JOIN users wu ON wu.id = g.white LEFT JOIN users bu ON bu.id = g.black LEFT JOIN chess_ratings wr ON wr.user_id = g.white LEFT JOIN chess_ratings br ON br.user_id = g.black WHERE g.id = ?").bind(gid).first();
+      if (!r) return null;
+      g = { id: r.id, creator: r.creator, white: r.white ? { id: r.white, name: r.wn, elo: r.we || 1200 } : null, black: r.black ? { id: r.black, name: r.bn, elo: r.be || 1200 } : null,
+        tc: { base: r.tc_base, inc: r.tc_inc }, rated: !!r.rated, status: r.status, moves: r.moves ? r.moves.split(" ") : [], clocks: { w: r.tc_base, b: r.tc_base }, turnStart: 0,
+        result: r.result || null, reason: r.reason || null, draw: null, rematch: {}, next: null, diffs: null };
+      await this.ctx.storage.put("g", g);
+    }
+    return this.g = g || null;
+  }
+  async chessSave(g){ this.g = g; await this.ctx.storage.put("g", g); }
+  chessCast(msg, except){ const s = JSON.stringify(msg); for (const o of this.ctx.getWebSockets()) if (o !== except) { try { o.send(s); } catch (e) {} } }
+  chessPresence(g, closing){
+    const on = { w: false, b: false }; let watchers = 0;
+    for (const o of this.ctx.getWebSockets()) { if (o === closing) continue; const a = o.deserializeAttachment() || {}; if (a.kind !== "chess") continue; const c = a.user && g.white && a.user.id === g.white.id ? "w" : a.user && g.black && a.user.id === g.black.id ? "b" : null; if (c) on[c] = true; else watchers++; }
+    return { type: "presence", online: on, watchers };
+  }
+  chessView(g, you){
+    const turn = g.moves.length % 2 ? "b" : "w", running = g.status === "live" && g.tc.base > 0 && g.moves.length >= 2;
+    return { type: "state", id: g.id, white: g.white, black: g.black, tc: [g.tc.base / 60000, g.tc.inc / 1000], rated: g.rated, status: g.status, moves: g.moves,
+      clocks: g.clocks, running, turn, elapsed: running ? Date.now() - g.turnStart : 0, result: g.result, reason: g.reason, draw: g.draw, rematch: g.rematch, next: g.next, diffs: g.diffs, you: you || null, creator: g.creator };
+  }
+  async chessConnect(req){
+    const gid = req.headers.get("X-Game"), user = JSON.parse(req.headers.get("X-User") || "null");
+    const g = await this.chessLoad(gid);
+    const pair = new WebSocketPair(); const [client, server] = Object.values(pair);
+    this.ctx.acceptWebSocket(server);
+    if (!g) { server.serializeAttachment({ kind: "chess", user: null }); server.send(JSON.stringify({ type: "error", error: "notfound" })); server.close(4404, "not found"); return new Response(null, { status: 101, webSocket: client }); }
+    let you = user && g.white && g.white.id === user.id ? "w" : user && g.black && g.black.id === user.id ? "b" : null;
+    if (!you && user && g.status === "open") {
+      const r = await this.env.DB.prepare("SELECT elo FROM chess_ratings WHERE user_id = ?").bind(user.id).first();
+      const seat = { id: user.id, name: user.name, elo: r ? r.elo : 1200 };
+      you = g.white ? "b" : "w"; g[you === "w" ? "white" : "black"] = seat; g.status = "live";
+      await this.env.DB.prepare("UPDATE chess_games SET white = ?, black = ?, status = 'live' WHERE id = ? AND status = 'open'").bind(g.white.id, g.black.id, g.id).run();
+      await this.chessSave(g);
+    }
+    server.serializeAttachment({ kind: "chess", user, gid: g.id });
+    server.send(JSON.stringify(this.chessView(g, you)));
+    // citiem — jauns stāvoklis (ja apsēdās otrs spēlētājs) + klātbūtne
+    for (const o of this.ctx.getWebSockets()) if (o !== server) { const a = o.deserializeAttachment() || {}; if (a.kind !== "chess") continue; const c = a.user && g.white && a.user.id === g.white.id ? "w" : a.user && g.black && a.user.id === g.black.id ? "b" : null; try { o.send(JSON.stringify(this.chessView(g, c))); } catch (e) {} }
+    this.chessCast(this.chessPresence(g));
+    return new Response(null, { status: 101, webSocket: client });
+  }
+  async chessEnd(g, result, reason){
+    g.status = "over"; g.result = result; g.reason = reason; g.draw = null;
+    if (g.rated && reason !== "abort" && g.white && g.black && g.white.id !== g.black.id) { try { g.diffs = await chessRatings(this.env, g); } catch (e) { g.diffs = null; } }
+    await this.env.DB.prepare("UPDATE chess_games SET status = 'over', result = ?, reason = ?, moves = ?, ended = ?, w_elo = ?, b_elo = ?, w_diff = ?, b_diff = ? WHERE id = ?")
+      .bind(result, reason, g.moves.join(" "), Date.now(), g.diffs ? g.diffs.we : null, g.diffs ? g.diffs.be : null, g.diffs ? g.diffs.w : null, g.diffs ? g.diffs.b : null, g.id).run();
+    await this.ctx.storage.deleteAlarm();
+    await this.chessSave(g);
+    this.chessCast({ type: "end", result, reason, diffs: g.diffs, clocks: g.clocks, moves: g.moves });
+  }
+  /* pārbauda, vai gājienā esošajam beidzies laiks */
+  async chessFlag(g){
+    if (g.status !== "live" || !g.tc.base || g.moves.length < 2) return false;
+    const turn = g.moves.length % 2 ? "b" : "w", left = g.clocks[turn] - (Date.now() - g.turnStart);
+    if (left > 0) return false;
+    g.clocks[turn] = 0;
+    const game = ChessGame.from(g.moves), other = turn === "w" ? 16 : 8;
+    await this.chessEnd(g, game.pos.canMate(other) ? (turn === "w" ? "0-1" : "1-0") : "1/2-1/2", "timeout");
+    return true;
+  }
+  async alarm(){ const g = await this.chessLoad(); if (!g || g.status !== "live") return; if (!(await this.chessFlag(g))) { const turn = g.moves.length % 2 ? "b" : "w"; await this.ctx.storage.setAlarm(g.turnStart + g.clocks[turn] + 50); } }
+  async chessMessage(ws, who, raw){
+    let d; try { d = JSON.parse(raw); } catch (e) { return; }
+    const g = await this.chessLoad(who.gid); if (!g) return;
+    if (d.type === "ping") { ws.send(JSON.stringify({ type: "pong", t: d.t })); return; }
+    const u = who.user, me = u && g.white && g.white.id === u.id ? "w" : u && g.black && g.black.id === u.id ? "b" : null;
+    const reply = o => ws.send(JSON.stringify(o));
+    if (!me) return reply({ type: "error", error: "spectator" });
+    const other = me === "w" ? "b" : "w";
+    if (d.type === "move") {
+      if (g.status !== "live") return reply({ type: "error", error: "notlive" });
+      if (await this.chessFlag(g)) return;
+      const turn = g.moves.length % 2 ? "b" : "w";
+      if (turn !== me || d.ply !== g.moves.length) return reply(this.chessView(g, me));
+      const game = ChessGame.from(g.moves), mv = game.move(String(d.uci || ""));
+      if (!mv) return reply({ ...this.chessView(g, me), error: "illegal" });
+      const t = Date.now();
+      if (g.tc.base && g.moves.length >= 2) { g.clocks[me] = Math.max(0, g.clocks[me] - (t - g.turnStart)) + g.tc.inc; }
+      g.moves.push(mv.uci); g.turnStart = t;
+      if (g.draw === other) g.draw = null; // gājiens = atteikums
+      const st = game.status();
+      const running = g.tc.base > 0 && g.moves.length >= 2;
+      this.chessCast({ type: "move", uci: mv.uci, san: mv.san, ply: g.moves.length, clocks: g.clocks, running, elapsed: 0, draw: g.draw });
+      if (st.over) return this.chessEnd(g, st.result, st.reason);
+      await this.chessSave(g);
+      if (running) await this.ctx.storage.setAlarm(t + g.clocks[other] + 50);
+      return;
+    }
+    if (d.type === "resign" && g.status === "live") return this.chessEnd(g, me === "w" ? "0-1" : "1-0", "resign");
+    if (d.type === "abort" && g.status === "live" && g.moves.length < 2) return this.chessEnd(g, "*", "abort");
+    if (d.type === "draw" && g.status === "live") {
+      if (g.draw === other) return this.chessEnd(g, "1/2-1/2", "agreement");
+      if (g.moves.length < 2) return;
+      g.draw = me; await this.chessSave(g); this.chessCast({ type: "draw", by: me }); return;
+    }
+    if (d.type === "decline" && g.draw === other) { g.draw = null; await this.chessSave(g); this.chessCast({ type: "draw", by: null }); return; }
+    if (d.type === "rematch" && g.status === "over" && !g.next) {
+      g.rematch = { ...(g.rematch || {}), [me]: true };
+      if (g.rematch.w && g.rematch.b) {
+        const nid = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+        await this.env.DB.prepare("INSERT INTO chess_games (id, white, black, creator, tc_base, tc_inc, rated, status, created) VALUES (?, ?, ?, ?, ?, ?, ?, 'live', ?)")
+          .bind(nid, g.black.id, g.white.id, u.id, g.tc.base, g.tc.inc, g.rated ? 1 : 0, Date.now()).run();
+        g.next = nid; await this.chessSave(g); this.chessCast({ type: "rematch", next: nid }); return;
+      }
+      await this.chessSave(g); this.chessCast({ type: "rematch", by: me }); return;
+    }
+  }
   async webSocketMessage(ws, raw){
     const who = ws.deserializeAttachment() || {};
+    if (who.kind === "chess") return this.chessMessage(ws, who, raw);
     if (!who.pack) return; // čatā ziņas iet caur REST (saglabā D1), WS tikai saņem
     let d; try { d = JSON.parse(raw); } catch (e) { return; }
     if (d.type !== "pos") return;
@@ -264,6 +442,7 @@ export class Room extends DurableObject {
   }
   async webSocketClose(ws){
     const who = ws.deserializeAttachment() || {};
+    if (who.kind === "chess") { try { ws.close(); } catch (e) {} const g = await this.chessLoad(); if (g) this.chessCast(this.chessPresence(g, ws)); return; }
     if (who.pack) { const s = JSON.stringify({ type: "leave", id: who.id }); for (const o of this.ctx.getWebSockets()) if (o !== ws) { try { o.send(s); } catch (e) {} } }
   }
 }
