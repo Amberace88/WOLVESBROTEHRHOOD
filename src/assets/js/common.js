@@ -234,7 +234,7 @@ W.initNav = () => {
   }
   // pirmā apmeklējuma valodas ieteikums (tikai saknē, bez piespiedu pārvirzes)
   try {
-    if (LANG === "lv" && !localStorage.getItem("wb-lang")) {
+    if (LANG === "lv" && !localStorage.getItem("wb-lang") && !document.body.classList.contains("app")) {
       const pref = (navigator.languages || [navigator.language || ""]).map(x => x.slice(0,2).toLowerCase()).map(x => x === "nb" || x === "nn" ? "no" : x)[0];
       if (pref && pref !== "lv" && ["en","ru","de","lt","et","no","fr"].includes(pref)) {
         const a = W.$(`#langMenu a[hreflang="${pref}"]`);
@@ -248,8 +248,10 @@ W.initNav = () => {
 };
 
 /* ---------- maps (shared) ---------- */
-W.darkTiles = () => L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-  subdomains: "abcd", maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+// OpenStreetMap flīzes (bez API atslēgas) + CSS tumšais filtrs — iederas melnajā dizainā
+W.darkTiles = () => L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19, className: "tiles-dark",
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 });
 W.osrm = async pts => {
   const coords = pts.map(p => `${(+p[1]).toFixed(5)},${(+p[0]).toFixed(5)}`).join(";");

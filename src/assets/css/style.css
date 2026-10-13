@@ -1004,3 +1004,7 @@ footer{background:radial-gradient(ellipse 50% 80% at 50% 0,rgba(236,232,223,.05)
   .rocker{max-width:92%}
   .ev-actions .btn{font-size:.95rem}
 }
+
+/* tumšā karte no OSM flīzēm */
+.tiles-dark{filter:grayscale(1) invert(1) brightness(1.25) contrast(1.05)}
+.leaflet-container{background:#1b1b1a!important}

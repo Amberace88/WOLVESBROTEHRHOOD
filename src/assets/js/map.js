@@ -30,6 +30,14 @@ $("#grip").addEventListener("click", () => $("#panel").classList.toggle("up"));
 const R = window.ROUTES || [];
 $("#hqRoutes").innerHTML = R.map(r => `<li><button data-id="${r.id}"><b>${esc(TL(r.name))}</b><span class="rk">~${r.km} km</span><small>${esc(r.region)} · ${esc(t("route.level." + r.level))}</small><small class="muted">${esc(TL(r.text))}</small></button></li>`).join("");
 $("#hqRoutes").addEventListener("click", e => { const b = e.target.closest("[data-id]"); if (b) loadClubRoute(b.dataset.id); });
+// visi kluba maršruti kartē kā vāji ceļveži — klikšķis ielādē analīzi
+const overview = L.layerGroup().addTo(map);
+R.forEach(r => {
+  const pl = L.polyline(r.pts, { color: "#ECE8DF", weight: 2, opacity: .35, dashArray: "4 8" }).addTo(overview)
+    .bindTooltip(TL(r.name), { sticky: true, className: "tt" }).on("click", () => loadClubRoute(r.id));
+  pl.on("mouseover", () => pl.setStyle({ opacity: .9, weight: 3 })).on("mouseout", () => pl.setStyle({ opacity: .35, weight: 2 }));
+  L.circleMarker(r.pts[0], { radius: 4, color: "#ECE8DF", weight: 1.5, fillColor: "#000", fillOpacity: 1 }).addTo(overview);
+});
 function loadClubRoute(id){
   const r = R.find(x => x.id === id); if (!r) return;
   $$("#hqRoutes button").forEach(b => b.classList.toggle("on", b.dataset.id === id));
@@ -115,6 +123,7 @@ const rainColor = p => p >= 60 ? "#E3120B" : p >= 30 ? "#d6a23c" : "#ECE8DF";
 const fmtDur = s => { const h = Math.floor(s / 3600), m = Math.round(s % 3600 / 60); return h ? `${h} h ${m} min` : `${m} min`; };
 
 async function analyse(pts, name, sub){
+  map.removeLayer(overview);
   $("#result").hidden = false; $("#panel").classList.add("has-result"); $("#panel").scrollTop = 0; $("#resName").textContent = name; $("#resSub").textContent = t("map.calcing");
   ["#kDist", "#kTime", "#kRain", "#kScore"].forEach(s => $(s).textContent = "…");
   $("#segments").innerHTML = ""; $("#rainbar").innerHTML = ""; $("#alerts").innerHTML = ""; $("#fuelList").innerHTML = `<li class="muted">${esc(t("map.fuelLoading"))}</li>`;
@@ -220,7 +229,7 @@ async function analyse(pts, name, sub){
   fuelAlong(geo, cum);
 }
 const gearTip = (tMin, rain) => tMin < 10 ? t("map.gear.cold") : rain >= 40 ? t("map.gear.rain") : tMin > 25 ? t("map.gear.hot") : t("map.gear.ok");
-$("#resClose").addEventListener("click", () => { $("#result").hidden = true; $("#panel").classList.remove("has-result"); routeLayer.clearLayers(); fuelRouteLayer.clearLayers(); current = null; $$("#hqRoutes button").forEach(b => b.classList.remove("on")); });
+$("#resClose").addEventListener("click", () => { $("#result").hidden = true; $("#panel").classList.remove("has-result"); overview.addTo(map); routeLayer.clearLayers(); fuelRouteLayer.clearLayers(); current = null; $$("#hqRoutes button").forEach(b => b.classList.remove("on")); });
 
 /* ---------- export ---------- */
 function exportLinks(pts, geo, name){
