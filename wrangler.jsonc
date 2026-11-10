@@ -9,8 +9,9 @@
     { "binding": "DB", "database_name": "wolves", "database_id": "AIZPILDI_PĒC_wrangler_d1_create" }
   ],
   "durable_objects": { "bindings": [ { "name": "ROOMS", "class_name": "Room" } ] },
+  "ai": { "binding": "AI" },
   "migrations": [ { "tag": "v1", "new_sqlite_classes": ["Room"] } ],
-  "vars": { "ADMIN_EMAIL": "baropsedijs@gmail.com" },
+  "vars": { "ADMIN_EMAIL": "", "DEV_EMAILS": "", "ADMIN_EMAILS": "" },
   "routes": [
     { "pattern": "wolvesbrotherhoodmc.com", "custom_domain": true },
     { "pattern": "www.wolvesbrotherhoodmc.com", "custom_domain": true }

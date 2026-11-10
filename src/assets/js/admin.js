@@ -64,6 +64,7 @@ const SECTIONS = [
   ["overview", "Pārskats"],
   ["texts", "Teksti visās valodās"],
   ["data", "Saturs"],
+  ["design", "Dizaina redaktors"],
   ["layout", "Sākumlapa un izskats"],
   ["forum", "Foruma kategorijas"],
   ["moderation", "Moderācija"],
@@ -121,7 +122,7 @@ async function route(){
   const [sec, arg] = (location.hash.slice(1) || "overview").split("/");
   view.innerHTML = `<p class="muted">Ielādē…</p>`;
   try {
-    await ({ overview, texts, data: dataView, layout, forum, moderation, accounts, files, backup, audit }[sec] || overview)(arg);
+    await ({ overview, texts, data: dataView, design, layout, forum, moderation, accounts, files, backup, audit }[sec] || overview)(arg);
   } catch (e) {
     if (e.status === 401 || e.status === 403) return start();
     view.innerHTML = `<div class="adm-empty"><p class="form-err">Neizdevās ielādēt: ${esc(e.message)}</p><button class="btn ghost" onclick="location.reload()">Mēģināt vēlreiz</button></div>`;
@@ -433,6 +434,431 @@ async function layout(){
   draw();
 }
 function normHex(h){ h = String(h); if (/^#[0-9a-f]{3}$/i.test(h)) return "#" + h.slice(1).split("").map(c => c + c).join(""); return h.slice(0, 7); }
+
+/* ================= DIZAINA REDAKTORS (vizuāls, tieši lapā) + AI palīgs ================= */
+const D_PAGES = [["index", "Sākumlapa"], ["eiropa", "Eiropa"], ["karte", "Ride HQ"], ["brali", "Brāļi"], ["404", "Kļūdas lapa"]];
+const D_DEV = [["desk", "Dators", 0], ["tab", "Planšete", 820], ["mob", "Telefons", 390]];
+const D_SCOPE = [["all", "Visām ierīcēm"], ["mobile", "Tikai telefonā"], ["desktop", "Tikai datorā"]];
+const D_PROPS = new Set(["color", "background-color", "background-image", "background-size", "background-position", "font-size", "font-weight", "font-style", "font-family",
+  "letter-spacing", "line-height", "text-transform", "text-align", "text-decoration", "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
+  "margin", "margin-top", "margin-right", "margin-bottom", "margin-left", "border", "border-color", "border-width", "border-style", "border-radius", "box-shadow",
+  "opacity", "display", "width", "max-width", "min-width", "height", "min-height", "max-height", "gap", "filter", "transform", "object-fit", "aspect-ratio", "text-shadow", "justify-content", "align-items", "flex-direction", "grid-template-columns", "order"]);
+const D_PROP_LV = { "color": "Teksta krāsa", "background-color": "Fona krāsa", "background-image": "Fona attēls", "font-size": "Burtu izmērs", "font-weight": "Biezums", "font-family": "Fonts", "font-style": "Slīpraksts",
+  "letter-spacing": "Burtu atstarpe", "line-height": "Rindas augstums", "text-transform": "Burti", "text-align": "Līdzinājums", "border-radius": "Stūru noapaļojums", "border": "Rāmis", "box-shadow": "Ēna",
+  "opacity": "Caurspīdīgums", "display": "Redzamība", "width": "Platums", "max-width": "Maks. platums", "min-height": "Min. augstums", "gap": "Atstarpe starp elementiem" };
+const D_STATE = /^(on|active|open|is-|in$|show|sel|cur|visible|hidden|js-|reveal|wb-)/;
+const D_SWATCH = ["--bone", "--silver", "--steel", "--black", "--leather", "--patch", "--eye", "--carmine", "--ok", "--warn"];
+const dValOk = v => { v = String(v ?? "").trim(); if (!v || v.length > 300 || /[;{}<>\\]|expression|javascript:|@import/i.test(v)) return false;
+  return (v.match(/url\([^)]*\)/gi) || []).every(u => /^url\(\s*["']?(\/api\/files\/[a-z0-9]{16}|\/?assets\/[\w./-]+)["']?\s*\)$/i.test(u)); };
+const dSelOk = s => typeof s === "string" && s.length <= 400 && /^[#.\w\s>+~:()\-\[\]="',*À-ɏ]+$/.test(s) && !/[{};<]/.test(s);
+function dRulesCss(rules){
+  const block = set => Object.entries(set || {}).filter(([s]) => dSelOk(s)).map(([s, p]) => {
+    const b = Object.entries(p || {}).filter(([k, v]) => D_PROPS.has(k) && dValOk(v)).map(([k, v]) => `${k}:${String(v).trim()} !important`).join(";");
+    return b ? `${s}{${b}}` : ""; }).filter(Boolean).join("\n");
+  const a = block(rules && rules.all), m = block(rules && rules.mobile), d = block(rules && rules.desktop);
+  return [a, m ? `@media (max-width:760px){${m}}` : "", d ? `@media (min-width:761px){${d}}` : ""].filter(Boolean).join("\n");
+}
+function dFullStyle(ui, extra){
+  const vars = Object.entries(ui.colors || {}).filter(([k, v]) => /^--[a-z0-9-]{1,30}$/.test(k) && /^#[0-9a-fA-F]{3,8}$/.test(String(v)));
+  let s = vars.length ? `:root{${vars.map(([k, v]) => `${k}:${v}`).join(";")}}` : "";
+  const rc = dRulesCss(ui.rules); if (rc) s += "\n" + rc;
+  if (ui.css && ui.css.trim()) s += "\n" + ui.css;
+  if (extra) s += "\n/* AI priekšskatījums */\n" + extra;
+  return s;
+}
+const dPx = v => { v = String(v ?? "").trim(); return /^-?\d+(\.\d+)?$/.test(v) && v !== "0" ? v + "px" : v; };
+const dHex = c => { const m = String(c).match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/); if (!m) return /^#/.test(c) ? normHex(c) : "#000000"; if (m[4] === "0") return ""; return "#" + [m[1], m[2], m[3]].map(x => (+x).toString(16).padStart(2, "0")).join(""); };
+
+async function design(){
+  const ui = clone(cms.ui) || {};
+  ui.rules = ui.rules || {}; for (const s of ["all", "mobile", "desktop"]) ui.rules[s] = ui.rules[s] || {};
+  ui.attrs = ui.attrs || {}; ui.css = ui.css || ""; ui.colors = ui.colors || {};
+  const st = { page: LS.get("wb-d-page") || "index", lang: LS.get("wb-d-lang") || "lv", dev: LS.get("wb-d-dev") || "desk", mode: "edit", scope: "all", target: "exact",
+    tab: "el", el: null, exact: null, similar: null, key: null, keyVia: null, ai: null, aiPrompt: "", aiInfo: null };
+  if (!D_PAGES.some(p => p[0] === st.page)) st.page = "index";
+  const texts = {};                      // nesaglabātie teksti: { lv: { atslēga: teksts } }
+  const undo = [], redo = [];
+  let fdoc = null, hovBox = null, selBox = null, gesture = false;
+  const cssText = await fetch(`${WB.base}assets/css/style.css`).then(r => r.text()).catch(() => "");
+  const rootVars = (cssText.match(/:root\s*\{([\s\S]*?)\}/) || [, ""])[1].trim();
+
+  const snap = () => JSON.stringify({ rules: ui.rules, attrs: ui.attrs, css: ui.css, texts });
+  const push = () => { undo.push(snap()); if (undo.length > 150) undo.shift(); redo.length = 0; dirty = true; updBar(); };
+  const restore = (s, from, to) => {
+    to.push(snap()); const o = JSON.parse(s); const textsChanged = JSON.stringify(o.texts) !== JSON.stringify(texts);
+    ui.rules = o.rules; ui.attrs = o.attrs; ui.css = o.css; for (const k of Object.keys(texts)) delete texts[k]; Object.assign(texts, o.texts);
+    dirty = true; if (textsChanged) loadFrame(); else { applyLive(); reselect(); } updBar(); drawInsp();
+  };
+  const doUndo = () => undo.length && restore(undo.pop(), undo, redo);
+  const doRedo = () => redo.length && restore(redo.pop(), redo, undo);
+  const count = () => Object.values(ui.rules).reduce((n, set) => n + Object.values(set).reduce((m, p) => m + Object.keys(p).length, 0), 0) + Object.keys(ui.attrs).length + Object.values(texts).reduce((n, o) => n + Object.keys(o).length, 0);
+
+  head("Dizaina redaktors", "Noklikšķini uz jebkura elementa lapā un maini to. Izmaiņas redzamas uzreiz; apmeklētājiem — pēc saglabāšanas.",
+    `<button class="btn ghost small" id="dUndo" title="Atsaukt (Ctrl+Z)">Atsaukt</button><button class="btn ghost small" id="dRedo" title="Atkārtot (Ctrl+Shift+Z)">Atkārtot</button><button class="btn ghost small" id="dHist">Vēsture</button><button class="btn small" id="dSave">Saglabāt</button>`);
+  $("#adm").classList.add("wide");
+  view.innerHTML = `<div class="dz">
+    <div class="dz-bar">
+      <label class="adm-f"><span>Lapa</span><select id="dPage">${D_PAGES.map(([v, l]) => `<option value="${v}"${v === st.page ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+      <label class="adm-f"><span>Valoda</span><select id="dLang">${LANGS.map(l => `<option value="${l}"${l === st.lang ? " selected" : ""}>${LANG_NAMES[l]}</option>`).join("")}</select></label>
+      <div class="dz-seg" id="dDev" role="group" aria-label="Ierīce">${D_DEV.map(([v, l]) => `<button data-dev="${v}" aria-pressed="${v === st.dev}">${l}</button>`).join("")}</div>
+      <div class="dz-seg" id="dMode" role="group" aria-label="Režīms"><button data-m="edit" aria-pressed="true">Rediģēt</button><button data-m="browse" aria-pressed="false">Pārlūkot</button></div>
+      <span class="small muted" id="dCount"></span>
+    </div>
+    <div class="dz-grid">
+      <div class="dz-stage" id="dStage"><div class="dz-frame" id="dBox"><iframe id="dFrame" title="Lapas priekšskatījums rediģēšanai"></iframe></div></div>
+      <aside class="dz-insp" aria-label="Iestatījumi">
+        <div class="dz-tabs" role="tablist">${[["el", "Elements"], ["ai", "AI palīgs"], ["list", "Visas izmaiņas"]].map(([v, l]) => `<button role="tab" data-tab="${v}" aria-selected="${v === st.tab}">${l}</button>`).join("")}</div>
+        <div id="dInsp" class="dz-body"></div>
+      </aside>
+    </div></div>`;
+  const frame = $("#dFrame");
+
+  function updBar(){
+    $("#dUndo").disabled = !undo.length; $("#dRedo").disabled = !redo.length;
+    const n = count(); $("#dCount").textContent = n ? `${n} izmaiņas` : "Nav izmaiņu";
+    const t = $('[data-tab="list"]'); if (t) t.textContent = `Visas izmaiņas${n ? " (" + n + ")" : ""}`;
+  }
+  function sizeFrame(){
+    const w = (D_DEV.find(d => d[0] === st.dev) || D_DEV[0])[2];
+    $("#dBox").style.width = w ? w + "px" : "100%"; $("#dBox").classList.toggle("device", !!w);
+  }
+  function src(){ return `/${st.lang === "lv" ? "" : st.lang + "/"}${st.page}.html?wbedit=1`; }
+  function loadFrame(){ fdoc = null; frame.src = src(); }
+
+  /* ---- lapas iekšpuse ---- */
+  function cssPath(el){
+    const parts = [];
+    while (el && el.nodeType === 1 && el.tagName !== "HTML") {
+      if (el.id && /^[A-Za-z][\w-]*$/.test(el.id) && fdoc.querySelectorAll("#" + el.id).length === 1) { parts.unshift("#" + el.id); break; }
+      if (el.tagName === "BODY") { parts.unshift("body"); break; }
+      const tag = el.tagName.toLowerCase(), sib = [...el.parentElement.children].filter(c => c.tagName === el.tagName);
+      parts.unshift(sib.length > 1 ? `${tag}:nth-of-type(${sib.indexOf(el) + 1})` : tag);
+      el = el.parentElement;
+    }
+    return parts.join(" > ");
+  }
+  const cls = el => [...el.classList].filter(c => /^[A-Za-z][\w-]*$/.test(c) && !D_STATE.test(c));
+  function similarSel(el){
+    const tag = el.tagName.toLowerCase(), c = cls(el);
+    let anc = el.parentElement; while (anc && !(anc.id && /^[A-Za-z][\w-]*$/.test(anc.id))) anc = anc.parentElement;
+    const pre = anc && anc.tagName !== "BODY" ? "#" + anc.id + " " : "";
+    if (c.length) return pre + tag + "." + c.slice(0, 2).join(".");
+    const p = el.parentElement, pc = p ? cls(p) : [];
+    return pc.length ? `${pre}${p.tagName.toLowerCase()}.${pc[0]} > ${tag}` : pre + tag;
+  }
+  const label = el => { const c = cls(el); return el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") + (c.length ? "." + c.slice(0, 2).join(".") : ""); };
+  function place(box, el){
+    if (!box) return; if (!el || !el.isConnected) { box.style.display = "none"; return; }
+    const r = el.getBoundingClientRect(); Object.assign(box.style, { display: "block", left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" });
+    box.firstChild.textContent = label(el);
+  }
+  function markerKey(el){
+    for (const n of el.childNodes) if (n.nodeType === 8) { const m = n.data.match(/^t:([\w.-]+)$/); if (m) return m[1]; }
+    return null;
+  }
+  function setLiveText(key, val){
+    if (!fdoc) return;
+    const w = fdoc.createTreeWalker(fdoc.body, NodeFilter.SHOW_COMMENT); const hits = [];
+    while (w.nextNode()) if (w.currentNode.data === "t:" + key) hits.push(w.currentNode);
+    for (const c of hits) {
+      let n = c.nextSibling; while (n && !(n.nodeType === 8 && n.data === "/t")) { const x = n.nextSibling; n.remove(); n = x; }
+      c.after(fdoc.createTextNode(val));
+    }
+    if (!hits.length && st.el && st.keyVia === "match" && st.key === key) st.el.textContent = val;
+  }
+  function applyLive(){
+    if (!fdoc) return;
+    let s = fdoc.getElementById("cms-style"); if (!s) { s = fdoc.createElement("style"); s.id = "cms-style"; fdoc.head.appendChild(s); }
+    s.textContent = dFullStyle(ui, st.ai && st.ai.css);
+    for (const [sel, a] of Object.entries(ui.attrs)) { let els = []; try { els = fdoc.querySelectorAll(sel); } catch (e) {}
+      els.forEach(el => { if (el.tagName !== "IMG") return; if (!el.dataset.wbOrig) el.dataset.wbOrig = el.getAttribute("src") || "";
+        if (a.src) { el.src = a.src; el.removeAttribute("srcset"); el.closest("picture")?.querySelectorAll("source").forEach(x => x.remove()); } if (typeof a.alt === "string") el.alt = a.alt; }); }
+    requestAnimationFrame(() => place(selBox, st.el));
+  }
+  function reselect(){ if (!fdoc || !st.exact) return; let el = null; try { el = fdoc.querySelector(st.exact); } catch (e) {} if (el) select(el, true); else { st.el = null; place(selBox, null); } }
+
+  frame.addEventListener("load", () => {
+    let d; try { d = frame.contentDocument; } catch (e) { return; }
+    if (!d || !d.body || d.body.classList.contains("adm-body")) return;
+    fdoc = d;
+    const pg = (frame.contentWindow.location.pathname.split("/").pop() || "index.html").replace(/\.html$/, "") || "index";
+    if (D_PAGES.some(p => p[0] === pg) && pg !== st.page) { st.page = pg; $("#dPage").value = pg; }
+    const style = d.createElement("style");
+    style.textContent = `.wb-ed-box{position:fixed;pointer-events:none;z-index:2147483646;display:none;box-sizing:border-box}
+      .wb-ed-box span{position:absolute;left:-1px;top:-20px;font:600 11px/18px system-ui,sans-serif;padding:0 6px;white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis}
+      .wb-ed-hov{outline:1px dashed #C9C9C9;background:rgba(236,232,223,.06)} .wb-ed-hov span{background:#2a2a2a;color:#ECE8DF}
+      .wb-ed-sel{outline:2px solid #E3120B;z-index:2147483647} .wb-ed-sel span{background:#E3120B;color:#fff}
+      html.wb-ed-on, html.wb-ed-on *{cursor:default!important}`;
+    d.head.appendChild(style);
+    const mk = c => { const b = d.createElement("div"); b.className = "wb-ed-box " + c; b.appendChild(d.createElement("span")); d.body.appendChild(b); return b; };
+    hovBox = mk("wb-ed-hov"); selBox = mk("wb-ed-sel");
+    d.documentElement.classList.toggle("wb-ed-on", st.mode === "edit");
+    const isBox = el => el && el.classList && el.classList.contains("wb-ed-box");
+    d.addEventListener("mousemove", e => { if (st.mode !== "edit" || isBox(e.target)) return; place(hovBox, e.target); }, true);
+    d.addEventListener("mouseleave", () => place(hovBox, null));
+    for (const ev of ["click", "submit", "auxclick"]) d.addEventListener(ev, e => {
+      if (st.mode !== "edit") return;
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      if (ev === "click" && !isBox(e.target)) { let t = e.target; const svg = t.closest && t.closest("svg"); if (svg && svg.parentElement) t = svg.parentElement; select(t); }
+    }, true);
+    const rep = () => { place(selBox, st.el); place(hovBox, null); };
+    d.addEventListener("scroll", rep, true); frame.contentWindow.addEventListener("resize", rep);
+    d.addEventListener("keydown", keys);
+    applyLive();
+    for (const [k, v] of Object.entries(texts[st.lang] || {})) setLiveText(k, v);
+    applyPendingRockers().then(reselect);
+  });
+
+  async function merged(l){ const dv = await dict(l).catch(() => ({})); return { ...dv, ...(cms["i18n:" + l] || {}) }; }
+  const keyOf = (dv, t, f) => Object.keys(dv).find(k => dv[k] === t && (!f || f(k))) || null;
+  function setRocker(el, val){
+    const w = frame.contentWindow; el.dataset.rocker = val.toLocaleUpperCase(st.lang);
+    if (w.WB && w.WB.rocker) { el.innerHTML = ""; w.WB.rocker(el); const sr = el.querySelector(".sr-only"); if (sr) sr.textContent = val; }
+  }
+  async function applyPendingRockers(){
+    const pend = texts[st.lang] || {}; if (!fdoc || !Object.keys(pend).length) return;
+    const dv = await merged(st.lang);
+    fdoc.querySelectorAll("[data-rocker]").forEach(el => { const sr = el.querySelector(".sr-only"); const tk = sr && keyOf(dv, sr.textContent.trim(), k => !/rocker/i.test(k)); if (tk && pend[tk] != null) setRocker(el, pend[tk]); });
+  }
+  async function select(el, quiet){
+    if (!el || el === fdoc.documentElement) return;
+    st.el = el; st.exact = cssPath(el); st.similar = similarSel(el);
+    st.key = markerKey(el); st.keyVia = st.key ? "marker" : null; st.key2 = null;
+    if (!st.key && el.dataset.rocker) {
+      const dv = await merged(st.lang); const sr = el.querySelector(".sr-only");
+      const rk = keyOf(dv, el.dataset.rocker, k => /rocker/i.test(k)), tk = sr ? keyOf(dv, sr.textContent.trim(), k => !/rocker/i.test(k)) : null;
+      if (rk || tk) { st.key = tk || rk; st.key2 = tk ? rk : null; st.keyVia = "rocker"; }
+    } else if (!st.key && ![...el.children].some(c => !/^(BR|B|I|EM|STRONG|SPAN)$/.test(c.tagName))) {
+      const t = el.textContent.trim();
+      if (t.length > 1 && t.length < 600) { const k = keyOf(await merged(st.lang), t); if (k) { st.key = k; st.keyVia = "match"; } }
+    }
+    place(selBox, el);
+    if (!quiet || st.tab === "el") { if (!quiet) st.tab = "el"; drawTabs(); drawInsp(); }
+  }
+  const curSel = () => st.target === "similar" ? st.similar : st.exact;
+  const rule = () => (ui.rules[st.scope] || {})[curSel()] || {};
+  function setProp(prop, val){
+    const sel = curSel(); if (!sel) return;
+    if (!gesture) { push(); gesture = true; }
+    const set = ui.rules[st.scope]; const r = set[sel] = set[sel] || {};
+    val = String(val ?? "").trim();
+    if (val === "") delete r[prop]; else if (dValOk(val)) r[prop] = val; else return toast("Šo vērtību nevar izmantot", true);
+    if (!Object.keys(r).length) delete set[sel];
+    applyLive(); updBar();
+  }
+  const endGesture = () => { gesture = false; };
+
+  /* ---- inspektors ---- */
+  function drawTabs(){ $$("[data-tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === st.tab)); }
+  function drawInsp(){ ({ el: inspEl, ai: inspAi, list: inspList }[st.tab] || inspEl)(); updBar(); }
+
+  function inspEl(){
+    const box = $("#dInsp");
+    if (!fdoc || !st.el || !st.el.isConnected || st.el.ownerDocument !== fdoc) { box.innerHTML = `<div class="dz-empty"><p><b>Izvēlies elementu</b></p><p class="muted small">Režīmā „Rediģēt” noklikšķini uz jebkura virsraksta, teksta, pogas, attēla vai sadaļas lapā. Lai atvērtu izvēlnes vai pārslēgtu cilnes lapā, pārslēdz uz „Pārlūkot”.</p></div>`; return; }
+    const el = st.el, cs = fdoc.defaultView.getComputedStyle(el), r = rule();
+    const nSim = (() => { try { return fdoc.querySelectorAll(st.similar).length; } catch (e) { return 0; } })();
+    const crumbs = []; for (let a = el, i = 0; a && a.tagName !== "BODY" && i < 5; a = a.parentElement, i++) crumbs.unshift(a);
+    const v = p => esc(r[p] || "");
+    const ph = p => esc(cs.getPropertyValue(p) || "");
+    const num = p => { const x = parseFloat(r[p]); return isNaN(x) ? "" : x; };
+    const colorRow = (p, name) => { const val = r[p] || ""; const hex = /^#/.test(val) ? normHex(val) : dHex(cs.getPropertyValue(p)) || "#000000";
+      return `<div class="dz-row"><span class="dz-lbl">${name}</span><input type="color" data-color="${p}" value="${esc(hex)}" aria-label="${name}">
+        <span class="dz-sw">${D_SWATCH.map(k => `<button class="dz-chip${val === `var(${k})` ? " on" : ""}" data-sw="${p}" data-v="var(${k})" title="${k}" style="background:var(${k})"></button>`).join("")}</span>
+        ${val ? `<button class="link-btn" data-clr="${p}">noņemt</button>` : ""}</div>`; };
+    const isImg = el.tagName === "IMG", at = ui.attrs[st.exact] || {};
+    const txtVal = st.key ? ((texts[st.lang] || {})[st.key] ?? (cms["i18n:" + st.lang] || {})[st.key] ?? null) : null;
+    box.innerHTML = `
+      <div class="dz-crumbs">${crumbs.map((a, i) => `<button data-crumb="${i}" class="${a === el ? "on" : ""}">${esc(label(a))}</button>`).join("<span>›</span>")}</div>
+      <div class="dz-target">
+        <div class="dz-seg small" role="group" aria-label="Uz ko attiecas"><button data-tg="exact" aria-pressed="${st.target === "exact"}">Tikai šis</button><button data-tg="similar" aria-pressed="${st.target === "similar"}"${nSim > 1 ? "" : " disabled"}>Visi līdzīgie (${nSim})</button></div>
+        <select id="dScope" aria-label="Ierīces">${D_SCOPE.map(([s, l]) => `<option value="${s}"${s === st.scope ? " selected" : ""}>${l}</option>`).join("")}</select>
+      </div>
+
+      ${st.key ? `<details class="dz-sec" open><summary>Teksts <span class="muted small">${LANG_NAMES[st.lang]}</span></summary>
+        <textarea id="dText" rows="3" class="dz-txt">${esc(txtVal ?? (st.keyVia === "rocker" ? (el.querySelector(".sr-only")?.textContent || el.dataset.rocker || "") : el.textContent).trim())}</textarea>
+        ${st.keyVia === "rocker" ? `<p class="small muted">Uzšuves virsraksts — lapā tiek rādīts lielajiem burtiem pa loku.</p>` : ""}
+        <p class="small muted">Atslēga <code>${esc(st.key)}</code>. Citā valodā — pārslēdz valodu augšā.</p></details>`
+      : (el.textContent.trim() && !isImg ? `<p class="small muted dz-note">Šis teksts nāk no satura sarakstiem (pasākumi, galerija, merch u.c.) — to maini sadaļā <a href="#data">Saturs</a>.</p>` : "")}
+
+      ${isImg ? `<details class="dz-sec" open><summary>Attēls</summary>
+        <img class="dz-prev" src="${esc(el.currentSrc || el.src)}" alt="">
+        <div class="dz-btns"><button class="btn ghost small" id="dImgUp">Augšupielādēt jaunu</button><button class="btn ghost small" id="dImgPick">No failiem</button>${at.src || at.alt != null ? `<button class="link-btn" id="dImgReset">oriģināls</button>` : ""}</div>
+        <label class="adm-f"><span>Apraksts (alt)</span><input id="dAlt" value="${esc(at.alt ?? el.alt ?? "")}"></label>
+        <div class="dz-row"><span class="dz-lbl">Ietilpināt</span><select data-p="object-fit"><option value="">—</option>${["cover", "contain", "fill"].map(x => `<option${r["object-fit"] === x ? " selected" : ""}>${x}</option>`).join("")}</select></div></details>` : ""}
+
+      <details class="dz-sec" open><summary>Teksta izskats</summary>
+        <div class="dz-row"><span class="dz-lbl">Fonts</span><select data-p="font-family"><option value="">Noklusējums</option>${[["var(--f-display)", "Virsrakstu (WB Display)"], ["var(--f-ui)", "Teksta (WB Text)"], ["var(--f-book)", "Grāmatas (WB Book)"]].map(([x, l]) => `<option value="${x}"${r["font-family"] === x ? " selected" : ""}>${l}</option>`).join("")}</select></div>
+        <div class="dz-row"><span class="dz-lbl">Izmērs</span><input type="range" min="8" max="200" step="1" data-rng="font-size" value="${num("font-size") || parseFloat(cs.fontSize) || 16}"><input class="dz-n" data-p="font-size" data-unit="px" value="${num("font-size")}" placeholder="${parseFloat(cs.fontSize) || ""}"><span class="muted small">px</span></div>
+        <div class="dz-row"><span class="dz-lbl">Biezums</span><select data-p="font-weight"><option value="">${esc(cs.fontWeight)}</option>${[300, 400, 500, 600, 700, 800, 900].map(x => `<option${r["font-weight"] == x ? " selected" : ""}>${x}</option>`).join("")}</select>
+          <label class="adm-chk small"><input type="checkbox" data-tgl="font-style" data-on="italic"${r["font-style"] === "italic" ? " checked" : ""}> slīpi</label></div>
+        <div class="dz-row"><span class="dz-lbl">Burti</span><select data-p="text-transform"><option value="">—</option>${[["none", "kā rakstīts"], ["uppercase", "LIELIE"], ["lowercase", "mazie"], ["capitalize", "Katrs Vārds"]].map(([x, l]) => `<option value="${x}"${r["text-transform"] === x ? " selected" : ""}>${l}</option>`).join("")}</select>
+          <select data-p="text-align" aria-label="Līdzinājums"><option value="">līdzinājums</option>${[["left", "pa kreisi"], ["center", "centrā"], ["right", "pa labi"], ["justify", "abās malās"]].map(([x, l]) => `<option value="${x}"${r["text-align"] === x ? " selected" : ""}>${l}</option>`).join("")}</select></div>
+        <div class="dz-row"><span class="dz-lbl">Atstarpes</span><input class="dz-n" data-p="letter-spacing" data-unit="em" value="${num("letter-spacing")}" placeholder="burtu" title="Burtu atstarpe (em)"><input class="dz-n" data-p="line-height" value="${v("line-height")}" placeholder="rindu" title="Rindas augstums (piem. 1.4)"></div>
+        ${colorRow("color", "Krāsa")}
+      </details>
+
+      <details class="dz-sec"><summary>Fons un forma</summary>
+        ${colorRow("background-color", "Fona krāsa")}
+        <div class="dz-row"><span class="dz-lbl">Fona attēls</span><button class="btn ghost small" id="dBgUp">Augšupielādēt</button><button class="btn ghost small" id="dBgPick">No failiem</button>${r["background-image"] ? `<button class="link-btn" data-clr="background-image">noņemt</button>` : ""}</div>
+        <div class="dz-row"><span class="dz-lbl">Stūri</span><input type="range" min="0" max="60" data-rng="border-radius" value="${num("border-radius") || parseFloat(cs.borderTopLeftRadius) || 0}"><input class="dz-n" data-p="border-radius" data-unit="px" value="${num("border-radius")}" placeholder="${parseFloat(cs.borderTopLeftRadius) || 0}"></div>
+        <div class="dz-row"><span class="dz-lbl">Rāmis</span><select data-p="border"><option value="">—</option>${[["none", "bez rāmja"], ["1px solid var(--steel)", "plāns pelēks"], ["1px solid var(--bone)", "plāns gaišs"], ["2px solid var(--eye)", "sarkans"], ["3px solid var(--bone)", "biezs gaišs"]].map(([x, l]) => `<option value="${x}"${r.border === x ? " selected" : ""}>${l}</option>`).join("")}</select></div>
+        <div class="dz-row"><span class="dz-lbl">Ēna</span><select data-p="box-shadow"><option value="">—</option>${[["none", "bez ēnas"], ["0 6px 18px rgba(0,0,0,.45)", "maiga"], ["0 18px 50px rgba(0,0,0,.7)", "dziļa"], ["0 0 0 1px var(--steel)", "kontūra"], ["0 0 24px rgba(227,18,11,.45)", "sarkans mirdzums"]].map(([x, l]) => `<option value="${esc(x)}"${r["box-shadow"] === x ? " selected" : ""}>${l}</option>`).join("")}</select></div>
+        <div class="dz-row"><span class="dz-lbl">Caurspīdīgums</span><input type="range" min="0" max="1" step=".05" data-rng="opacity" value="${r.opacity ?? cs.opacity}"><span class="small muted" id="dOp">${Math.round((r.opacity ?? cs.opacity) * 100)}%</span></div>
+      </details>
+
+      <details class="dz-sec"><summary>Atstarpes un izmērs</summary>
+        <p class="small muted">Skaitlis = pikseļi. Var rakstīt arī <code>2rem</code>, <code>5%</code>, <code>auto</code>.</p>
+        ${[["padding", "Iekšpusē"], ["margin", "Ārpusē"]].map(([p, l]) => `<div class="dz-row"><span class="dz-lbl">${l}</span>${["top", "right", "bottom", "left"].map((s, i) => `<input class="dz-n" data-p="${p}-${s}" value="${v(p + "-" + s)}" placeholder="${esc(parseFloat(cs.getPropertyValue(p + "-" + s)) || 0)}" title="${l}: ${["augšā", "pa labi", "apakšā", "pa kreisi"][i]}">`).join("")}</div>`).join("")}
+        <div class="dz-row"><span class="dz-lbl">Platums</span><input class="dz-n w" data-p="width" value="${v("width")}" placeholder="${ph("width")}"><input class="dz-n w" data-p="max-width" value="${v("max-width")}" placeholder="maks."></div>
+        <div class="dz-row"><span class="dz-lbl">Augstums</span><input class="dz-n w" data-p="min-height" value="${v("min-height")}" placeholder="min."><input class="dz-n w" data-p="gap" value="${v("gap")}" placeholder="starpa"></div>
+      </details>
+
+      <details class="dz-sec"><summary>Redzamība</summary>
+        <label class="adm-chk"><input type="checkbox" data-tgl="display" data-on="none"${r.display === "none" ? " checked" : ""}> Paslēpt (${esc(D_SCOPE.find(s => s[0] === st.scope)[1].toLowerCase())})</label>
+        <p class="small muted">Paslēpts elements redaktorā pazūd; to atkal parādīt var cilnē „Visas izmaiņas”.</p>
+      </details>
+
+      <div class="dz-foot"><code class="small muted" title="CSS selektors">${esc(curSel())}</code>
+        ${Object.keys(r).length ? `<button class="btn ghost small" id="dClear">Noņemt šī elementa izmaiņas</button>` : ""}
+        <button class="btn ghost small" id="dAskAi">Jautāt AI par šo elementu</button></div>`;
+
+    $$("[data-crumb]").forEach(b => b.addEventListener("click", () => select(crumbs[+b.dataset.crumb])));
+    $$("[data-tg]").forEach(b => b.addEventListener("click", () => { st.target = b.dataset.tg; inspEl(); }));
+    $("#dScope").addEventListener("change", e => { st.scope = e.target.value; inspEl(); });
+    $$("[data-p]").forEach(i => {
+      const fire = () => { let val = i.value; if (i.dataset.unit && /^-?\d+(\.\d+)?$/.test(val.trim())) val = val.trim() + i.dataset.unit; else if (i.classList.contains("dz-n") && !i.dataset.unit && i.dataset.p !== "line-height") val = dPx(val);
+        setProp(i.dataset.p, val); const rng = $(`[data-rng="${i.dataset.p}"]`); if (rng && parseFloat(val)) rng.value = parseFloat(val); };
+      i.addEventListener(i.tagName === "SELECT" ? "change" : "input", fire); i.addEventListener("change", endGesture);
+      if (i.tagName === "SELECT") i.addEventListener("change", endGesture);
+    });
+    $$("[data-rng]").forEach(i => {
+      i.addEventListener("input", () => { const p = i.dataset.rng; const val = p === "opacity" ? i.value : i.value + "px"; setProp(p, val);
+        const n = $(`[data-p="${p}"]`); if (n) n.value = i.value; if (p === "opacity") $("#dOp").textContent = Math.round(i.value * 100) + "%"; });
+      i.addEventListener("change", endGesture);
+    });
+    $$("[data-color]").forEach(i => { i.addEventListener("input", () => setProp(i.dataset.color, i.value)); i.addEventListener("change", () => { endGesture(); inspEl(); }); });
+    $$("[data-sw]").forEach(b => b.addEventListener("click", () => { setProp(b.dataset.sw, b.dataset.v); endGesture(); inspEl(); }));
+    $$("[data-clr]").forEach(b => b.addEventListener("click", () => { setProp(b.dataset.clr, ""); endGesture(); inspEl(); }));
+    $$("[data-tgl]").forEach(c => c.addEventListener("change", () => { setProp(c.dataset.tgl, c.checked ? c.dataset.on : ""); endGesture(); if (c.dataset.tgl === "display") place(selBox, st.el); }));
+    const tx = $("#dText");
+    if (tx) { tx.addEventListener("input", () => { if (!gesture) { push(); gesture = true; } const T = texts[st.lang] = texts[st.lang] || {}; T[st.key] = tx.value;
+        if (st.keyVia === "rocker") { if (st.key2) T[st.key2] = tx.value.toLocaleUpperCase(st.lang); setRocker(st.el, tx.value); } else setLiveText(st.key, tx.value); place(selBox, st.el); updBar(); }); tx.addEventListener("change", endGesture); }
+    const setImg = url => { push(); endGesture(); ui.attrs[st.exact] = { ...(ui.attrs[st.exact] || {}), src: url }; applyLive(); inspEl(); };
+    $("#dImgUp")?.addEventListener("click", () => pickUpload(setImg));
+    $("#dImgPick")?.addEventListener("click", () => pickExisting(setImg));
+    $("#dImgReset")?.addEventListener("click", () => { push(); endGesture(); delete ui.attrs[st.exact]; if (el.dataset.wbOrig != null) el.src = el.dataset.wbOrig; applyLive(); inspEl(); });
+    $("#dAlt")?.addEventListener("input", e => { if (!gesture) { push(); gesture = true; } ui.attrs[st.exact] = { ...(ui.attrs[st.exact] || {}), alt: e.target.value }; applyLive(); });
+    $("#dAlt")?.addEventListener("change", endGesture);
+    const setBg = url => { push(); const set = ui.rules[st.scope], s = curSel(); set[s] = { ...(set[s] || {}), "background-image": `url(${url})`, "background-size": "cover", "background-position": "center" }; endGesture(); applyLive(); inspEl(); };
+    $("#dBgUp").addEventListener("click", () => pickUpload(setBg));
+    $("#dBgPick").addEventListener("click", () => pickExisting(setBg));
+    $("#dClear")?.addEventListener("click", () => { push(); endGesture(); delete ui.rules[st.scope][curSel()]; applyLive(); inspEl(); });
+    $("#dAskAi").addEventListener("click", () => { st.tab = "ai"; drawTabs(); drawInsp(); $("#dAiQ")?.focus(); });
+  }
+
+  async function inspAi(){
+    const box = $("#dInsp");
+    if (!st.aiInfo) { box.innerHTML = `<p class="muted">Pārbauda AI…</p>`; try { st.aiInfo = await api("/admin/ai"); } catch (e) { st.aiInfo = { available: false }; } if (st.tab !== "ai") return; }
+    if (!st.aiInfo.available) { box.innerHTML = `<div class="dz-empty"><p><b>AI palīgs vēl nav pieslēgts</b></p><p class="small muted">Izstrādātājam: Cloudflare Workers AI (bez maksas) ieslēdzas ar <code>"ai": { "binding": "AI" }</code> konfigurācijā un jaunu izvietošanu. Vai arī iestati noslēpumu <code>ANTHROPIC_API_KEY</code>, lai izmantotu Claude.</p></div>`; return; }
+    const selInfo = fdoc && st.el && st.el.isConnected && st.el.ownerDocument === fdoc ? label(st.el) : null;
+    box.innerHTML = `
+      <p class="small muted">Uzraksti vārdiem, ko mainīt. AI sagatavo izmaiņas, tu tās redzi lapā un pats izlem — pieņemt vai atmest.</p>
+      <textarea id="dAiQ" rows="4" class="dz-txt" placeholder="Piem.: padari sākumlapas virsrakstu lielāku un ar sarkanu apakšlīniju; telefonā samazini atstarpes starp sadaļām">${esc(st.aiPrompt)}</textarea>
+      ${selInfo ? `<label class="adm-chk small"><input type="checkbox" id="dAiSel" checked> Attiecas uz izvēlēto: <code>${esc(selInfo)}</code></label>` : `<p class="small muted">Padoms: vispirms noklikšķini uz elementa lapā — AI zinās, par ko ir runa.</p>`}
+      <div class="dz-btns"><button class="btn small" id="dAiGo">Sagatavot izmaiņas</button><span class="small muted">${st.aiInfo.engine === "claude" ? "Claude" : "Workers AI"}</span></div>
+      <div id="dAiRes">${st.ai ? aiResHtml() : ""}</div>
+      <div class="dz-ideas"><p class="small muted">Idejas:</p>${["Padari visus sadaļu virsrakstus lielākus un ciešākus", "Telefonā samazini atstarpes starp sadaļām", "Pogām pievieno sarkanu mirdzumu, uzbraucot ar peli", "Kājeni padari tumšāku ar plānu līniju augšā", "Uzlabo kontrastu sekundārajam tekstam"].map(x => `<button class="dz-idea">${esc(x)}</button>`).join("")}</div>`;
+    $$(".dz-idea").forEach(b => b.addEventListener("click", () => { $("#dAiQ").value = b.textContent; $("#dAiQ").focus(); }));
+    $("#dAiQ").addEventListener("input", e => st.aiPrompt = e.target.value);
+    $("#dAiGo").addEventListener("click", aiRun);
+    bindAiRes();
+  }
+  function aiResHtml(){
+    const a = st.ai, tk = Object.keys(a.texts || {});
+    return `<div class="dz-ai">
+      <p><b>Priekšskatījums lapā</b></p>${a.explain ? `<p class="small">${esc(a.explain)}</p>` : ""}
+      ${tk.length ? `<p class="small muted">Teksti: ${tk.map(k => `<code>${esc(k)}</code>`).join(", ")}</p>` : ""}
+      <details><summary class="small">CSS kods</summary><pre class="adm-json small">${esc(a.css || "(nav)")}</pre></details>
+      <div class="dz-btns"><button class="btn small" id="dAiOk">Pieņemt</button><button class="btn ghost small" id="dAiNo">Atmest</button></div></div>`;
+  }
+  function bindAiRes(){
+    $("#dAiOk")?.addEventListener("click", () => {
+      const a = st.ai; push(); endGesture();
+      if (a.css && a.css.trim()) ui.css = (ui.css.trim() ? ui.css.trim() + "\n\n" : "") + `/* AI: ${st.aiPrompt.slice(0, 90).replace(/\*\//g, "").replace(/\n/g, " ")} */\n` + a.css.trim();
+      for (const [k, v] of Object.entries(a.texts || {})) { (texts[st.lang] = texts[st.lang] || {})[k] = v; setLiveText(k, v); }
+      st.ai = null; applyLive(); toast("Pieņemts — neaizmirsti saglabāt"); inspAi();
+    });
+    $("#dAiNo")?.addEventListener("click", () => { st.ai = null; applyLive(); inspAi(); });
+  }
+  async function aiRun(){
+    const q = $("#dAiQ").value.trim(); if (q.length < 3) return toast("Uzraksti, ko mainīt", true);
+    st.aiPrompt = q; const btn = $("#dAiGo"); btn.disabled = true; btn.textContent = "Domā…";
+    const useSel = fdoc && $("#dAiSel")?.checked && st.el && st.el.isConnected && st.el.ownerDocument === fdoc;
+    const structure = fdoc ? [...fdoc.querySelectorAll("body > header, main > section[id], main > div[id], body > footer, nav[id], header[id]")].slice(0, 40)
+      .map(s => `${label(s)}: ${(s.querySelector("h1,h2,h3")?.textContent || "").trim().slice(0, 60)}`).join("\n") : "";
+    let selected = null;
+    if (useSel) { const cs = fdoc.defaultView.getComputedStyle(st.el);
+      selected = { sel: curSel(), tag: st.el.tagName.toLowerCase(), key: st.key || "", text: st.el.textContent.trim().slice(0, 300), html: st.el.outerHTML.replace(/\s+/g, " ").slice(0, 2000),
+        styles: Object.fromEntries(["color", "background-color", "font-size", "font-weight", "font-family", "letter-spacing", "line-height", "padding", "margin", "border-radius", "display", "width"].map(p => [p, cs.getPropertyValue(p)])) }; }
+    try {
+      const j = await api("/admin/ai", { body: { prompt: q, page: st.page, lang: st.lang, selected, cssVars: rootVars, structure, currentCss: [dRulesCss(ui.rules), ui.css].filter(Boolean).join("\n") } });
+      st.ai = { css: j.css, texts: j.texts, explain: j.explain };
+      applyLive(); for (const [k, v] of Object.entries(j.texts || {})) setLiveText(k, v);
+      $("#dAiRes").innerHTML = aiResHtml(); bindAiRes();
+    } catch (e) { toast(e.message, true); }
+    btn.disabled = false; btn.textContent = "Sagatavot izmaiņas";
+  }
+
+  function inspList(){
+    const box = $("#dInsp"); const rows = [];
+    for (const [sc, set] of Object.entries(ui.rules)) for (const [sel, props] of Object.entries(set))
+      rows.push(`<div class="dz-chg"><button class="link-btn dz-go" data-go="${esc(sel)}">${esc(sel)}</button> <span class="muted small">${esc(D_SCOPE.find(s => s[0] === sc)[1])}</span>
+        <ul>${Object.entries(props).map(([p, v]) => `<li><span>${esc(D_PROP_LV[p] || p)}: <code>${esc(v)}</code></span><button class="icon-btn mini" data-rm="${esc(sc)}|${esc(sel)}|${esc(p)}" aria-label="Noņemt">×</button></li>`).join("")}</ul></div>`);
+    for (const [sel, a] of Object.entries(ui.attrs)) rows.push(`<div class="dz-chg"><button class="link-btn dz-go" data-go="${esc(sel)}">${esc(sel)}</button> <span class="muted small">attēls</span><ul><li><span>${a.src ? "Jauns attēls" : ""}${a.alt != null ? " · alt" : ""}</span><button class="icon-btn mini" data-rma="${esc(sel)}" aria-label="Noņemt">×</button></li></ul></div>`);
+    for (const [l, o] of Object.entries(texts)) for (const [k, v] of Object.entries(o)) rows.push(`<div class="dz-chg"><span><b>${l.toUpperCase()}</b> <code>${esc(k)}</code></span><ul><li><span>${esc(String(v).slice(0, 80))}</span><button class="icon-btn mini" data-rmt="${esc(l)}|${esc(k)}" aria-label="Noņemt">×</button></li></ul><span class="small muted">nesaglabāts teksts</span></div>`);
+    box.innerHTML = (rows.length ? rows.join("") : `<div class="dz-empty"><p class="muted">Vēl nav dizaina izmaiņu.</p></div>`) +
+      `<details class="dz-sec"><summary>Papildu CSS (arī AI pieņemtās izmaiņas)</summary><textarea id="dCss" class="adm-json" rows="10" spellcheck="false">${esc(ui.css)}</textarea></details>
+      ${count() ? `<button class="btn ghost small" id="dAllClr">Noņemt visas dizaina izmaiņas</button>` : ""}`;
+    $$("[data-go]").forEach(b => b.addEventListener("click", () => { let el = null; try { el = fdoc.querySelector(b.dataset.go); } catch (e) {} if (el) { el.scrollIntoView({ block: "center" }); select(el); } else toast("Šajā lapā tāda elementa nav", true); }));
+    $$("[data-rm]").forEach(b => b.addEventListener("click", () => { const [sc, sel, p] = b.dataset.rm.split("|"); push(); endGesture(); delete ui.rules[sc][sel][p]; if (!Object.keys(ui.rules[sc][sel]).length) delete ui.rules[sc][sel]; applyLive(); inspList(); }));
+    $$("[data-rma]").forEach(b => b.addEventListener("click", () => { push(); endGesture(); delete ui.attrs[b.dataset.rma]; loadFrame(); inspList(); }));
+    $$("[data-rmt]").forEach(b => b.addEventListener("click", () => { const [l, k] = b.dataset.rmt.split("|"); push(); endGesture(); delete texts[l][k]; loadFrame(); inspList(); }));
+    $("#dCss").addEventListener("input", e => { if (!gesture) { push(); gesture = true; } ui.css = e.target.value; applyLive(); });
+    $("#dCss").addEventListener("change", endGesture);
+    $("#dAllClr")?.addEventListener("click", () => { if (!confirmBox("Noņemt visas dizaina izmaiņas (stilus, attēlus, nesaglabātos tekstus)? Pēc saglabāšanas lapa atgriezīsies sākotnējā izskatā.")) return;
+      push(); endGesture(); ui.rules = { all: {}, mobile: {}, desktop: {} }; ui.attrs = {}; ui.css = ""; for (const k of Object.keys(texts)) delete texts[k]; loadFrame(); inspList(); });
+  }
+
+  /* ---- vadība ---- */
+  function keys(e){
+    const t = e.target, typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+    if (typing || !(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "z") { if (e.key === "Escape" && !typing && st.el) { st.el = null; place(selBox, null); if (st.tab === "el") inspEl(); } return; }
+    e.preventDefault(); e.shiftKey ? doRedo() : doUndo();
+  }
+  document.addEventListener("keydown", keys);
+  const stop = () => { if (location.hash.split("/")[0] === "#design") return; document.removeEventListener("keydown", keys); $("#adm").classList.remove("wide"); removeEventListener("hashchange", stop); };
+  addEventListener("hashchange", stop);
+  $("#dUndo").addEventListener("click", doUndo); $("#dRedo").addEventListener("click", doRedo);
+  $("#dPage").addEventListener("change", e => { st.page = e.target.value; LS.set("wb-d-page", st.page); st.el = null; st.exact = null; loadFrame(); drawInsp(); });
+  $("#dLang").addEventListener("change", e => { st.lang = e.target.value; LS.set("wb-d-lang", st.lang); loadFrame(); setTimeout(drawInsp, 50); });
+  $$("[data-dev]").forEach(b => b.addEventListener("click", () => { st.dev = b.dataset.dev; LS.set("wb-d-dev", st.dev); $$("[data-dev]").forEach(x => x.setAttribute("aria-pressed", x === b)); sizeFrame(); setTimeout(() => place(selBox, st.el), 350);
+    if (st.dev === "mob" && st.scope === "desktop" || st.dev === "desk" && st.scope === "mobile") { st.scope = "all"; drawInsp(); } }));
+  $$("[data-m]").forEach(b => b.addEventListener("click", () => { st.mode = b.dataset.m; $$("[data-m]").forEach(x => x.setAttribute("aria-pressed", x === b)); fdoc && fdoc.documentElement.classList.toggle("wb-ed-on", st.mode === "edit"); place(hovBox, null); }));
+  $$("[data-tab]").forEach(b => b.addEventListener("click", () => { st.tab = b.dataset.tab; drawTabs(); drawInsp(); }));
+  $("#dHist").addEventListener("click", () => historyDialog("ui", () => design()));
+  $("#dSave").addEventListener("click", async () => {
+    const btn = $("#dSave"); btn.disabled = true;
+    try {
+      for (const s of Object.keys(ui.rules)) for (const [sel, p] of Object.entries(ui.rules[s])) if (!Object.keys(p).length) delete ui.rules[s][sel];
+      await saveCms("ui", ui);
+      for (const [l, o] of Object.entries(texts)) if (Object.keys(o).length) { await saveCms("i18n:" + l, { ...(cms["i18n:" + l] || {}), ...o }); delete dictCache[l]; }
+      for (const k of Object.keys(texts)) delete texts[k];
+      dirty = false; updBar(); toast("Saglabāts — apmeklētāji to redz uzreiz");
+    } catch (e) { toast(e.message, true); dirty = true; }
+    btn.disabled = false;
+  });
+  sizeFrame(); updBar(); drawInsp(); loadFrame();
+}
 
 /* ================= FORUMA KATEGORIJAS ================= */
 const DEF_CATS = [["roadhelp", "wrench"], ["tech", "gear"], ["routes", "route"], ["gear", "jacket"], ["market", "swap"], ["general", "fire"]];

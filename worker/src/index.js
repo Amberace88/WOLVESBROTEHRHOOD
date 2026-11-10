@@ -125,7 +125,8 @@ async function api(req, env, url){
     need("officer");
     const b = await body();
     /* galvenā administratora un izstrādātāja lomu ar ielūgumu piešķirt nevar — tikai konfigurācijā */
-    const role = ["member", "officer"].includes(b.role) ? b.role : "member";
+    if (b.role && !["member", "officer"].includes(b.role)) return err("Forbidden", 403);
+    const role = b.role || "member";
     if (RANK[role] >= RANK[user.role]) return err("Forbidden", 403);
     const code = "WOLF-" + hex(crypto.getRandomValues(new Uint8Array(2))).toUpperCase() + "-" + hex(crypto.getRandomValues(new Uint8Array(2))).toUpperCase();
     await env.DB.prepare("INSERT INTO invites (code, role, created_by, created) VALUES (?, ?, ?, ?)").bind(code, role, user.id, now()).run();

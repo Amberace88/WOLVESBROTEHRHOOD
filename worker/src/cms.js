@@ -148,6 +148,49 @@ export async function cmsApi(ctx){
     return json({ ok: true, imported: st.length / 2 });
   }
 
+
+  // ---- AI dizaina palīgs (Cloudflare Workers AI bez maksas vai Claude, ja iestatīta ANTHROPIC_API_KEY)
+  if (p === "/admin/ai" && m === "POST") {
+    need("admin");
+    const win = Math.floor(now() / 3600000);
+    const lim = await env.DB.prepare("INSERT INTO rate (k, win, n) VALUES (?, ?, 1) ON CONFLICT(k, win) DO UPDATE SET n = n + 1 RETURNING n").bind("ai:" + user.id, win).first();
+    if (lim && lim.n > 40) return err("AI limits: 40 pieprasījumi stundā", 429);
+    const b = await body();
+    const prompt = String(b.prompt || "").slice(0, 2000).trim();
+    if (prompt.length < 3) return err("Uzraksti, ko mainīt");
+    const ctxInfo = {
+      page: String(b.page || "index").slice(0, 40), lang: LANGS.includes(b.lang) ? b.lang : "lv",
+      selected: b.selected ? { selector: String(b.selected.sel || "").slice(0, 400), tag: String(b.selected.tag || "").slice(0, 20), textKey: String(b.selected.key || "").slice(0, 80), text: String(b.selected.text || "").slice(0, 400), html: String(b.selected.html || "").slice(0, 2500), styles: b.selected.styles || {} } : null,
+      cssVars: String(b.cssVars || "").slice(0, 1500), structure: String(b.structure || "").slice(0, 3000), currentCss: String(b.currentCss || "").slice(0, 6000)
+    };
+    const system = `You are a senior web designer editing the live website of a Latvian motorcycle club (Wolves Brotherhood MC). Design language: black background, bone white text (#ECE8DF), silver secondary text, red (#E3120B) used only for signals, condensed display font (var(--f-display)) for headings, var(--f-ui) for text.
+You change the site ONLY by returning additional CSS and, optionally, new texts for existing text keys. You cannot change HTML or JavaScript.
+Reply with ONE JSON object and nothing else: {"css": "<CSS rules>", "texts": {"<text key>": "<new text>"}, "explain": "<1-3 short sentences in Latvian describing what you changed>"}.
+Rules: target selectors precisely (use the selected element's selector when the request is about it); prefer CSS custom properties from :root; keep accessibility (contrast, focus); responsive (use @media (max-width:760px) for phone); no @import, no external URLs, no javascript; keep texts in the page language (${ctxInfo.lang}); "texts" only for the provided textKey or keys you are sure exist, otherwise {}. Keep CSS minimal.`;
+    const user_msg = `Request: ${prompt}\n\nPage: ${ctxInfo.page} (${ctxInfo.lang})\nCSS variables:\n${ctxInfo.cssVars}\nPage structure:\n${ctxInfo.structure}\n${ctxInfo.selected ? `Selected element: ${JSON.stringify(ctxInfo.selected)}\n` : ""}Current custom CSS:\n${ctxInfo.currentCss || "(none)"}`;
+    let out = "";
+    try {
+      if (env.ANTHROPIC_API_KEY) {
+        const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+          body: JSON.stringify({ model: env.ANTHROPIC_MODEL || "claude-sonnet-5-5", max_tokens: 2500, system, messages: [{ role: "user", content: user_msg }] }) });
+        const j = await r.json(); if (!r.ok) throw new Error((j.error && j.error.message) || "AI error");
+        out = (j.content || []).map(x => x.text || "").join("");
+      } else if (env.AI) {
+        const r = await env.AI.run(env.AI_MODEL || "@cf/meta/llama-3.3-70b-instruct-fp8-fast", { messages: [{ role: "system", content: system }, { role: "user", content: user_msg }], max_tokens: 2000, temperature: 0.2 });
+        out = typeof r === "string" ? r : (r.response ?? JSON.stringify(r));
+        if (typeof out === "object") out = JSON.stringify(out);
+      } else return err("AI nav pieslēgts (vajag Workers AI vai ANTHROPIC_API_KEY)", 501);
+    } catch (e) { return err("AI kļūda: " + e.message, 502); }
+    const mtx = String(out).match(/\{[\s\S]*\}/);
+    let res; try { res = JSON.parse(mtx ? mtx[0] : out); } catch (e) { return err("AI atbilde nebija saprotama — pamēģini formulēt citādi", 502); }
+    const css = String(res.css || "").replace(/<\/?(style|script)/gi, "").replace(/@import[^;]*;?/gi, "").replace(/javascript:/gi, "").slice(0, 20000);
+    const texts = {};
+    if (res.texts && typeof res.texts === "object") for (const [k, v] of Object.entries(res.texts)) if (/^[a-zA-Z0-9_.-]{2,80}$/.test(k) && typeof v === "string") texts[k] = v.slice(0, 2000);
+    await audit(env, user, "ai.suggest", ctxInfo.page, { prompt: prompt.slice(0, 200) });
+    return json({ css, texts, explain: String(res.explain || "").slice(0, 600), engine: env.ANTHROPIC_API_KEY ? "claude" : "workers-ai" });
+  }
+  if (p === "/admin/ai" && m === "GET") { need("admin"); return json({ available: !!(env.ANTHROPIC_API_KEY || env.AI), engine: env.ANTHROPIC_API_KEY ? "claude" : env.AI ? "workers-ai" : null }); }
+
   // ---- faili
   if (p === "/admin/files" && m === "POST") {
     need("admin");
@@ -229,6 +272,29 @@ export async function forumCats(env, defaults){
   return [...ids];
 }
 
+
+/* ---------- vizuālā redaktora noteikumi → CSS (stingra pārbaude: tikai atļautās īpašības un vērtības) ---------- */
+const PROPS = new Set(["color", "background-color", "background-image", "background-size", "background-position", "font-size", "font-weight", "font-style", "font-family",
+  "letter-spacing", "line-height", "text-transform", "text-align", "text-decoration", "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
+  "margin", "margin-top", "margin-right", "margin-bottom", "margin-left", "border", "border-color", "border-width", "border-style", "border-radius", "box-shadow",
+  "opacity", "display", "width", "max-width", "min-width", "height", "min-height", "max-height", "gap", "filter", "transform", "object-fit", "aspect-ratio", "text-shadow", "justify-content", "align-items", "flex-direction", "grid-template-columns", "order"]);
+const SEL_OK = s => typeof s === "string" && s.length <= 400 && /^[#.\w\s>+~:()\-\[\]="',*\u00C0-\u024F]+$/.test(s) && !/[{};<]/.test(s);
+const VAL_OK = v => {
+  v = String(v ?? "").trim();
+  if (!v || v.length > 300 || /[;{}<>\\]|expression|javascript:|@import/i.test(v)) return false;
+  const urls = v.match(/url\([^)]*\)/gi) || [];
+  return urls.every(u => /^url\(\s*["']?(\/api\/files\/[a-z0-9]{16}|\/?assets\/[\w./-]+)["']?\s*\)$/i.test(u));
+};
+export function rulesCss(rules){
+  if (!rules || typeof rules !== "object") return "";
+  const block = set => Object.entries(set || {}).filter(([sel]) => SEL_OK(sel)).map(([sel, props]) => {
+    const body = Object.entries(props || {}).filter(([k, v]) => PROPS.has(k) && VAL_OK(v)).map(([k, v]) => `${k}:${String(v).trim()} !important`).join(";");
+    return body ? `${sel}{${body}}` : "";
+  }).filter(Boolean).join("\n");
+  const all = block(rules.all), mob = block(rules.mobile), desk = block(rules.desktop);
+  return [all, mob ? `@media (max-width:760px){${mob}}` : "", desk ? `@media (min-width:761px){${desk}}` : ""].filter(Boolean).join("\n");
+}
+
 /* ---------- HTML: teksta pārrakstījumi un satura ievietošana pirms lapas skriptiem ---------- */
 const escKeep = s => String(s).replace(/&(?!(amp|lt|gt|quot|#\d+);)/g, "&amp;").replace(/<(?!\/?(b|br|i)(\s|>|\/))/g, "&lt;").replace(/"/g, "&quot;");
 const escAttr = s => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -272,11 +338,13 @@ export async function renderHtml(res, env, url){
     if (mt) html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escAttr(mt)}</title>`).replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${escAttr(mt)}$2`);
     if (md) html = html.replace(/(<meta name="description" content=")[^"]*(")/, `$1${escAttr(md)}$2`).replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${escAttr(md)}$2`);
   }
-  const payload = { i18n: tr, data, ui: { hidden: ui.hidden || [], order: ui.order || [], banner: ui.banner || null }, forumCats: Array.isArray(c.forumCats) ? c.forumCats : null };
+  const attrs = ui.attrs && typeof ui.attrs === "object" ? ui.attrs : {};
+  const payload = { i18n: tr, data, ui: { hidden: ui.hidden || [], order: ui.order || [], banner: ui.banner || null, attrs }, forumCats: Array.isArray(c.forumCats) ? c.forumCats : null };
   let headAdd = `<script>window.__CMS=${safeJson(payload)};</script>`;
   const vars = ui.colors && typeof ui.colors === "object" ? Object.entries(ui.colors).filter(([k, v]) => /^--[a-z0-9-]{1,30}$/.test(k) && /^#[0-9a-fA-F]{3,8}$/.test(String(v))) : [];
   let style = vars.length ? `:root{${vars.map(([k, v]) => `${k}:${v}`).join(";")}}` : "";
-  if (typeof ui.css === "string" && ui.css.trim()) style += "\n" + ui.css.replace(/<\/?style/gi, "").slice(0, 60000);
+  const rc = rulesCss(ui.rules); if (rc) style += "\n" + rc;
+  if (typeof ui.css === "string" && ui.css.trim()) style += "\n" + ui.css.replace(/<\/?(style|script)/gi, "").slice(0, 60000);
   html = html.replace(/<head>/i, `<head>\n${headAdd}`);
   if (style) html = html.replace(/<\/head>/i, `<style id="cms-style">${style}</style>\n</head>`);
   const h = new Headers(res.headers);

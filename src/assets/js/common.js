@@ -279,6 +279,14 @@ document.addEventListener("DOMContentLoaded", () => { const y = W.$("#yr"); if (
       let ref = anchor && anchor.parentElement === main ? anchor.nextSibling : main.firstChild;
       for (const el of secs) { main.insertBefore(el, ref); ref = el.nextSibling; }
     }
+    if (ui.attrs && typeof ui.attrs === "object") for (const [sel, a] of Object.entries(ui.attrs)) {
+      let els = []; try { els = document.querySelectorAll(sel); } catch (e) { continue; }
+      els.forEach(el => {
+        if (el.tagName !== "IMG" || !a) return;
+        if (typeof a.src === "string" && /^(\/api\/files\/[a-z0-9]{16}|(\.\.\/)*\/?assets\/[\w./-]+)$/i.test(a.src)) { el.src = a.src; el.removeAttribute("srcset"); const pic = el.closest("picture"); if (pic) pic.querySelectorAll("source").forEach(x => x.remove()); }
+        if (typeof a.alt === "string") el.alt = a.alt;
+      });
+    }
     if (Array.isArray(ui.hidden)) for (const id of ui.hidden) { const el = document.getElementById(id); if (el && el.tagName !== "BODY") el.hidden = true, el.style.display = "none"; }
     const b = ui.banner;
     if (b && b.on && b.text && !document.body.classList.contains("adm-body")) {
