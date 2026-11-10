@@ -284,3 +284,10 @@ html.js [data-reveal].rv-in{opacity:1;transform:none}
 @media print{.nav,.drawer,footer.site,.toast,.lang-hint{display:none!important}body{background:#fff;color:#000}.page-head{padding-top:0}}
 
 .form label.check{display:flex}
+
+/* rindas forma (meklēšana + pogas) */
+.form.inline-form,.inline-form{display:flex;gap:.6rem;align-items:end;flex-wrap:wrap;margin-top:.5rem}
+.inline-form input{max-width:160px}
+.inline-form .grow{flex:1 1 220px}
+.inline-form .grow input{max-width:none}
+.inline-form .btn{width:auto;flex:0 0 auto}
