@@ -23,7 +23,7 @@ W.t = (k, vars) => {
   return s;
 };
 const PR = new Intl.PluralRules(LOCALE);
-W.tp = (k, n, vars) => { const r = PR.select(n); const key = D[`${k}.${r}`] !== undefined ? `${k}.${r}` : `${k}.other`; return W.t(key, { n, ...(vars||{}) }); };
+W.tp = (k, n, vars) => { const r = n === 0 && D[`${k}.zero`] !== undefined ? "zero" : PR.select(n); const key = D[`${k}.${r}`] !== undefined ? `${k}.${r}` : `${k}.other`; return W.t(key, { n, ...(vars||{}) }); };
 // daudzvalodu saturs: string vai {lv, en, ru …}
 W.L = v => v == null ? "" : typeof v === "string" ? v : (v[LANG] ?? v.en ?? v.lv ?? Object.values(v)[0] ?? "");
 

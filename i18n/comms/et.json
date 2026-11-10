@@ -198,6 +198,7 @@
  "comms.imComing": "Olen teel ✓",
  "comms.markResolved": "Abi saadud",
  "comms.resolveConfirm": "Kas märkida, et abi on saadud? SOS ei ole siis enam aktiivne.",
+ "comms.responders.zero": "Keegi pole veel vastanud",
  "comms.responders.one": "{n} on teel",
  "comms.responders.other": "{n} on teel",
  "comms.openMap": "Ava kaardil",

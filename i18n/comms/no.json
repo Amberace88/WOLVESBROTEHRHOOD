@@ -198,6 +198,7 @@
  "comms.imComing": "På vei ✓",
  "comms.markResolved": "Hjelp mottatt",
  "comms.resolveConfirm": "Markere at hjelp er mottatt? SOS-en er da ikke lenger aktiv.",
+ "comms.responders.zero": "Ingen har svart ennå",
  "comms.responders.one": "{n} er på vei",
  "comms.responders.other": "{n} er på vei",
  "comms.openMap": "Åpne i kartet",

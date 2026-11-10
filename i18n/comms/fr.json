@@ -198,6 +198,7 @@
  "comms.imComing": "En route ✓",
  "comms.markResolved": "Aide reçue",
  "comms.resolveConfirm": "Indiquer que l’aide a été reçue ? Le SOS ne sera plus actif.",
+ "comms.responders.zero": "Personne n’a encore répondu",
  "comms.responders.one": "{n} en route",
  "comms.responders.other": "{n} en route",
  "comms.openMap": "Ouvrir sur la carte",

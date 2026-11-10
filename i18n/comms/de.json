@@ -198,6 +198,7 @@
  "comms.imComing": "Bin unterwegs ✓",
  "comms.markResolved": "Hilfe erhalten",
  "comms.resolveConfirm": "Markieren, dass Hilfe eingetroffen ist? Das SOS ist dann nicht mehr aktiv.",
+ "comms.responders.zero": "Noch hat sich niemand gemeldet",
  "comms.responders.one": "{n} unterwegs",
  "comms.responders.other": "{n} unterwegs",
  "comms.openMap": "Auf der Karte öffnen",
