@@ -11,7 +11,7 @@ if (img.complete) lit(); else { img.addEventListener("load", lit); setTimeout(li
 /* ---------- šodiena: datums, vārda dienas, nākamā īpašā diena ---------- */
 (function strip(){
   const n = WB.names(today), nx = WB.nextSpecial(today);
-  const parts = [`<span><b>${today.getDate()}. ${esc(WB.monthName(today))}</b> ${esc(WB.weekday(today))}</span>`];
+  const parts = [`<span><b>${esc(WB.dayLabel(today))}</b> ${esc(WB.weekday(today))}</span>`];
   parts.push(`<span>${esc(t("today.nameday"))}: <b>${esc(n.main.length ? n.main.join(", ") : t("js.noNames"))}</b></span>`);
   if (nx) parts.push(`<span>${esc(WB.relDays(WB.daysUntil(nx.date)))}: <b>${esc(nx.name)}</b></span>`);
   $("#todayStrip").innerHTML = `<div class="wrap">${parts.join("")}<a href="klubs.html#kalendars">${esc(t("home.calendar"))}</a></div>`;
