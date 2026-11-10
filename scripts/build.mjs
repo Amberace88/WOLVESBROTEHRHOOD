@@ -46,7 +46,7 @@ const relLang = (from, to, p) => `${from === "lv" ? "" : "../"}${langDir(to)}${p
 /* navigācija: secība pēc specifikācijas 1. sadaļas */
 const NAV = [
   ["klubs", "nav.club", 1], ["pasakumi", "nav.events", 1], ["karte", "nav.ridehq", 1], ["brali", "nav.brothers", 1], ["memorials", "nav.memorials", 1],
-  ["sazina", "nav.comms", 2, "member"], ["atbalsts", "nav.support", 2], ["merch", "nav.merch", 1], ["partneri", "nav.partners", 2]
+  ["sazina", "nav.comms", 0, "member"], ["atbalsts", "nav.support", 2], ["merch", "nav.merch", 1], ["partneri", "nav.partners", 2]
 ];
 const SUBNAV = [["sadarbiba", "nav.advertise"], ["spele", "nav.chess"], ["privatums", "nav.privacy"], ["admin", "nav.admin", "admin"]];
 
