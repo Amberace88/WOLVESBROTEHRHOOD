@@ -99,7 +99,8 @@ export async function makeContext(req, env, url, execCtx){
       return this._body;
     }
   };
-  if (!ctx.device) { ctx.device = token(16); ctx.newDevice = true; ctx.setCookie(setCookie(DEVICE_COOKIE, ctx.device, { maxAge: 400 * 86400, secure: ctx.secure, sameSite: "Lax" })); }
+  /* ierīces sīkdatni piešķir tikai rakstošiem pieprasījumiem (pieteikšanās u.c.), lai publiskās GET atbildes var kešot */
+  if (!ctx.device && req.method !== "GET" && req.method !== "HEAD") { ctx.device = token(16); ctx.newDevice = true; ctx.setCookie(setCookie(DEVICE_COOKIE, ctx.device, { maxAge: 400 * 86400, secure: ctx.secure, sameSite: "Lax" })); }
   ctx.user = await loadSession(env, req);
   ctx.active = !!(ctx.user && ctx.user.status === "active");
   ctx.isAdmin = !!(ctx.active && ctx.user.role === "admin");

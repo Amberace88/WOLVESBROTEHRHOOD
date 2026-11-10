@@ -20,7 +20,7 @@ A.mlField = (name, label, value = {}, { textarea = false, max = 200, required = 
     <div class="ml-tabs" role="tablist">${LANGS.map((l, i) => `<button type="button" role="tab" aria-selected="${i === 0}" data-l="${l}" class="${value && value[l] ? "has" : ""}">${l.toUpperCase()}</button>`).join("")}</div>
     ${LANGS.map((l, i) => textarea
       ? `<textarea name="${esc(name)}.${l}" id="${id}-${l}" maxlength="${max}" rows="${rows}" lang="${l}"${i ? " hidden" : ""}${required && !i ? " required" : ""}>${esc((value && value[l]) || "")}</textarea>`
-      : `<input name="${esc(name)}.${l}" id="${id}-${l}" maxlength="${max}" lang="${l}" value="${esc((value && value[l]) || "")}"${i ? " hidden" : ""}${required && !i ? " required" : ""}>`).join("")}
+      : `<input type="text" name="${esc(name)}.${l}" id="${id}-${l}" maxlength="${max}" lang="${l}" value="${esc((value && value[l]) || "")}"${i ? " hidden" : ""}${required && !i ? " required" : ""}>`).join("")}
     <small class="hint">${esc(t("adm.mlHint"))}</small></fieldset>`;
 };
 A.readML = (form, name) => { const o = {}; for (const l of LANGS) { const el = form.elements[`${name}.${l}`]; if (el && el.value.trim()) o[l] = el.value.trim(); } return o; };
