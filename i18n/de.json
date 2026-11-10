@@ -668,5 +668,8 @@
  "rhr.acc.removeQ": "Diesem Konto den Zugang zum Bereich „Brüder“ entziehen? Es wird abgemeldet.",
  "rhr.acc.self": "Das eigene Konto kann nicht geändert werden",
  "rhr.acc.locked": "Nicht änderbar",
- "rhr.acc.saved": "Gespeichert"
+ "rhr.acc.saved": "Gespeichert",
+ "meta.admin.title": "Verwaltung",
+ "meta.admin.desc": "Verwaltung der Website von Wolves Brotherhood MC",
+ "rhr.acc.admin": "Admin-Bereich"
 }

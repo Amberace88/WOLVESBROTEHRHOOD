@@ -160,3 +160,13 @@ window.DONATE = {
   ],
   supporters: [] // { name: "Jānis B.", tier: "patron" }
 };
+
+/* ---- administrācijas pārrakstījumi: noklusējums paliek window.__DEFAULTS (redaktoram), lapa izmanto labojumus ---- */
+(function(){
+  const keys = ["CLUB", "EVENTS", "DIARY", "HISTORY", "MEMBERS", "ROUTES", "GALLERY", "MERCH", "DONATE"];
+  const d = window.__DEFAULTS = {};
+  const o = (window.__CMS && window.__CMS.data) || {};
+  for (const k of keys) { d[k] = window[k]; if (o[k] !== undefined && o[k] !== null) window[k] = o[k]; }
+  // obligātie tehniskie lauki, ja labojumā tie izdzēsti
+  if (window.CLUB && d.CLUB) { if (!window.CLUB.api) window.CLUB.api = d.CLUB.api; if (!window.CLUB.homeBase) window.CLUB.homeBase = d.CLUB.homeBase; }
+})();

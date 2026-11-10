@@ -668,5 +668,8 @@
  "rhr.acc.removeQ": "Fjerne denne kontoens tilgang til Brødre-seksjonen? Brukeren blir logget ut.",
  "rhr.acc.self": "Du kan ikke endre din egen konto",
  "rhr.acc.locked": "Kan ikke endres",
- "rhr.acc.saved": "Lagret"
+ "rhr.acc.saved": "Lagret",
+ "meta.admin.title": "Administrasjon",
+ "meta.admin.desc": "Administrasjon av nettstedet til Wolves Brotherhood MC",
+ "rhr.acc.admin": "Adminpanel"
 }

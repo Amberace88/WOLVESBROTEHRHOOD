@@ -21,6 +21,7 @@ function renderSide(){
   $("#roomList").innerHTML = R.ROOMS.map(r => { const ok = R.can(user, r.minRole); return `<li><a href="#chat/${r.id}" data-view="chat/${r.id}" class="${ok ? "" : "locked"}"><span class="ico">${WB.icon("hash")}</span>${esc(t("rhr.room." + r.id))}${ok ? "" : ` <span class="lock">${WB.icon("lock")}</span>`}</a></li>`; }).join("");
   $("#meBox").innerHTML = user
     ? `<div class="me"><span class="avatar">${esc(user.name.slice(0, 1).toUpperCase())}</span><div><b>${esc(user.name)}</b>${roleTag(user.role) || `<span class="role">${esc(t("rhr.role.rider"))}</span>`}</div><button class="link-btn" id="logout">${esc(t("rhr.logout"))}</button></div>
+       ${R.can(user, "admin") ? `<a class="btn small wide" href="admin.html">${esc(t("rhr.acc.admin"))}</a>` : ""}
        ${R.can(user, "officer") ? `<a class="btn ghost small wide" href="#accounts" data-view="accounts">${esc(t("rhr.acc.title"))}</a>` : ""}`
     : `<p class="small muted">${esc(t("rhr.guest"))}</p><button class="btn small wide" id="loginBtn">${esc(t("rhr.auth.login"))} / ${esc(t("rhr.auth.register"))}</button>`;
   const lo = $("#logout"); lo && lo.addEventListener("click", async () => { await R.logout(); user = null; gate("guest"); });
@@ -211,7 +212,7 @@ const roleName = r => t("rhr.role." + r) || r;
 async function showAccounts(){
   if (!R.can(user, "officer")) { location.hash = "forum/all"; return; }
   const mine = RANKS[user.role] || 0;
-  const grantable = ROLE_ORDER.filter(r => r !== "rider" && r !== "developer" && RANKS[r] < mine);
+  const grantable = ["member", "officer"].filter(r => RANKS[r] < mine);
   head(t("rhr.acc.title"), t("rhr.acc.sub"));
   view.innerHTML = `<section class="acc-invite">
       <h3>${esc(t("rhr.acc.invite"))}</h3>
@@ -231,8 +232,8 @@ async function showAccounts(){
     <div class="acc-item" role="row">
       <div role="cell"><b>${esc(u.name)}</b>${u.me ? ` <span class="muted small">(${esc(t("rhr.acc.you"))})</span>` : ""}${u.email ? `<br><span class="muted small">${esc(u.email)}</span>` : ""}</div>
       <div role="cell"><span class="role r-${esc(u.role)}">${esc(roleName(u.role))}</span></div>
-      <div role="cell" class="acc-act">${u.editable ? `
-        <select data-role="${esc(u.id)}" aria-label="${esc(t("rhr.acc.role"))}">${ROLE_ORDER.filter(r => r !== "developer" && RANKS[r] < mine).map(r => `<option value="${r}"${r === u.role ? " selected" : ""}>${esc(roleName(r))}</option>`).join("")}</select>
+      <div role="cell" class="acc-act">${u.editable && !["admin", "developer"].includes(u.role) ? `
+        <select data-role="${esc(u.id)}" aria-label="${esc(t("rhr.acc.role"))}">${["rider", "member", "officer"].filter(r => RANKS[r] < mine).map(r => `<option value="${r}"${r === u.role ? " selected" : ""}>${esc(roleName(r))}</option>`).join("")}</select>
         <button class="link-btn" data-remove="${esc(u.id)}">${esc(t("rhr.acc.remove"))}</button>` : `<span class="muted small">${esc(t(u.me ? "rhr.acc.self" : "rhr.acc.locked"))}</span>`}</div>
     </div>`).join("")}</div>`;
   $$("[data-role]").forEach(sel => sel.addEventListener("change", async () => {

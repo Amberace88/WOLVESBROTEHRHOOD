@@ -5,10 +5,24 @@ const API = (window.CLUB && CLUB.api || "").replace(/\/$/, "");
 const LS = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 const now = () => Date.now();
-const CATS = [
+const CATS_DEFAULT = [
   { id: "roadhelp", icon: "wrench" }, { id: "tech", icon: "gear" }, { id: "routes", icon: "route" },
   { id: "gear", icon: "jacket" }, { id: "market", icon: "swap" }, { id: "general", icon: "fire" }
 ];
+/* administrācijā var pārdēvēt, paslēpt, pārkārtot un pievienot kategorijas */
+const CATS = (() => {
+  const cfg = window.__CMS && Array.isArray(window.__CMS.forumCats) ? window.__CMS.forumCats : null;
+  if (!cfg) return CATS_DEFAULT;
+  const I = window.I18N || {}, lang = window.LANG || "lv", out = [];
+  for (const c of cfg) {
+    if (!c || !/^[a-z0-9-]{2,24}$/.test(c.id) || c.hidden) continue;
+    const def = CATS_DEFAULT.find(d => d.id === c.id);
+    const name = c.name && (c.name[lang] || c.name.en || c.name.lv);
+    if (name) I["rhr.cat." + c.id] = name;
+    out.push({ id: c.id, icon: c.icon || (def && def.icon) || "fire" });
+  }
+  return out.length ? out : CATS_DEFAULT;
+})();
 const ROOMS = [
   { id: "club", minRole: "member" }, { id: "rides", minRole: "member" }, { id: "officers", minRole: "officer" }
 ];

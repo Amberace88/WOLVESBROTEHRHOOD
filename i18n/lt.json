@@ -682,5 +682,8 @@
  "rhr.acc.removeQ": "Atimti šiai paskyrai prieigą prie skyriaus „Broliai“? Jis bus atjungtas.",
  "rhr.acc.self": "Savo paskyros keisti negalima",
  "rhr.acc.locked": "Keisti negalima",
- "rhr.acc.saved": "Išsaugota"
+ "rhr.acc.saved": "Išsaugota",
+ "meta.admin.title": "Administravimas",
+ "meta.admin.desc": "Wolves Brotherhood MC svetainės administravimas",
+ "rhr.acc.admin": "Administravimo skydelis"
 }

@@ -675,5 +675,8 @@
  "rhr.acc.removeQ": "Atņemt šim kontam piekļuvi Brāļu sadaļai? Viņš tiks izrakstīts.",
  "rhr.acc.self": "Savu kontu mainīt nevar",
  "rhr.acc.locked": "Nevar mainīt",
- "rhr.acc.saved": "Saglabāts"
+ "rhr.acc.saved": "Saglabāts",
+ "meta.admin.title": "Administrācija",
+ "meta.admin.desc": "Wolves Brotherhood MC lapas administrācija",
+ "rhr.acc.admin": "Administrācijas panelis"
 }

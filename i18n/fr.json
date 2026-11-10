@@ -675,5 +675,8 @@
  "rhr.acc.removeQ": "Retirer à ce compte l’accès à la section « Frères » ? Il sera déconnecté.",
  "rhr.acc.self": "Vous ne pouvez pas modifier votre propre compte",
  "rhr.acc.locked": "Non modifiable",
- "rhr.acc.saved": "Enregistré"
+ "rhr.acc.saved": "Enregistré",
+ "meta.admin.title": "Administration",
+ "meta.admin.desc": "Administration du site Wolves Brotherhood MC",
+ "rhr.acc.admin": "Panneau d’administration"
 }

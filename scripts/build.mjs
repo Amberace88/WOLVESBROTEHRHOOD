@@ -22,6 +22,9 @@ const T = (l, k) => {
   if (v === undefined) throw new Error(`Nezināma i18n atslēga: ${k}`);
   return v;
 };
+/* teksts ar marķieri — administrācijas panelī labojams bez jaunas būves */
+const ATTR_KEYS = new Set();
+const TM = (l, k) => `<!--t:${k}-->${T(l, k)}<!--/t-->`;
 const escAttr = s => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const langDir = l => l === "lv" ? "" : l + "/";
 const pageFile = p => p === "index" ? "" : p + ".html";
@@ -56,7 +59,7 @@ ${p === "index" ? `<script type="application/ld+json">${JSON.stringify({ "@conte
 
 function nav(l, p) {
   const h = p === "index" ? "" : "index.html";
-  const item = (href, key, page) => `<li><a href="${href}"${page && page === p ? ' class="active" aria-current="page"' : ""}>${T(l, key)}</a></li>`;
+  const item = (href, key, page) => `<li><a href="${href}"${page && page === p ? ' class="active" aria-current="page"' : ""}>${TM(l, key)}</a></li>`;
   const langs = LANGS.map(x => `<li><a href="${l === "lv" ? (x === "lv" ? "" : x + "/") : (x === "lv" ? "../" : (x === l ? "" : "../" + x + "/"))}${pageFile(p)}" hreflang="${x}" lang="${x}"${x === l ? ' aria-current="true"' : ""}><b>${x.toUpperCase()}</b> ${LANG_NAMES[x]}</a></li>`).join("");
   return `<header class="nav" id="nav">
   <div class="wrap">
@@ -66,7 +69,7 @@ function nav(l, p) {
       ${item(h + "#pasakumi", "nav.events")}
       ${item("eiropa.html", "nav.europe", "eiropa")}
       ${item("karte.html", "nav.ridehq", "karte")}
-      <li class="m-only"><a href="brali.html"${p === "brali" ? ' class="active"' : ""}>${T(l, "nav.riders")}</a></li>
+      <li class="m-only"><a href="brali.html"${p === "brali" ? ' class="active"' : ""}>${TM(l, "nav.riders")}</a></li>
       ${item(h + "#merch", "nav.merch")}
       ${item(h + "#atbalsts", "nav.donate")}
     </ul>
@@ -74,7 +77,7 @@ function nav(l, p) {
       <button class="lang-btn" id="langBtn" aria-haspopup="true" aria-expanded="false" aria-label="${escAttr(T(l, "a11y.lang"))}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg>${l.toUpperCase()}</button>
       <ul class="lang-menu" id="langMenu">${langs}</ul>
     </div>
-    <a class="btn small nav-cta${p === "brali" ? " on" : ""}" href="brali.html"><span class="pulse-dot" aria-hidden="true"></span>${T(l, "nav.cta")}</a>
+    <a class="btn small nav-cta${p === "brali" ? " on" : ""}" href="brali.html"><span class="pulse-dot" aria-hidden="true"></span>${TM(l, "nav.cta")}</a>
     <button class="burger" id="burger" aria-label="${escAttr(T(l, "a11y.menu"))}" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
   </div>
   <span class="nav-progress" id="navProgress" aria-hidden="true"></span>
@@ -87,10 +90,10 @@ function footer(l, p) {
   <div class="wrap">
     <div class="rocker" data-rocker="LATVIA" data-dir="down"></div>
     <ul class="flinks">
-      <li><a href="${h}#hronika">${T(l, "nav.club")}</a></li><li><a href="eiropa.html">${T(l, "nav.europe")}</a></li><li><a href="karte.html">Ride HQ</a></li><li><a href="brali.html">${T(l, "nav.riders")}</a></li><li><a href="${h}#merch">Merch</a></li><li><a href="${h}#atbalsts">${T(l, "nav.donate")}</a></li><li><a href="${h}#pievienoties">${T(l, "nav.contact")}</a></li>
+      <li><a href="${h}#hronika">${TM(l, "nav.club")}</a></li><li><a href="eiropa.html">${TM(l, "nav.europe")}</a></li><li><a href="karte.html">Ride HQ</a></li><li><a href="brali.html">${TM(l, "nav.riders")}</a></li><li><a href="${h}#merch">Merch</a></li><li><a href="${h}#atbalsts">${TM(l, "nav.donate")}</a></li><li><a href="${h}#pievienoties">${TM(l, "nav.contact")}</a></li>
     </ul>
-    <small class="reqs">Biedrība WBMC · ${T(l, "foot.reg")} 40008360087 · Jaunciema gatve 147-1, Rīga, LV-1023 · info@wolvesbrotherhoodmc.com</small>
-    <small>© <span id="yr">${new Date().getFullYear()}</span> Wolves Brotherhood MC Latvia. ${T(l, "foot.credits")}</small>
+    <small class="reqs">Biedrība WBMC · ${TM(l, "foot.reg")} 40008360087 · Jaunciema gatve 147-1, Rīga, LV-1023 · info@wolvesbrotherhoodmc.com</small>
+    <small>© <span id="yr">${new Date().getFullYear()}</span> Wolves Brotherhood MC Latvia. ${TM(l, "foot.credits")}</small>
   </div>
 </footer>`;
 }
@@ -100,7 +103,15 @@ function render(l, p) {
   html = html.replace(/\{\{@include:([^}]+)\}\}/g, (_, f) => fs.readFileSync(path.join(SRC, f.trim()), "utf8"));
   html = html.replace("{{@head}}", head(l, p)).replace("{{@nav}}", nav(l, p)).replace("{{@footer}}", footer(l, p));
   html = html.replace(/\{\{@lang\}\}/g, l === "no" ? "nb" : l).replace(/\{\{@base\}\}/g, l === "lv" ? "" : "../");
-  html = html.replace(/\{\{([a-zA-Z0-9_.-]+)\}\}/g, (_, k) => escHtmlKeep(T(l, k)));
+  // teksta kontekstā — ar marķieri (labojams administrācijā), atribūtos un <title>/<script>/<style>/<textarea> — bez
+  html = html.replace(/\{\{([a-zA-Z0-9_.-]+)\}\}/g, (m0, k, off, all) => {
+    const v = escHtmlKeep(T(l, k));
+    const lt = all.lastIndexOf("<", off), gt = all.lastIndexOf(">", off);
+    if (lt > gt) { ATTR_KEYS.add(k); return v; } // atribūts — administrācijā labojams pēc vērtības
+    const before = all.slice(Math.max(0, off - 4000), off).toLowerCase();
+    for (const tag of ["title", "script", "style", "textarea"]) { const o = before.lastIndexOf("<" + tag), c = before.lastIndexOf("</" + tag); if (o > c) return v; }
+    return `<!--t:${k}-->${v}<!--/t-->`;
+  });
   if (/\{\{/.test(html)) throw new Error(`${l}/${p}: palika neaizstāts {{…}}`);
   return html;
 }
@@ -121,19 +132,21 @@ fs.rmSync(DIST, { recursive: true, force: true });
 copyDir(path.join(SRC, "assets"), path.join(DIST, "assets"));
 // eu-events.json → JS
 const ev = JSON.parse(fs.readFileSync(path.join(SRC, "assets/js/eu-events.json"), "utf8"));
-fs.writeFileSync(path.join(DIST, "assets/js/eu-events.js"), "/* Eiropas moto pasākumi — ģenerēts no eu-events.json */\nwindow.EU_EVENTS=" + JSON.stringify(ev) + ";\n");
+fs.writeFileSync(path.join(DIST, "assets/js/eu-events.js"), "/* Eiropas moto pasākumi — ģenerēts no eu-events.json; administrācijā labojams */\nwindow.EU_EVENTS_DEFAULT=" + JSON.stringify(ev) + ";\nwindow.EU_EVENTS=(window.__CMS&&__CMS.data&&__CMS.data.EU_EVENTS)||window.EU_EVENTS_DEFAULT;\n");
 // i18n JS
 fs.mkdirSync(path.join(DIST, "assets/i18n"), { recursive: true });
 for (const l of LANGS) fs.writeFileSync(path.join(DIST, `assets/i18n/${l}.js`), `window.I18N=${JSON.stringify({ ...dicts.lv, ...dicts.en, ...dicts[l] })};\n`);
+for (const l of LANGS) fs.writeFileSync(path.join(DIST, `assets/i18n/${l}.json`), JSON.stringify(dicts[l]));
 // pages
 for (const l of LANGS) for (const p of PAGES) {
   const out = path.join(DIST, langDir(l), p + ".html");
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, render(l, p));
 }
+fs.writeFileSync(path.join(DIST, "assets/i18n/attr-keys.json"), JSON.stringify([...ATTR_KEYS].sort()));
 // static extras
-fs.writeFileSync(path.join(DIST, "robots.txt"), `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`);
+fs.writeFileSync(path.join(DIST, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /admin.html\nDisallow: /*/admin.html\nDisallow: /api/\nSitemap: ${SITE}/sitemap.xml\n`);
 fs.writeFileSync(path.join(DIST, "sitemap.xml"), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n` +
-  PAGES.filter(p => p !== "404").flatMap(p => LANGS.map(l => `<url><loc>${urlFor(l, p)}</loc>${LANGS.map(x => `<xhtml:link rel="alternate" hreflang="${x === "no" ? "nb" : x}" href="${urlFor(x, p)}"/>`).join("")}</url>`)).join("\n") + "\n</urlset>\n");
+  PAGES.filter(p => p !== "404" && p !== "admin").flatMap(p => LANGS.map(l => `<url><loc>${urlFor(l, p)}</loc>${LANGS.map(x => `<xhtml:link rel="alternate" hreflang="${x === "no" ? "nb" : x}" href="${urlFor(x, p)}"/>`).join("")}</url>`)).join("\n") + "\n</urlset>\n");
 fs.writeFileSync(path.join(DIST, "manifest.webmanifest"), JSON.stringify({ name: "Wolves Brotherhood MC", short_name: "Wolves MC", start_url: "/", display: "standalone", background_color: "#000000", theme_color: "#000000", icons: [{ src: "/assets/img/icon-180.png", sizes: "180x180", type: "image/png" }, { src: "/assets/img/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }] }, null, 1));
 console.log(`OK: ${LANGS.length} valodas × ${PAGES.length} lapas → dist/`);

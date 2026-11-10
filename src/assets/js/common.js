@@ -15,8 +15,9 @@ W.iso = d => d.getFullYear()+"-"+W.pad(d.getMonth()+1)+"-"+W.pad(d.getDate());
 W.day0 = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 W.parseISO = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
 
-/* ---------- i18n ---------- */
+/* ---------- i18n (+ administrācijas teksta labojumi) ---------- */
 const D = window.I18N || {};
+if (window.__CMS && window.__CMS.i18n) for (const [k, v] of Object.entries(window.__CMS.i18n)) if (v !== "" && v != null) D[k] = v;
 W.t = (k, vars) => {
   let s = D[k]; if (s === undefined) { console.warn("i18n:", k); s = k; }
   if (vars) s = s.replace(/\{(\w+)\}/g, (_, v) => vars[v] ?? "");
@@ -266,4 +267,33 @@ W.hav = (a, b) => { const R = 6371, t = x => x * Math.PI / 180, dLa = t(b[0]-a[0
   const h = Math.sin(dLa/2)**2 + Math.cos(t(a[0]))*Math.cos(t(b[0]))*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); };
 
 document.addEventListener("DOMContentLoaded", () => { const y = W.$("#yr"); if (y) y.textContent = new Date().getFullYear(); });
+
+/* ---------- administrācijas lapas iestatījumi: paziņojuma josla, sadaļu secība un redzamība ---------- */
+(function applyUI(){
+  const ui = (window.__CMS && window.__CMS.ui) || {};
+  const run = () => {
+    const main = document.querySelector("main");
+    if (main && Array.isArray(ui.order) && ui.order.length) {
+      const secs = ui.order.map(id => document.getElementById(id)).filter(el => el && el.parentElement === main);
+      const anchor = document.getElementById("top");
+      let ref = anchor && anchor.parentElement === main ? anchor.nextSibling : main.firstChild;
+      for (const el of secs) { main.insertBefore(el, ref); ref = el.nextSibling; }
+    }
+    if (Array.isArray(ui.hidden)) for (const id of ui.hidden) { const el = document.getElementById(id); if (el && el.tagName !== "BODY") el.hidden = true, el.style.display = "none"; }
+    const b = ui.banner;
+    if (b && b.on && b.text && !document.body.classList.contains("adm-body")) {
+      const txt = W.L(b.text); if (!txt) return;
+      let closed = null; try { closed = sessionStorage.getItem("wb-banner"); } catch (e) {}
+      if (closed === txt) return;
+      const bar = document.createElement("div");
+      bar.className = "cms-banner tone-" + (["info", "alert", "good"].includes(b.tone) ? b.tone : "info");
+      bar.setAttribute("role", "status");
+      bar.innerHTML = `<div class="wrap"><span>${W.esc(txt)}</span>${b.link ? ` <a href="${W.esc(b.link)}">${W.esc(W.L(b.linkText) || "→")}</a>` : ""}<button class="cms-banner-x" aria-label="${W.esc(W.t("a11y.close"))}">×</button></div>`;
+      document.body.prepend(bar);
+      document.documentElement.classList.add("has-banner");
+      bar.querySelector("button").addEventListener("click", () => { bar.remove(); document.documentElement.classList.remove("has-banner"); try { sessionStorage.setItem("wb-banner", txt); } catch (e) {} });
+    }
+  };
+  document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", run) : run();
+})();
 })();

@@ -668,5 +668,8 @@
  "rhr.acc.removeQ": "Remove this account's access to the Brothers section? They will be logged out.",
  "rhr.acc.self": "You can't change your own account",
  "rhr.acc.locked": "Can't be changed",
- "rhr.acc.saved": "Saved"
+ "rhr.acc.saved": "Saved",
+ "meta.admin.title": "Administration",
+ "meta.admin.desc": "Wolves Brotherhood MC site administration",
+ "rhr.acc.admin": "Admin panel"
 }

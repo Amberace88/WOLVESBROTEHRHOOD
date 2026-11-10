@@ -4,6 +4,7 @@
 import { DurableObject } from "cloudflare:workers";
 import "../../src/assets/js/chess-engine.js"; // globalThis.WBChess — tie paši noteikumi kā pārlūkā
 const { Game: ChessGame } = globalThis.WBChess;
+import { cmsApi, renderHtml, forumCats, audit } from "./cms.js";
 
 const json = (data, status = 200, headers = {}) => new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...headers } });
 const err = (msg, status = 400) => json({ error: msg }, status);
@@ -40,7 +41,12 @@ async function sessionUser(env, req, url){
   const tok = h.startsWith("Bearer ") ? h.slice(7) : url.searchParams.get("token");
   if (!tok) return null;
   const row = await env.DB.prepare("SELECT u.id, u.name, u.role, u.email FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires > ?").bind(await sha(tok), now()).first();
-  return row || null;
+  if (!row) return null;
+  /* augstākās lomas pieder tikai konfigurācijā norādītajiem e-pastiem — pārbaude katrā pieprasījumā */
+  const forced = forcedRole(env, String(row.email || "").toLowerCase());
+  const fix = forced ? (row.role !== forced ? forced : null) : (row.role === "admin" || row.role === "developer" ? "member" : null);
+  if (fix) { await env.DB.prepare("UPDATE users SET role = ? WHERE id = ?").bind(fix, row.id).run(); row.role = fix; }
+  return row;
 }
 async function newSession(env, userId){
   const tok = hex(crypto.getRandomValues(new Uint8Array(32)));
@@ -67,6 +73,7 @@ async function api(req, env, url){
   let mm;
 
   if (p === "/health") return json({ ok: true });
+  { const r = await cmsApi({ p, m, env, req, url, user, need, body }); if (r) return r; }
   // ---- auth
   if (p === "/auth/register" && m === "POST") {
     if (await limited(env, "reg:" + ip, 5)) return err("Too many attempts", 429);
@@ -102,8 +109,9 @@ async function api(req, env, url){
     if (!u) return err("Wrong email or password", 401);
     const { hash } = await hashPassword(String(b.password || ""), u.salt);
     if (!eqConst(hash, u.pass)) return err("Wrong email or password", 401);
-    const forced = forcedRole(env, u.email);
-    if (forced && u.role !== forced) { await env.DB.prepare("UPDATE users SET role = ? WHERE id = ?").bind(forced, u.id).run(); u.role = forced; }
+    const forced = forcedRole(env, String(u.email).toLowerCase());
+    const fix = forced ? (u.role !== forced ? forced : null) : (u.role === "admin" || u.role === "developer" ? "member" : null);
+    if (fix) { await env.DB.prepare("UPDATE users SET role = ? WHERE id = ?").bind(fix, u.id).run(); u.role = fix; }
     return json({ token: await newSession(env, u.id), user: pub(u) });
   }
   if (p === "/auth/logout" && m === "POST") {
@@ -116,10 +124,12 @@ async function api(req, env, url){
   if (p === "/admin/invites" && m === "POST") {
     need("officer");
     const b = await body();
-    const role = ["member", "officer", "admin"].includes(b.role) ? b.role : "member";
+    /* galvenā administratora un izstrādātāja lomu ar ielūgumu piešķirt nevar — tikai konfigurācijā */
+    const role = ["member", "officer"].includes(b.role) ? b.role : "member";
     if (RANK[role] >= RANK[user.role]) return err("Forbidden", 403);
     const code = "WOLF-" + hex(crypto.getRandomValues(new Uint8Array(2))).toUpperCase() + "-" + hex(crypto.getRandomValues(new Uint8Array(2))).toUpperCase();
     await env.DB.prepare("INSERT INTO invites (code, role, created_by, created) VALUES (?, ?, ?, ?)").bind(code, role, user.id, now()).run();
+    await audit(env, user, "invite.create", code, { role });
     return json({ code, role });
   }
   if (p === "/admin/users" && m === "GET") {
@@ -144,13 +154,15 @@ async function api(req, env, url){
         env.DB.prepare("DELETE FROM sessions WHERE user_id = ?").bind(target.id),
         env.DB.prepare("UPDATE users SET role = 'rider' WHERE id = ?").bind(target.id)
       ]);
+      await audit(env, user, "user.remove", target.id);
       return json({ ok: true, role: "rider" });
     }
-    const role = ["rider", "member", "officer", "admin"].includes(b.role) ? b.role : null;
+    const role = ["rider", "member", "officer"].includes(b.role) ? b.role : null;
     if (!role || RANK[role] >= mine) return err("Forbidden", 403);
     const st = [env.DB.prepare("UPDATE users SET role = ? WHERE id = ?").bind(role, target.id)];
     if (RANK[role] < (RANK[target.role] || 0)) st.push(env.DB.prepare("DELETE FROM sessions WHERE user_id = ?").bind(target.id));
     await env.DB.batch(st);
+    await audit(env, user, "user.role", target.id, { from: target.role, to: role });
     return json({ ok: true, role });
   }
 
@@ -165,7 +177,7 @@ async function api(req, env, url){
   }
   if (p === "/forum/threads" && m === "POST") {
     need("member"); if (await limited(env, "post:" + user.id, 6)) return err("Slow down", 429);
-    const b = await body(); const cat = CATS.includes(b.cat) ? b.cat : "general", title = clip(b.title, 140), text = clip(b.body, 8000);
+    const b = await body(); const cat = (await forumCats(env, CATS)).includes(b.cat) ? b.cat : "general", title = clip(b.title, 140), text = clip(b.body, 8000);
     if (title.length < 3 || text.length < 2) return err("Title and text required");
     const tid = id(), t0 = now();
     await env.DB.batch([
@@ -510,7 +522,10 @@ export default {
       try { return await api(req, env, url); }
       catch (e) { return err(e.status ? e.message : "Server error", e.status || 500); }
     }
-    const res = await env.ASSETS.fetch(req);
+    let res = await env.ASSETS.fetch(req);
+    if ((res.headers.get("Content-Type") || "").includes("text/html") && req.method === "GET") {
+      try { res = await renderHtml(res, env, url); } catch (e) { /* ja satura slānis nestrādā, rāda noklusējuma lapu */ }
+    }
     const h = new Headers(res.headers);
     h.set("X-Content-Type-Options", "nosniff"); h.set("Referrer-Policy", "strict-origin-when-cross-origin"); h.set("Permissions-Policy", "geolocation=(self), camera=(), microphone=()");
     if (/\/assets\/(fonts|img|vendor)\//.test(url.pathname)) h.set("Cache-Control", "public, max-age=2592000, immutable");

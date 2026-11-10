@@ -668,5 +668,8 @@
  "rhr.acc.removeQ": "Kas eemaldada sellelt kontolt ligipääs jaotisele „Vennad“? Ta logitakse välja.",
  "rhr.acc.self": "Oma kontot muuta ei saa",
  "rhr.acc.locked": "Ei saa muuta",
- "rhr.acc.saved": "Salvestatud"
+ "rhr.acc.saved": "Salvestatud",
+ "meta.admin.title": "Haldus",
+ "meta.admin.desc": "Wolves Brotherhood MC veebilehe haldus",
+ "rhr.acc.admin": "Halduspaneel"
 }
