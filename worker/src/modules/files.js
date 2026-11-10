@@ -52,7 +52,7 @@ export const routes = [
     }
     const row = await ctx.env.DB.prepare("SELECT data FROM files WHERE id = ?").bind(id).first();
     const inline = f.mime.startsWith("image/") || f.mime.startsWith("audio/");
-    return new Response(row.data, { headers: {
+    return new Response(new Uint8Array(row.data), { headers: { /* D1 BLOB → masīvs/ArrayBuffer → baiti */
       "Content-Type": f.mime, "Content-Length": String(f.size), "X-Content-Type-Options": "nosniff",
       "Content-Security-Policy": "default-src 'none'; sandbox", "Cache-Control": f.public ? "public, max-age=86400" : "private, max-age=3600",
       "Content-Disposition": `${inline ? "inline" : "attachment"}; filename*=UTF-8''${encodeURIComponent(f.name || f.id)}`
