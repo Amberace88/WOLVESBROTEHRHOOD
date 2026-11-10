@@ -5,3 +5,6 @@ dist/
 .dev.vars
 wrangler.demo.json
 .deploy.log
+.dev/
+backups/
+node_modules
