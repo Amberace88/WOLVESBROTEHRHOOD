@@ -4,9 +4,10 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "dev": "node scripts/build.mjs && wrangler dev",
-    "db:init": "wrangler d1 execute wolves --remote --file worker/schema.sql",
-    "deploy": "node scripts/build.mjs && wrangler deploy"
+    "dev": "bash scripts/dev.sh main 8787",
+    "deploy": "bash scripts/deploy-demo.sh"
   },
-  "devDependencies": { "wrangler": "^4.0.0" }
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
 }
