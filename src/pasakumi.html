@@ -17,7 +17,51 @@
     <p class="lead">{{pasakumi.lead}}</p>
   </div>
 </header>
-<div class="wrap" id="app"></div>
+<div class="wrap ev-page" id="app">
+  <section class="ev-summary" id="evSummary" aria-live="polite" aria-label="{{events.summary}}"></section>
+
+  <div class="ev-bar">
+    <div class="tabs ev-cats" id="evCats" role="tablist" aria-label="{{events.categories}}">
+      <button type="button" role="tab" id="tab-lv" data-cat="lv" aria-selected="true" aria-controls="evResults">{{events.cat.lv}}<span class="n" data-n="lv"></span></button>
+      <button type="button" role="tab" id="tab-eu" data-cat="eu" aria-selected="false" aria-controls="evResults">{{events.cat.eu}}<span class="n" data-n="eu"></span></button>
+      <button type="button" role="tab" id="tab-other" data-cat="other" aria-selected="false" aria-controls="evResults" class="secondary">{{events.cat.other}}<span class="n" data-n="other"></span></button>
+    </div>
+    <div class="ev-seg" id="evViews" role="group" aria-label="{{events.view}}">
+      <button type="button" data-view="list" aria-pressed="true">{{events.vList}}</button>
+      <button type="button" data-view="cal" aria-pressed="false">{{events.vCal}}</button>
+      <button type="button" data-view="map" aria-pressed="false">{{events.vMap}}</button>
+      <button type="button" data-view="time" aria-pressed="false">{{events.vTime}}</button>
+    </div>
+  </div>
+
+  <form class="ev-filters" id="evFilters" role="search" aria-label="{{events.filters}}">
+    <button type="button" class="btn ghost small ev-ftoggle" id="evFToggle" aria-expanded="false" aria-controls="evFBody">{{events.filters}}<span class="n" id="evFCount"></span></button>
+    <div class="ev-fbody" id="evFBody">
+      <label class="ev-f ev-q"><span>{{events.search}}</span><input type="search" name="q" placeholder="{{events.searchPh}}" autocomplete="off"></label>
+      <label class="ev-f"><span>{{events.country}}</span><select name="country"></select></label>
+      <label class="ev-f"><span>{{events.region}}</span><select name="region"></select></label>
+      <label class="ev-f"><span>{{events.type}}</span><select name="type"></select></label>
+      <label class="ev-f"><span>{{events.organizer}}</span><select name="org"></select></label>
+      <label class="ev-f ev-fdate"><span>{{events.from}}</span><input type="date" name="from"></label>
+      <label class="ev-f ev-fdate"><span>{{events.to}}</span><input type="date" name="to"></label>
+      <label class="check ev-saved"><input type="checkbox" name="saved"><span>{{events.onlySaved}}</span></label>
+      <button type="button" class="link-btn ev-reset" id="evReset" hidden>{{events.reset}}</button>
+    </div>
+  </form>
+
+  <p class="ev-count" id="evCount" aria-live="polite"></p>
+  <div id="evResults" role="tabpanel" aria-labelledby="tab-lv">
+    <div id="vList" class="ev-list"></div>
+    <div id="vCal" class="ev-cal" hidden></div>
+    <div id="vMap" class="ev-mapbox" hidden><div id="evMap" role="region" aria-label="{{events.vMap}}"></div></div>
+    <div id="vTime" class="ev-time" hidden></div>
+  </div>
+
+  <aside class="ev-foot">
+    <p class="ev-note">{{events.note}}</p>
+    <p class="ev-sub"><span>{{events.subscribe}}</span> <a id="evIcal" href="/api/events.ics">{{events.subscribeLink}}</a> <button type="button" class="link-btn" id="evIcalCopy">{{events.copyLink}}</button></p>
+  </aside>
+</div>
 </main>
 {{@footer}}
 <script src="{{@base}}assets/js/common.js" defer></script>
