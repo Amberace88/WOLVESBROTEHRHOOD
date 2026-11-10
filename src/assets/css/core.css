@@ -137,9 +137,12 @@ input[type=checkbox],input[type=radio]{accent-color:var(--bone);width:18px;heigh
 .lang-menu a{display:flex;gap:.7rem;align-items:baseline;padding:.5rem .65rem;text-decoration:none;border-radius:4px;color:var(--silver)}
 .lang-menu a b{color:var(--bone);width:1.9rem;font-weight:600;font-size:.88rem}
 .lang-menu a:hover,.lang-menu a[aria-current]{background:#1a1a19;color:var(--bone)}
-.lang-hint{position:fixed;z-index:150;left:50%;top:calc(var(--nav-h) + 12px);transform:translateX(-50%);display:flex;gap:.6rem;align-items:center;background:#0b0b0b;border:1px solid var(--line-2);border-radius:8px;padding:.5rem .6rem .5rem 1rem;box-shadow:0 20px 50px rgba(0,0,0,.7);font-size:.95rem}
+.lang-hint{position:fixed;z-index:150;right:16px;bottom:16px;display:flex;gap:.6rem;align-items:center;background:#0b0b0b;border:1px solid var(--line-2);border-radius:8px;padding:.5rem .6rem .5rem 1rem;box-shadow:0 20px 50px rgba(0,0,0,.7);font-size:.95rem}
 @media (max-width:1379px){.nav-links .opt{display:none}}
 @media (max-width:1599px){#commsBtn .account-label{display:none}}
+/* lietotņu lapās (karte, saziņa) apakšā ir vadības elementi — ieteikums augšā */
+body.app .lang-hint,body.page-sazina .lang-hint{bottom:auto;top:calc(var(--nav-h) + 12px)}
+@media (max-width:520px){.lang-hint{left:16px;right:16px;justify-content:space-between}}
 @media (max-width:1120px){.nav-links{display:none}}
 @media (max-width:520px){.brand span{font-size:1.35rem}.nav .account-label{display:none}.nav-tools{gap:.35rem}}
 
