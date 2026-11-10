@@ -12,7 +12,7 @@ const CATS = [
 const ROOMS = [
   { id: "club", minRole: "member" }, { id: "rides", minRole: "member" }, { id: "officers", minRole: "officer" }
 ];
-const RANK = { rider: 1, member: 2, officer: 3 };
+const RANK = { rider: 1, member: 2, officer: 3, admin: 4, developer: 5 };
 const can = (u, role) => !!u && RANK[u.role] >= RANK[role];
 
 /* ---------------- LIVE ---------------- */
@@ -51,7 +51,10 @@ const live = {
   newHazard: d => req("/hazards", { method: "POST", body: d }),
   helpers: () => req("/helpers").then(j => j.items),
   saveHelper: d => req("/helpers", { method: "POST", body: d }),
-  invite: () => req("/admin/invites", { method: "POST", body: { role: "member" } })
+  invite: (role = "member") => req("/admin/invites", { method: "POST", body: { role } }),
+  users: () => req("/admin/users").then(j => j.users),
+  setRole: (id, role) => req("/admin/users/" + id, { method: "POST", body: { role } }),
+  removeUser: id => req("/admin/users/" + id, { method: "POST", body: { remove: true } })
 };
 
 /* ---------------- DEMO ---------------- */
@@ -133,7 +136,10 @@ const demo = {
   async newHazard(d){ db.hazards.push({ id: uid(), ...d, by: nameOf(db.me) || "Rider", created: now() }); save(); },
   async helpers(){ return db.helpers.map(h => ({ ...h, note: L(h.note) })); },
   async saveHelper(d){ const i = db.helpers.findIndex(h => h.uid === db.me); const rec = { id: uid(), uid: db.me, name: nameOf(db.me), ...d }; i < 0 ? db.helpers.push(rec) : db.helpers[i] = rec; save(); },
-  async invite(){ return { code: "WOLF-" + Math.random().toString(36).slice(2, 6).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase() }; }
+  async invite(){ return { code: "WOLF-" + Math.random().toString(36).slice(2, 6).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase() }; },
+  async users(){ return []; },
+  async setRole(){ throw new Error("Offline"); },
+  async removeUser(){ throw new Error("Offline"); }
 };
 
 /* ---------- izvēlas režīmu: ja API atbild — live, citādi demo ---------- */

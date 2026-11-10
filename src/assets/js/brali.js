@@ -21,11 +21,11 @@ function renderSide(){
   $("#roomList").innerHTML = R.ROOMS.map(r => { const ok = R.can(user, r.minRole); return `<li><a href="#chat/${r.id}" data-view="chat/${r.id}" class="${ok ? "" : "locked"}"><span class="ico">${WB.icon("hash")}</span>${esc(t("rhr.room." + r.id))}${ok ? "" : ` <span class="lock">${WB.icon("lock")}</span>`}</a></li>`; }).join("");
   $("#meBox").innerHTML = user
     ? `<div class="me"><span class="avatar">${esc(user.name.slice(0, 1).toUpperCase())}</span><div><b>${esc(user.name)}</b>${roleTag(user.role) || `<span class="role">${esc(t("rhr.role.rider"))}</span>`}</div><button class="link-btn" id="logout">${esc(t("rhr.logout"))}</button></div>
-       ${R.can(user, "officer") ? `<button class="btn ghost small wide" id="mkInvite">${esc(t("rhr.makeInvite"))}</button><p class="small muted" id="inviteOut"></p>` : ""}`
+       ${R.can(user, "officer") ? `<a class="btn ghost small wide" href="#accounts" data-view="accounts">${esc(t("rhr.acc.title"))}</a>` : ""}`
     : `<p class="small muted">${esc(t("rhr.guest"))}</p><button class="btn small wide" id="loginBtn">${esc(t("rhr.auth.login"))} / ${esc(t("rhr.auth.register"))}</button>`;
-  const lo = $("#logout"); lo && lo.addEventListener("click", async () => { await R.logout(); user = null; renderSide(); route(); });
+  const lo = $("#logout"); lo && lo.addEventListener("click", async () => { await R.logout(); user = null; gate("guest"); });
   const li = $("#loginBtn"); li && li.addEventListener("click", openAuth);
-  const mi = $("#mkInvite"); mi && mi.addEventListener("click", async () => { const j = await R.invite(); $("#inviteOut").innerHTML = `${esc(t("rhr.inviteCode"))}: <b>${esc(j.code)}</b>`; });
+
   highlight();
 }
 const highlight = () => { const h = location.hash.slice(1) || "forum/all"; $$(".rhr-nav a").forEach(a => a.classList.toggle("on", h.startsWith(a.dataset.view) || (h.startsWith("t/") && a.dataset.view === "forum/" + (window._curCat || "all")))); };
@@ -40,12 +40,15 @@ $$("[data-auth]").forEach(b => b.addEventListener("click", () => {
   $$("#authForm [data-reg]").forEach(x => x.hidden = authMode !== "register");
   $("#authBtn").textContent = t(authMode === "login" ? "rhr.auth.login" : "rhr.auth.register");
   $("#authForm").password.autocomplete = authMode === "login" ? "current-password" : "new-password";
+  $("#authForm").invite.required = authMode === "register";
 }));
 $("#authForm").addEventListener("submit", async e => {
   e.preventDefault(); const f = e.target; $("#authErr").textContent = "";
   try {
     user = authMode === "login" ? await R.login(f.email.value, f.password.value) : await R.register({ name: f.name.value.trim(), email: f.email.value.trim(), password: f.password.value, invite: f.invite.value.trim() });
-    authDlg.close(); renderSide(); route();
+    authDlg.close();
+    if (!isMember(user)) { gate("pending"); return; }
+    location.reload();
     if (Q.get("back") === "chess") location.href = "./#spele";
   } catch (err) { $("#authErr").textContent = err.message || t("rhr.err.generic"); }
 });
@@ -201,6 +204,48 @@ $("#composeForm").addEventListener("submit", async e => {
   } catch (x) { err.textContent = x.message || t("rhr.err.generic"); }
 });
 
+
+/* ---------- konti un ielūgumi (valde, administrators, izstrādātājs) ---------- */
+const ROLE_ORDER = ["rider", "member", "officer", "admin", "developer"];
+const RANKS = { rider: 1, member: 2, officer: 3, admin: 4, developer: 5 };
+const roleName = r => t("rhr.role." + r) || r;
+async function showAccounts(){
+  if (!R.can(user, "officer")) { location.hash = "forum/all"; return; }
+  const mine = RANKS[user.role] || 0;
+  const grantable = ROLE_ORDER.filter(r => r !== "rider" && r !== "developer" && RANKS[r] < mine);
+  head(t("rhr.acc.title"), t("rhr.acc.sub"));
+  view.innerHTML = `<section class="acc-invite">
+      <h3>${esc(t("rhr.acc.invite"))}</h3>
+      <p class="muted small">${esc(t("rhr.acc.inviteHint"))}</p>
+      <div class="acc-row"><label class="sr-only" for="invRole">${esc(t("rhr.acc.role"))}</label>
+        <select id="invRole">${grantable.map(r => `<option value="${r}">${esc(roleName(r))}</option>`).join("")}</select>
+        <button class="btn small" id="invMake">${esc(t("rhr.makeInvite"))}</button></div>
+      <p class="acc-code" id="invOut" aria-live="polite"></p>
+    </section>
+    <section><h3>${esc(t("rhr.acc.list"))}</h3><div id="accList"><p class="muted">…</p></div></section>`;
+  $("#invMake").addEventListener("click", async () => {
+    try { const j = await R.invite($("#invRole").value); $("#invOut").innerHTML = `${esc(t("rhr.inviteCode"))} (${esc(roleName(j.role))}): <b>${esc(j.code)}</b>`; }
+    catch (e) { $("#invOut").textContent = e.message; }
+  });
+  const list = await R.users();
+  $("#accList").innerHTML = `<div class="acc-table" role="table">${list.map(u => `
+    <div class="acc-item" role="row">
+      <div role="cell"><b>${esc(u.name)}</b>${u.me ? ` <span class="muted small">(${esc(t("rhr.acc.you"))})</span>` : ""}${u.email ? `<br><span class="muted small">${esc(u.email)}</span>` : ""}</div>
+      <div role="cell"><span class="role r-${esc(u.role)}">${esc(roleName(u.role))}</span></div>
+      <div role="cell" class="acc-act">${u.editable ? `
+        <select data-role="${esc(u.id)}" aria-label="${esc(t("rhr.acc.role"))}">${ROLE_ORDER.filter(r => r !== "developer" && RANKS[r] < mine).map(r => `<option value="${r}"${r === u.role ? " selected" : ""}>${esc(roleName(r))}</option>`).join("")}</select>
+        <button class="link-btn" data-remove="${esc(u.id)}">${esc(t("rhr.acc.remove"))}</button>` : `<span class="muted small">${esc(t(u.me ? "rhr.acc.self" : "rhr.acc.locked"))}</span>`}</div>
+    </div>`).join("")}</div>`;
+  $$("[data-role]").forEach(sel => sel.addEventListener("change", async () => {
+    try { await R.setRole(sel.dataset.role, sel.value); WB.toast ? WB.toast(t("rhr.acc.saved")) : null; showAccounts(); }
+    catch (e) { alert(e.message); showAccounts(); }
+  }));
+  $$("[data-remove]").forEach(b => b.addEventListener("click", async () => {
+    if (!confirm(t("rhr.acc.removeQ"))) return;
+    try { await R.removeUser(b.dataset.remove); showAccounts(); } catch (e) { alert(e.message); }
+  }));
+}
+
 /* ---------- router ---------- */
 async function route(){
   unsub && unsub(); unsub = null; killMap();
@@ -214,12 +259,47 @@ async function route(){
     else if (h === "sos") await showSos();
     else if (h === "hazards") await showHazards();
     else if (h === "helpers") await showHelpers();
+    else if (h === "accounts") await showAccounts();
     else await showForum("all");
   } catch (e) { view.innerHTML = `<div class="empty-state"><h3>${esc(t("rhr.err.generic"))}</h3><p class="muted">${esc(e.message)}</p></div>`; }
   $("#rhrMain").scrollTop = 0;
 }
-addEventListener("hashchange", route);
-(async () => { await R.probe(); $("#rhrMode").textContent = R.mode === "live" ? t("rhr.modeLive") : t("rhr.modeDemo"); user = await R.init(); renderSide(); route();
-  if (Q.get("auth") && !user) { const b = $(`[data-auth="${Q.get("auth") === "register" ? "register" : "login"}"]`); b && b.click(); openAuth(); }
-  R.sos().then(l => { const n = l.filter(s => !s.resolved).length; const b = $("#sosBadge"); b.hidden = !n; b.textContent = n; }).catch(() => {}); })();
+addEventListener("hashchange", () => { if (isMember(user)) route(); });
+/* ---------- slēgtā zona: bez kluba biedra konta nekas netiek rādīts ---------- */
+function gate(kind){
+  unsub && unsub(); unsub = null; killMap();
+  document.body.classList.add("rhr-locked");
+  const msg = kind === "pending" ? t("rhr.gate.pending") : kind === "offline" ? t("rhr.gate.offline") : t("rhr.gate.text");
+  $("#rhr").innerHTML = `<section class="rhr-gate" role="region" aria-labelledby="gateTitle">
+    <span class="rhr-gate-ico" aria-hidden="true">${WB.icon("lock")}</span>
+    <h1 id="gateTitle">${esc(t("rhr.gate.title"))}</h1>
+    <p class="lead">${esc(msg)}</p>
+    <div class="btn-row">
+      ${kind === "offline" ? "" : kind === "pending"
+        ? `<button class="btn ghost" id="gateOut">${esc(t("rhr.logout"))}</button>`
+        : `<button class="btn" id="gateIn">${esc(t("rhr.gate.login"))}</button>`}
+      <a class="btn ghost" href="./#pievienoties">${esc(t("rhr.gate.join"))}</a>
+    </div>
+    <p class="small muted">${esc(t("rhr.gate.public"))} <a href="./">${esc(t("rhr.gate.home"))}</a></p>
+  </section>`;
+  const gi = $("#gateIn"); gi && gi.addEventListener("click", openAuth);
+  const go = $("#gateOut"); go && go.addEventListener("click", async () => { await R.logout(); user = null; gate("guest"); });
+  document.title = t("rhr.gate.title") + " · Wolves Brotherhood MC";
+}
+const isMember = u => R.can(u, "member");
+let started = false;
+async function enter(){
+  if (!isMember(user)) return gate(user ? "pending" : "guest");
+  if (started) { renderSide(); return route(); }
+  started = true; renderSide(); route();
+  R.sos().then(l => { const n = l.filter(s => !s.resolved).length; const b = $("#sosBadge"); b.hidden = !n; b.textContent = n; }).catch(() => {});
+}
+addEventListener("hashchange", () => { if (!isMember(user)) gate(user ? "pending" : "guest"); });
+
+(async () => { await R.probe();
+  if (R.mode !== "live") return gate("offline");
+  $("#rhrMode").textContent = t("rhr.modeLive"); user = await R.init();
+  if (!isMember(user)) { gate(user ? "pending" : "guest"); if (Q.get("auth") && !user) openAuth(); return; }
+  enter();
+})();
 })();

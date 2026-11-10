@@ -1156,3 +1156,24 @@ footer{background:radial-gradient(ellipse 50% 80% at 50% 0,rgba(236,232,223,.05)
   .cb-actions{grid-template-columns:1fr 1fr}
   .cb-tabs button{font-size:1rem}
 }
+
+/* Brāļi — slēgtā zona (tikai kluba biedriem) */
+.rhr-locked .rhr{display:block;overflow:auto}
+.rhr-gate{max-width:560px;margin:0 auto;padding:clamp(48px,12vh,120px) 20px 64px;text-align:center}
+.rhr-gate-ico{display:inline-grid;place-items:center;width:56px;height:56px;border:1px solid var(--line, #2b2a28);border-radius:50%;margin-bottom:18px;color:var(--bone, #ECE8DF)}
+.rhr-gate-ico svg{width:24px;height:24px}
+.rhr-gate h1{margin:0 0 12px}
+.rhr-gate .lead{margin:0 auto 26px;max-width:46ch}
+.rhr-gate .btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:22px}
+.role.r-admin{background:var(--bone);color:#000;border-color:var(--bone);box-shadow:0 0 0 1px #000,0 0 0 2px var(--bone)}
+.role.r-developer{background:#000;color:var(--bone);border-color:var(--bone);letter-spacing:.04em}
+/* Brāļi — konti un ielūgumi */
+.acc-invite{border:1px solid var(--line, #2b2a28);border-radius:4px;padding:16px;margin-bottom:24px}
+.acc-invite h3,.rhr-view section>h3{margin:0 0 6px}
+.acc-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.acc-row select,.acc-act select{background:#000;color:var(--bone);border:1px solid var(--line, #2b2a28);border-radius:3px;padding:6px 8px;font:inherit}
+.acc-code{margin:10px 0 0;min-height:1.4em}
+.acc-code b{font-size:1.1rem;letter-spacing:.06em;user-select:all}
+.acc-item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line, #2b2a28)}
+.acc-act{display:flex;gap:10px;align-items:center;justify-content:flex-end}
+@media (max-width:600px){.acc-item{grid-template-columns:1fr}.acc-act{justify-content:flex-start}}
