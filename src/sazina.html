@@ -2,7 +2,7 @@
 <html lang="{{@lang}}">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <title>{{meta.sazina.title}}</title>
 <meta name="description" content="{{meta.sazina.desc}}">
 {{@head}}
@@ -11,13 +11,18 @@
 <body class="page-sazina">
 {{@nav}}
 <main id="main">
-<header class="page-head">
+<header class="page-head sz-page-head">
   <div class="wrap">
     <h1 class="rocker" data-rocker="{{sazina.rocker}}">{{sazina.title}}</h1>
     <p class="lead">{{sazina.lead}}</p>
   </div>
 </header>
-<div class="wrap" id="app"></div>
+<div class="wrap sz-gate" id="gate"></div>
+<div class="sz-app" id="app" data-view="list" hidden>
+  <aside class="sz-side" id="szSide" aria-label="{{comms.sections}}"></aside>
+  <section class="sz-main" id="szMain" aria-live="off"></section>
+  <aside class="sz-info" id="szInfo" aria-label="{{comms.info}}" hidden></aside>
+</div>
 </main>
 {{@footer}}
 <script src="{{@base}}assets/js/common.js" defer></script>
