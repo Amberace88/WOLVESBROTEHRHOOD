@@ -112,25 +112,22 @@ window.MERCH = [
   { id: "stickers", type: "sticker", design: "mark", price: 6, colors: ["#000"], name: { lv: "Uzlīmju komplekts", en: "Sticker pack", ru: "Набор наклеек", de: "Stickerset", lt: "Lipdukų rinkinys", et: "Kleebisekomplekt", no: "Klistremerkesett", fr: "Lot d'autocollants" } }
 ];
 
-/* ---------------- Ziedojumi ----------------
-   Aizpildi vismaz vienu maksājuma veidu (tukšs = netiek rādīts). */
+/* ---------------- Atbalsts ----------------
+   9. sadaļa: rekvizīti no specifikācijas melnraksta — JĀPĀRBAUDA pie biedrības un bankas dokumentiem.
+   Pēc pārbaudes administrators admin panelī (sadaļa „Atbalsts”) atzīmē rekvizītus kā apstiprinātus;
+   tikai tad publiskajā lapā redzams „Rekvizīti apstiprināti: <datums>”. Ja IBAN šeit mainās, apstiprinājums jāatkārto.
+   Mērķi — vienkārši apraksti: bez mērķa summām, savāktajām summām un ikmēneša līmeņiem. */
 window.DONATE = {
-  // 9. sadaļa: rekvizīti no specifikācijas melnraksta — pirms publicēšanas jāpārbauda pie biedrības un bankas
   recipient: "WBMC BIEDRĪBA", iban: "LV87RIKO0002930404914", bank: "Luminor Bank AS Latvijas filiāle", bic: "RIKOLV2X", bankAddress: "Skanstes iela 12, Rīga, LV-1013",
-  stripeLink: "", stripeMonthly: "", paypal: "",
   goals: [
-    { id: "home", target: 5000, raised: 0,
+    { id: "home",
       name: { lv: "Kluba mājas", en: "Clubhouse", ru: "Дом клуба", de: "Clubhaus", lt: "Klubo namai", et: "Klubimaja", no: "Klubbhus", fr: "Local du club" },
       text: { lv: "Telpas motocikliem, krāsām un dienasgrāmatai. Remonts, apkure, darbnīca.", en: "A place for the bikes, the colours and the diary. Renovation, heating, workshop.", ru: "Помещение для мотоциклов, цветов и дневника. Ремонт, отопление, мастерская.", de: "Ein Ort für Maschinen, Farben und Tagebuch. Renovierung, Heizung, Werkstatt.", lt: "Patalpos motociklams, spalvoms ir dienoraščiui. Remontas, šildymas, dirbtuvės.", et: "Ruumid ratastele, värvidele ja päevikule. Remont, küte, töökoda.", no: "Et sted for syklene, fargene og dagboka. Oppussing, varme, verksted.", fr: "Un lieu pour les motos, les couleurs et le journal. Rénovation, chauffage, atelier." } },
-    { id: "charity", target: 2000, raised: 0,
+    { id: "charity",
       name: { lv: "Labdarības braucieni", en: "Charity rides", ru: "Благотворительные поездки", de: "Wohltätigkeitsfahrten", lt: "Labdaros važiavimai", et: "Heategevussõidud", no: "Veldedighetsturer", fr: "Balades caritatives" },
       text: { lv: "Degviela un loģistika braucieniem, kuros vedam palīdzību bērnunamiem un veterāniem.", en: "Fuel and logistics for rides bringing help to children's homes and veterans.", ru: "Топливо и логистика для поездок с помощью детским домам и ветеранам.", de: "Sprit und Logistik für Fahrten mit Hilfe für Kinderheime und Veteranen.", lt: "Kuras ir logistika važiavimams, kuriais vežame pagalbą vaikų namams ir veteranams.", et: "Kütus ja logistika sõitudeks, millega viime abi lastekodudele ja veteranidele.", no: "Drivstoff og logistikk til turer med hjelp til barnehjem og veteraner.", fr: "Carburant et logistique pour les balades apportant de l'aide aux foyers d'enfants et aux vétérans." } },
-    { id: "memorial", target: 800, raised: 0,
+    { id: "memorial",
       name: { lv: "Piemiņas pasākumi", en: "Memorial events", ru: "Памятные мероприятия", de: "Gedenkveranstaltungen", lt: "Atminimo renginiai", et: "Mälestusüritused", no: "Minnearrangementer", fr: "Cérémonies du souvenir" },
       text: { lv: "Ziedi, sveces un pasākumi Lāčplēša dienā, 18. novembrī un brāļu piemiņai.", en: "Flowers, candles and events on Lāčplēsis Day, 18 November and in memory of fallen brothers.", ru: "Цветы, свечи и мероприятия в День Лачплесиса, 18 ноября и в память о братьях.", de: "Blumen, Kerzen und Veranstaltungen am Lāčplēsis-Tag, am 18. November und zum Gedenken an Brüder.", lt: "Gėlės, žvakės ir renginiai Lāčplēsio dieną, lapkričio 18-ąją ir brolių atminimui.", et: "Lilled, küünlad ja üritused Lāčplēsise päeval, 18. novembril ja vendade mälestuseks.", no: "Blomster, lys og arrangementer på Lāčplēsis-dagen, 18. november og til minne om brødre.", fr: "Fleurs, bougies et cérémonies le jour de Lāčplēsis, le 18 novembre et en mémoire des frères." } }
-  ],
-  tiers: [
-    { id: "friend", price: 5 }, { id: "supporter", price: 15 }, { id: "patron", price: 50 }
-  ],
-  supporters: [] // { name: "Jānis B.", tier: "patron" }
+  ]
 };

@@ -11,13 +11,24 @@
 <body class="page-merch">
 {{@nav}}
 <main id="main">
-<header class="page-head">
+<header class="page-head" id="merchHead">
   <div class="wrap">
     <h1 class="rocker" data-rocker="{{merch.rocker}}">{{merch.title}}</h1>
-    <p class="lead">{{merch.lead}}</p>
+    <p class="lead">{{cm.merch.lead}}</p>
   </div>
 </header>
-<div class="wrap" id="app"></div>
+<div class="wrap" id="app" aria-live="polite"><p class="muted cm-loading">{{cm.loading}}</p></div>
+<section class="section cm-howto" id="howto" hidden>
+  <div class="wrap">
+    <h2>{{cm.merch.howTitle}}</h2>
+    <ol class="cm-steps three">
+      <li><b>{{cm.merch.how1}}</b><p>{{cm.merch.how1t}}</p></li>
+      <li><b>{{cm.merch.how2}}</b><p>{{cm.merch.how2t}}</p></li>
+      <li><b>{{cm.merch.how3}}</b><p>{{cm.merch.how3t}}</p></li>
+    </ol>
+    <p class="small dim cm-nocard">{{cm.merch.noCard}}</p>
+  </div>
+</section>
 </main>
 {{@footer}}
 <script src="{{@base}}assets/js/common.js" defer></script>
