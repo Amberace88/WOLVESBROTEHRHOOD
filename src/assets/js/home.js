@@ -33,7 +33,7 @@ async function events(){
   const box = $("#homeEvents");
   let list = null;
   try { const j = await WB.req(`/events?from=${WB.iso(t0)}&limit=60`); list = j.events || []; } catch (e) { list = null; }
-  if (!list) list = (window.EU_EVENTS || []).map(x => ({ id: x.id, title: x.name, start: x.start, end: x.end, city: x.city, country: x.cc || x.country, category: x.cc === "LV" ? "lv-moto" : "eu-moto" }));
+  if (!list) list = (window.EU_EVENTS || []).filter(e => e.status === "confirmed" && !/provisional/i.test(e.note || "")).map(x => ({ id: x.id, title: x.name, start: x.start, end: x.end, city: x.city, country: x.cc || x.country, category: x.cc === "LV" ? "lv-moto" : "eu-moto" }));
   list = list.filter(e => (e.end || e.start) >= WB.iso(t0)).sort((a, b) => a.start.localeCompare(b.start));
   const lv = list.filter(e => /^lv-/.test(e.category)).slice(0, 4), eu = list.filter(e => /^eu-/.test(e.category) && /moto/.test(e.category)).slice(0, 4);
   const group = (title, arr) => arr.length ? `<li class="ev-group"><h3>${esc(title)}</h3><ol>${arr.map(evRow).join("")}</ol></li>` : "";
