@@ -25,3 +25,4 @@
 .codes code{letter-spacing:.06em}
 .sessions .session{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.75rem 0}
 .big-code code{display:inline-block;font-size:1.25rem;letter-spacing:.08em;padding:.4rem .7rem;border:1px dashed var(--line-2);border-radius:4px;user-select:all}
+.ts-box{min-height:65px;margin:.2rem 0}

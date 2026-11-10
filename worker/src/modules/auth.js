@@ -49,14 +49,32 @@ async function me(ctx){
   return json({ user: { ...pubUser(ctx.user), email: ctx.user.email }, perms, stepupFresh: ctx.user.mfaAt > now() - 12 * 3600e3 });
 }
 
+/* Cloudflare Turnstile: ja TURNSTILE_SECRET iestatīts, reģistrācija un pieteikšanās prasa derīgu žetonu */
+async function humanCheck(ctx, b){
+  const secret = ctx.env.TURNSTILE_SECRET;
+  if (!secret || !ctx.env.TURNSTILE_SITEKEY) return;
+  const tok = clip(b.turnstile, 2048);
+  if (!tok) fail(400, "Confirm that you are not a robot", { code: "bot" });
+  let ok = false;
+  try {
+    const form = new FormData(); form.append("secret", secret); form.append("response", tok); form.append("remoteip", ctx.ip);
+    const r = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
+    ok = !!(await r.json()).success;
+  } catch (e) { ok = false; }
+  if (!ok) { await secEvent(ctx.env, ctx, "bot_blocked", "MEDIUM", {}); fail(400, "Confirm that you are not a robot", { code: "bot" }); }
+}
+
 export const routes = [
   route("GET", "/health", () => json({ ok: true, v: 2 })),
+  /* publiskā klienta konfigurācija (Turnstile vietnes atslēga nav noslēpums) */
+  route("GET", "/config", ctx => json({ turnstile: ctx.env.TURNSTILE_SECRET && ctx.env.TURNSTILE_SITEKEY ? ctx.env.TURNSTILE_SITEKEY : null }, 200, { "Cache-Control": "public, max-age=300" })),
   route("GET", "/me", me),
 
   route("POST", "/auth/register", async ctx => {
     const { env } = ctx;
     await ctx.limit("reg:" + ctx.ip, 5, 600);
     const b = await ctx.body();
+    await humanCheck(ctx, b);
     const em = vEmail(b.email), name = text(b.name, 40, 2, "name"), pw = String(b.password || "");
     if (!passwordPolicy(pw)) fail(400, "Password must be at least 10 characters", { code: "weak_password" });
     if (await env.DB.prepare("SELECT 1 FROM users WHERE email = ?").bind(em).first()) fail(409, "This email is already registered", { code: "exists" });
@@ -89,6 +107,7 @@ export const routes = [
     const { env } = ctx;
     await ctx.limit("login:" + ctx.ip, 10, 60);
     const b = await ctx.body();
+    await humanCheck(ctx, b);
     const em = clip(b.email, 120).toLowerCase(), pw = String(b.password || "").slice(0, 200);
     const u = await env.DB.prepare("SELECT * FROM users WHERE email = ?").bind(em).first();
     if (u && u.locked_until > now()) { await secEvent(env, ctx, "login_blocked", "MEDIUM", {}, u.id); fail(429, "Too many failed attempts. Try again in 15 minutes.", { code: "locked" }); }

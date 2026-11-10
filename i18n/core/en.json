@@ -420,5 +420,7 @@
  "priv.rights": "You have the right to access your data, correct it, request deletion or restrict processing, and to complain to the Latvian Data State Inspectorate (www.dvi.gov.lv). We handle requests within one month, taking legal obligations and the club's legitimate interests into account.",
  "priv.h.contact": "Contact",
  "priv.contact": "Questions about data:",
- "sc.mfaKey": "MFA secret encryption (MFA_KEY)"
+ "sc.mfaKey": "MFA secret encryption (MFA_KEY)",
+ "sec.bot_blocked": "Blocked bot (Turnstile)",
+ "err.bot": "Confirm that you are not a robot."
 }

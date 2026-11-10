@@ -32,14 +32,14 @@ function securityHeaders(h, url, nonce){
   const wss = `${https ? "wss" : "ws"}://${url.host}`;
   h.set("Content-Security-Policy", [
     "default-src 'self'",
-    `script-src 'self'${nonce ? ` 'nonce-${nonce}'` : ""}`,
+    `script-src 'self'${nonce ? ` 'nonce-${nonce}'` : ""} https://challenges.cloudflare.com`,
     "style-src 'self' 'unsafe-inline'",
     `img-src 'self' data: blob: ${CSP_IMG.join(" ")}`,
     "font-src 'self'",
     `connect-src 'self' ${wss} ${CSP_CONNECT.join(" ")}`,
     "media-src 'self' blob:",
     "worker-src 'self' blob:",
-    "frame-src https://meet.jit.si",
+    "frame-src https://meet.jit.si https://challenges.cloudflare.com",
     "frame-ancestors 'none'", "object-src 'none'", "base-uri 'self'", "form-action 'self'",
     ...(https ? ["upgrade-insecure-requests"] : [])
   ].join("; "));

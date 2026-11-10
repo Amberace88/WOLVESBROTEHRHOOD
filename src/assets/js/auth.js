@@ -17,6 +17,22 @@ if (Q.get("invite")) { show("register"); $('#registerForm [name=invite]').value 
 
 WB.session().then(me => { if (me) go(me.status); });
 
+/* botu aizsardzība (Cloudflare Turnstile) — tikai ja serverī iestatītas atslēgas */
+const human = {};
+WB.req("/config").then(c => {
+  if (!c || !c.turnstile) return;
+  const s = document.createElement("script");
+  s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"; s.async = true;
+  s.onload = () => ["loginForm", "registerForm"].forEach(id => {
+    const f = $("#" + id), box = document.createElement("div"); box.className = "ts-box";
+    f.querySelector(".form-err").before(box);
+    human[id] = window.turnstile.render(box, { sitekey: c.turnstile, theme: "dark", language: document.documentElement.lang || "auto" });
+  });
+  document.head.appendChild(s);
+}).catch(() => {});
+const token = id => (human[id] !== undefined && window.turnstile ? window.turnstile.getResponse(human[id]) : undefined);
+const resetHuman = id => { if (human[id] !== undefined && window.turnstile) window.turnstile.reset(human[id]); };
+
 const busy = (f, on) => { const b = f.querySelector("button.btn"); b.disabled = on; b.classList.toggle("dis", on); };
 const error = (f, e) => { f.querySelector(".form-err").textContent = e ? WB.errMsg(e) : ""; };
 async function submit(f, fn){
@@ -27,7 +43,9 @@ async function submit(f, fn){
 }
 
 $("#loginForm").addEventListener("submit", e => { e.preventDefault(); submit(e.target, async d => {
-  const r = await WB.req("/auth/login", { body: { email: d.get("email"), password: d.get("password") } });
+  let r;
+  try { r = await WB.req("/auth/login", { body: { email: d.get("email"), password: d.get("password"), turnstile: token("loginForm") } }); }
+  finally { resetHuman("loginForm"); }
   if (r.mfa) { e.target.hidden = true; $("#mfaForm").hidden = false; $('#mfaForm [name=code]').focus(); return; }
   go(r.status);
 }); });
@@ -37,7 +55,9 @@ $("#mfaForm").addEventListener("submit", e => { e.preventDefault(); submit(e.tar
   go(r.status);
 }).catch(() => {}); });
 $("#registerForm").addEventListener("submit", e => { e.preventDefault(); submit(e.target, async d => {
-  const r = await WB.req("/auth/register", { body: { invite: d.get("invite"), name: d.get("name"), email: d.get("email"), password: d.get("password") } });
+  let r;
+  try { r = await WB.req("/auth/register", { body: { invite: d.get("invite"), name: d.get("name"), email: d.get("email"), password: d.get("password"), turnstile: token("registerForm") } }); }
+  finally { resetHuman("registerForm"); }
   go(r.status);
 }); });
 $("#resetForm").addEventListener("submit", e => { e.preventDefault(); submit(e.target, async d => {

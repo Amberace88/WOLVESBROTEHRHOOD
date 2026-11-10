@@ -420,5 +420,7 @@
  "priv.rights": "Tev ir tiesības piekļūt saviem datiem, labot tos, pieprasīt dzēšanu vai ierobežot apstrādi, kā arī iesniegt sūdzību Datu valsts inspekcijā (www.dvi.gov.lv). Pieprasījumus izskatām mēneša laikā, ņemot vērā juridiskos pienākumus un kluba leģitīmās intereses.",
  "priv.h.contact": "Saziņa",
  "priv.contact": "Jautājumi par datiem:",
- "sc.mfaKey": "MFA atslēgu šifrēšana (MFA_KEY)"
+ "sc.mfaKey": "MFA atslēgu šifrēšana (MFA_KEY)",
+ "sec.bot_blocked": "Bloķēts robots (Turnstile)",
+ "err.bot": "Apstiprini, ka neesi robots."
 }

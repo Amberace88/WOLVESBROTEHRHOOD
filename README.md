@@ -1,61 +1,66 @@
-# Wolves Brotherhood MC — wolvesbrotherhoodmc.com
+# WBMC — Wolves Brotherhood MC · wolvesbrotherhoodmc.com
 
-Kluba mājaslapa 8 valodās (LV, EN, RU, DE, LT, ET, NO, FR) + Ride HQ karte, Eiropas moto pasākumu kalendārs, Riders Help Riders (forums, SOS, brīdinājumi, palīdzības punkti, kluba čati), kluba šaha galds un ziedojumi.
+Latvian Motorcycle Club from 1999. Vietne 8 valodās (LV, EN, RU, DE, LT, ET, NO, FR), izstrādāta pēc `WBMC_Techniska_Specifikacija_v2`.
+Kartējums prasība → risinājums: `docs/v2/01-audits-un-plans.md`.
 
-Viss darbojas uz **viena Cloudflare Worker** (Workers Paid plāns): statiskā lapa + `/api` (D1 datubāze + Durable Objects reāllaika čatiem, "bara" atrašanās vietai un šaha partijām).
+Viss darbojas uz **viena Cloudflare Worker**: statiskās lapas + `/api` (D1 datubāze, Durable Objects reāllaika saziņai, bara atrašanās vietai un šaham).
+
+## Sadaļas
+
+| Lapa | Kas tur ir | Piekļuve |
+|---|---|---|
+| `index` | Logo, „Latvian Motorcycle Club from 1999”, tuvākie pasākumi, Ride HQ, partneri | publiska |
+| `klubs` | Šodiena, hronika, dienasgrāmata, kalendārs, galerija, saziņas forma | publiska |
+| `pasakumi` | Moto pasākumi: Latvija → Eiropa → citi transporta pasākumi; saraksts, kalendārs, karte, laika josla, iCal | publiska |
+| `karte` | Ride HQ: maršruti (punkti, aplis, saglabāt, kopīgot), laikapstākļi, slāņi, degvielas cenas (EK), SOS | publiska (bars, SOS — biedriem) |
+| `brali` | Biedru profili ar lauku redzamību pēc pakāpes | tikai biedriem |
+| `memorials` | Piemiņas kartītes (publicē tikai ar ģimenes piekrišanu un apstiprinātāju) | publiska |
+| `sazina` | Norīkojumi, kanāli pēc pakāpes, grupas, privātās sarunas, idejas, Riders Help Riders (SOS), balss ziņas, videozvani (Jitsi) | tikai biedriem |
+| `atbalsts` | Bankas rekvizīti, EPC/SEPA QR, atbalsta mērķi | publiska |
+| `merch`, `partneri`, `sadarbiba` | Produkti, partneri (ar zīmola piekrišanu), reklāmas iespējas | publiska |
+| `admin` | Konti, lomas un tiesības, ielūgumi, audits, Security Center, iestatījumi, tulkojumi + katra moduļa pārvaldība | pēc tiesībām, ar MFA |
+| `pieslegties`, `profils` | Ieeja ar ielūgumu, MFA (TOTP), rezerves kodi, sesijas | — |
 
 ## Struktūra
 
-| Ceļš | Kas tur ir |
+| Ceļš | Saturs |
 |---|---|
-| `src/*.html` | Lapu veidnes (`index`, `karte`, `eiropa`, `brali`, `404`) ar `{{atslēga}}` tulkojumiem |
-| `src/assets/js/data.js` | **Viss kluba saturs**: pasākumi, dienasgrāmata, hronika, biedri, maršruti, galerija, merch, ziedojumu rekvizīti |
-| `src/assets/js/eu-events.json` | Eiropas moto pasākumi (58 ieraksti, ar avotiem) |
-| `i18n/*.json` | Saskarnes tulkojumi 8 valodās |
-| `scripts/build.mjs` | Būvē `dist/` — LV saknē, pārējās valodas `/en/`, `/ru/` … + sitemap.xml, hreflang |
-| `src/assets/js/chess-engine.js` | Šaha dzinējs: FIDE noteikumi, SAN/PGN, dators (alfa-beta). Tas pats fails pārbauda gājienus serverī |
-| `src/assets/js/chess.js` | Šaha galds: pret Vilku (4 līmeņi), divatā, tiešsaistē ar brāli |
-| `worker/src/index.js` | API: auth, forums, čati, SOS, brīdinājumi, palīdzības punkti, bars, šahs (`/api/chess/*`) |
-| `worker/schema.sql` | D1 tabulas |
+| `src/*.html` | Lapu veidnes ar `{{atslēga}}` tulkojumiem |
+| `src/assets/css/core.css` | Dizaina sistēma (krāsas, fonti, komponentes); moduļu stili atsevišķos failos |
+| `src/assets/js/common.js` | Kopējais klients `WB` (API, sesija, tiesības, dialogi, datumi, karte) |
+| `i18n/<modulis>/<valoda>.json` | Tulkojumi (core, events, ridehq, comms, people, commerce) |
+| `scripts/build.mjs` | Būvē `dist/` — LV saknē, citas valodas `/en/` … + sitemap, robots, hreflang |
+| `worker/src/index.js` | API ieeja: drošības galvenes, CSP ar nonce, CSRF, pāradresācijas (`/qr`), cron |
+| `worker/src/lib/` | `http.js` (validācija), `core.js` (sesijas, RBAC, audits, migrācijas), `crypto.js` (paroles, TOTP), `xlsx.js` |
+| `worker/src/modules/` | auth, admin, files, events, ridehq, comms, rhr, people, commerce, chess |
+| `brand/qr/` | QR kods (SVG, PNG, PDF, A6 kartīte) |
+| `docs/v2/` | Specifikācijas kartējums, izstrādes rokasgrāmata, Ride HQ datu avoti, videozvani, e-komercija, rezerves kopijas |
 
 ## Lokāli
 
 ```bash
 npm install
-npm run build              # → dist/
-npx wrangler d1 execute wolves --local --file worker/schema.sql
-npx wrangler dev           # http://localhost:8787  (API + lapa)
+bash scripts/dev.sh main 8787      # būvē un palaiž http://localhost:8787 (atsevišķa lokālā DB)
 ```
+Pirmais konts ar e-pastu `admin@wbmc.test` kļūst par administratoru (tikai lokāli). Datubāzes tabulas izveido Worker pats (`worker/src/migrations`, moduļu `migrations`).
 
-Bez Worker (`dist/index.html` atverot tieši) Riders Help Riders un bars strādā **demo režīmā** — dati tikai pārlūkā.
+## Izvietošana
 
-## Izvietošana uz Cloudflare (vienreiz)
+```bash
+bash ~/Desktop/"EDDIE WEBS"/CLIENTS/"WOLVES BROTHERHOOD MC"/website/scripts/deploy-demo.sh
+```
+Skripts: rīki → Cloudflare pieslēgšanās → D1 → **rezerves kopija** (`backups/`) → būve → izvietošana → migrācijas → pārbaude.
 
-1. Domēnam `wolvesbrotherhoodmc.com` jābūt Cloudflare kontā (nameserveri → Cloudflare).
-2. `npx wrangler login`
-3. `npx wrangler d1 create wolves` → ieliec `database_id` failā `wrangler.jsonc`
-4. `npm run db:init` — izveido tabulas
-5. `wrangler.jsonc` → `vars.ADMIN_EMAIL` = tavs e-pasts (šis konts pēc reģistrācijas kļūst par valdi/officer)
-6. `npm run deploy`
-7. Lapā **Riders Help Riders → Reģistrēties** ar ADMIN_EMAIL → "Izveidot biedra ielūgumu" → kodus izsniedz brāļiem.
+Vienreizēji iestatījumi Cloudflare (Worker → Settings → Variables and Secrets):
+- `ADMIN_EMAIL` — pirmā administratora e-pasts (tikai pirmajai reģistrācijai, pēc tam var atstāt tukšu). Nekur netiek rādīts publiski.
+- `MFA_KEY` (secret) — 32 baitu atslēga base64, ar ko šifrē MFA atslēgas datubāzē: `openssl rand -base64 32`.
+- Pēc izvēles: `SECURITY_WEBHOOK` (Slack/Discord/Telegram drošības paziņojumiem), `TURNSTILE_SECRET` + `TURNSTILE_SITEKEY` (botu aizsardzība).
+- Domēns `wolvesbrotherhoodmc.com` jāpievieno Cloudflare (nameserveri), tad `wrangler.jsonc` maršruti strādā un QR kods ved uz lapu.
 
-Turpmāk: rediģē `data.js` / tulkojumus → `npm run deploy` (labāk vairākas izmaiņas vienā reizē).
+## Drošība īsumā
 
-## Šaha galds
-
-- **Pret Vilku** — dators pārlūkā (Web Worker), līmeņi Prospekts ≈600 · Biedrs ≈1100 · Road Captain ≈1600 · Prezidents ≈2000; padoms, atsaukšana, pulkstenis.
-- **Divatā** — viens ekrāns, pēc izvēles ar pulksteni.
-- **Tiešsaistē** — jāienāk ar Brāļi online kontu. Izaicinājums ar laika kontroli (3+2 … 30+0 vai bez laika), saite brālim, skatītāji, neizšķirta piedāvājums, padošanās, revanšs. Serveris (Durable Object) pārbauda katru gājienu un pulksteni; rezultāts un **Elo reitings** (sāk ar 1200) glabājas D1 (`chess_games`, `chess_ratings`).
-
-## Kas jāaizpilda (`src/assets/js/data.js`)
-
-- `CLUB.founded` — kluba dibināšanas datums un gads (rādās kalendārā un hronikā)
-- `MEMBERS` — vārdi / iesaukas (vārda dienas automātiski parādās kalendārā)
-- `EVENTS`, `DIARY`, `HISTORY` — īstie ieraksti (izdzēs `sample: true`)
-- `DONATE.iban`, `bank`, `bic` vai `stripeLink` — tad ziedojumi rāda rekvizītus + SEPA QR kodu
-- `CLUB.socials`, `CLUB.email`
-- Galerijai: bildes uz `src/assets/img/`, ieraksti `GALLERY`
+HttpOnly + SameSite=Strict sesijas, CSRF galvene + Origin pārbaude, CSP ar nonce, HSTS, lomas un tiesības katrā API pieprasījumā servera pusē, obligāta MFA administratoriem un kluba vadībai, atkārtots MFA apstiprinājums administrācijas darbībām, pieteikšanās bloķēšana, jaunu ierīču notikumi, audita žurnāls, Security Center (tikai reāli dati). Sīkāk — `docs/v2/01-audits-un-plans.md`.
 
 ## Datu avoti (bez maksas)
 
-Open-Meteo (laikapstākļi), OSRM (maršruti), Photon/komoot (adrešu meklēšana), Overpass/OpenStreetMap (DUS, servisi, kafejnīcas, fotoradari), RainViewer (radars), CARTO (tumšā karte). Vārda dienas: Latvijas kalendārs (`vardadienas`, MIT).
+OpenStreetMap (karte, Overpass objekti), OSRM (maršruti), Photon (adreses), Open-Meteo (laikapstākļi), RainViewer (radars), EK Weekly Oil Bulletin (degvielas cenas, CC BY 4.0), SSB (Norvēģija). Sīkāk — `docs/v2/ridehq.md`.
