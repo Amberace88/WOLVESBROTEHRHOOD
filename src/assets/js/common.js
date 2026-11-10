@@ -310,12 +310,23 @@ W.paintAccount = me => {
   if (!acc) return;
   const active = me && me.status === "active";
   W.$$("[data-need]").forEach(el => { const n = el.dataset.need; el.hidden = !(active && (n === "member" || (n === "admin" && (me.role === "admin" || Object.keys(me.perms || {}).some(m => ["users", "roles", "invites", "audit", "security", "settings", "i18n"].includes(m) || /[ceda]/.test(me.perms[m] || "")))))); });
-  if (comms) comms.hidden = !active;
+  if (comms) { comms.hidden = !active; if (active) W.pollUnread(); }
   if (me) {
     acc.href = "profils.html";
     acc.innerHTML = `<span class="av">${W.esc((me.name || "?").trim()[0].toUpperCase())}</span><span class="account-label">${W.esc(me.status === "pending" ? W.t("acc.pending") : me.name)}</span>`;
     acc.setAttribute("aria-label", W.t("acc.profile"));
   }
+};
+/* nelasīto ziņu punkts galvenē (Saziņa): reizi minūtē, tikai kad cilne redzama */
+let _unreadT = null;
+W.setUnread = n => { const d = W.$("#commsDot"), b = W.$("#commsBtn"); if (d) d.hidden = !(n > 0); if (b) b.setAttribute("aria-label", n > 0 ? `${W.t("nav.comms")} (${n})` : W.t("nav.comms")); };
+W.pollUnread = () => {
+  if (_unreadT) return;
+  const tick = async () => {
+    if (document.visibilityState === "visible") { try { const j = await W.req("/comms/unread"); W.setUnread(j.total || 0); } catch (e) { if (e && (e.status === 401 || e.status === 403 || e.status === 404)) { clearInterval(_unreadT); return; } } }
+  };
+  tick(); _unreadT = setInterval(tick, 60000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") tick(); });
 };
 W.logout = async () => { try { await W.req("/auth/logout", { body: {} }); } catch (e) {} try { sessionStorage.clear(); } catch (e) {} location.href = W.base || "./"; };
 
