@@ -46,7 +46,7 @@ const relLang = (from, to, p) => `${from === "lv" ? "" : "../"}${langDir(to)}${p
 /* navigācija: secība pēc specifikācijas 1. sadaļas */
 const NAV = [
   ["klubs", "nav.club", 1], ["pasakumi", "nav.events", 1], ["karte", "nav.ridehq", 1], ["brali", "nav.brothers", 1], ["memorials", "nav.memorials", 1],
-  ["sazina", "nav.comms", 0, "member"], ["atbalsts", "nav.support", 0], ["merch", "nav.merch", 1], ["partneri", "nav.partners", 0]
+  ["sazina", "nav.comms", 2, "member"], ["atbalsts", "nav.support", 2], ["merch", "nav.merch", 1], ["partneri", "nav.partners", 2]
 ];
 const SUBNAV = [["sadarbiba", "nav.advertise"], ["spele", "nav.chess"], ["privatums", "nav.privacy"], ["admin", "nav.admin", "admin"]];
 
@@ -92,7 +92,8 @@ function nav(l, p) {
   const b = l === "lv" ? "" : "../";
   const href = pg => pg === "index" ? (l === "lv" ? "./" : "./") : pg + ".html";
   const cur = pg => pg === p ? ' aria-current="page"' : "";
-  const inline = NAV.filter(n => n[2]).map(([pg, k]) => `<li><a href="${href(pg)}"${cur(pg)}>${T(l, k)}</a></li>`).join("");
+  /* 1 = vienmēr rindā, 2 = rindā tikai platos ekrānos (≥1380 px), pārējos — izvēlnē */
+  const inline = NAV.filter(n => n[2]).map(([pg, k, w, need]) => `<li${w === 2 ? ' class="opt"' : ""}${need ? ` data-need="${need}" hidden` : ""}><a href="${href(pg)}"${cur(pg)}>${T(l, k)}</a></li>`).join("");
   const full = NAV.map(([pg, k, , need]) => `<li${need ? ` data-need="${need}" hidden` : ""}><a href="${href(pg)}"${cur(pg)}>${T(l, k)}</a></li>`).join("");
   const sub = SUBNAV.map(([pg, k, need]) => `<li${need ? ` data-need="${need}" hidden` : ""}><a href="${href(pg)}"${cur(pg)}>${T(l, k)}</a></li>`).join("");
   const langs = cls => LANGS.map(x => `<li><a href="${relLang(l, x, p)}" hreflang="${x}" lang="${x}" data-lang="${x}"${x === l ? ' aria-current="true"' : ""}><b>${x.toUpperCase()}</b>${LANG_NAMES[x]}</a></li>`).join("");

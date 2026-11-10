@@ -50,7 +50,7 @@ a.tile:hover{border-color:var(--line-2)}
 .adm-form{display:grid;gap:var(--s-4)}
 .reset-out{color:var(--bone)}
 @media (max-width:900px){
-  .adm-shell{grid-template-columns:1fr}
+  .adm-shell{grid-template-columns:minmax(0,1fr)}
   .adm-side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:var(--s-4)}
   .adm-side nav{display:none}
   .adm-select{display:block}
@@ -58,3 +58,5 @@ a.tile:hover{border-color:var(--line-2)}
   .adm-main{padding:var(--s-5) var(--s-4) var(--s-7)}
   .sc-grid{grid-template-columns:1fr}
 }
+/* tiesību tabula: pirmā kolonna paliek redzama, ritinot pa labi */
+.perm-table th:first-child,.perm-table th[scope=row]{position:sticky;left:0;background:var(--felt);z-index:1;box-shadow:1px 0 0 var(--line)}

@@ -1,7 +1,7 @@
 /* Autentifikācija: ielūgumi, pieteikšanās, MFA (TOTP + rezerves kodi), sesijas, ierīces */
 import { route, json, fail, now, uid, clip, email as vEmail, text, setCookie, cookies, parseJSON } from "../lib/http.js";
 import { createSession, sessionCookie, clearSessionCookie, pubUser, COOKIE, secEvent, MODULES } from "../lib/core.js";
-import { hashPassword, passwordPolicy, eqConst, sha, verifyTotp, newTotpSecret, recoveryCodes, normCode } from "../lib/crypto.js";
+import { hashPassword, passwordPolicy, eqConst, sha, verifyTotp, newTotpSecret, recoveryCodes, normCode, sealSecret, openSecret } from "../lib/crypto.js";
 
 const MFA_COOKIE = "wbmc_m";
 const LOCK_AFTER = 5, LOCK_MIN = 15;
@@ -127,7 +127,7 @@ export const routes = [
       const i = list.indexOf(h);
       if (i >= 0) { list.splice(i, 1); await env.DB.prepare("UPDATE users SET recovery = ? WHERE id = ?").bind(JSON.stringify(list), s.uid).run(); ok = true; await secEvent(env, ctx, "mfa_recovery_used", "HIGH", { left: list.length }, s.uid); }
     } else {
-      const ctr = await verifyTotp(s.mfa_secret, b.code, s.mfa_last || 0);
+      const ctr = await verifyTotp(await openSecret(env, s.mfa_secret), b.code, s.mfa_last || 0);
       if (ctr) { ok = true; await env.DB.prepare("UPDATE users SET mfa_last = ? WHERE id = ?").bind(ctr, s.uid).run(); }
     }
     if (!ok) { await failedLogin(ctx, { id: s.uid, fails: s.fails, locked_until: s.locked_until, role: s.role }, "mfa"); fail(401, "Invalid code", { code: "mfa_invalid" }); }
@@ -151,7 +151,7 @@ export const routes = [
     await ctx.limit("stepup:" + ctx.user.id, 6, 60);
     const u = await env.DB.prepare("SELECT mfa_secret, mfa_last, mfa_enabled FROM users WHERE id = ?").bind(ctx.user.id).first();
     if (!u.mfa_enabled) fail(400, "Two-factor authentication is not set up", { code: "mfa_setup" });
-    const ctr = await verifyTotp(u.mfa_secret, (await ctx.body()).code, u.mfa_last || 0);
+    const ctr = await verifyTotp(await openSecret(env, u.mfa_secret), (await ctx.body()).code, u.mfa_last || 0);
     if (!ctr) { await secEvent(env, ctx, "stepup_failed", "MEDIUM", {}); fail(401, "Invalid code", { code: "mfa_invalid" }); }
     await env.DB.batch([
       env.DB.prepare("UPDATE users SET mfa_last = ? WHERE id = ?").bind(ctr, ctx.user.id),
@@ -166,7 +166,7 @@ export const routes = [
     const u = await ctx.env.DB.prepare("SELECT mfa_enabled, email FROM users WHERE id = ?").bind(ctx.user.id).first();
     if (u.mfa_enabled) fail(400, "Two-factor authentication is already enabled", { code: "mfa_on" });
     const secret = newTotpSecret();
-    await ctx.env.DB.prepare("UPDATE users SET mfa_pending = ? WHERE id = ?").bind(secret, ctx.user.id).run();
+    await ctx.env.DB.prepare("UPDATE users SET mfa_pending = ? WHERE id = ?").bind(await sealSecret(ctx.env, secret), ctx.user.id).run();
     const label = encodeURIComponent(`WBMC:${u.email}`);
     return json({ secret, uri: `otpauth://totp/${label}?secret=${secret}&issuer=WBMC&algorithm=SHA1&digits=6&period=30` });
   }),
@@ -177,7 +177,7 @@ export const routes = [
     const u = await env.DB.prepare("SELECT mfa_pending, mfa_enabled FROM users WHERE id = ?").bind(ctx.user.id).first();
     if (u.mfa_enabled) fail(400, "Already enabled", { code: "mfa_on" });
     if (!u.mfa_pending) fail(400, "Start the setup first", { code: "mfa_nosetup" });
-    const ctr = await verifyTotp(u.mfa_pending, (await ctx.body()).code, 0);
+    const ctr = await verifyTotp(await openSecret(env, u.mfa_pending), (await ctx.body()).code, 0);
     if (!ctr) fail(401, "Invalid code — check the time on your phone", { code: "mfa_invalid" });
     const codes = recoveryCodes(10), hashes = await Promise.all(codes.map(c => sha(normCode(c))));
     await env.DB.batch([
@@ -193,7 +193,7 @@ export const routes = [
     if (!ctx.user) fail(401, "Login required", { code: "login" });
     const u = await env.DB.prepare("SELECT mfa_secret, mfa_last, mfa_enabled FROM users WHERE id = ?").bind(ctx.user.id).first();
     if (!u.mfa_enabled) fail(400, "Two-factor authentication is not set up", { code: "mfa_setup" });
-    const ctr = await verifyTotp(u.mfa_secret, (await ctx.body()).code, u.mfa_last || 0);
+    const ctr = await verifyTotp(await openSecret(env, u.mfa_secret), (await ctx.body()).code, u.mfa_last || 0);
     if (!ctr) fail(401, "Invalid code", { code: "mfa_invalid" });
     const codes = recoveryCodes(10), hashes = await Promise.all(codes.map(c => sha(normCode(c))));
     await env.DB.prepare("UPDATE users SET recovery = ?, mfa_last = ? WHERE id = ?").bind(JSON.stringify(hashes), ctr, ctx.user.id).run();
@@ -207,7 +207,7 @@ export const routes = [
     const b = await ctx.body();
     const u = await env.DB.prepare("SELECT mfa_secret, mfa_last, mfa_enabled FROM users WHERE id = ?").bind(ctx.user.id).first();
     if (!u.mfa_enabled) fail(400, "Two-factor authentication is not enabled");
-    const ctr = await verifyTotp(u.mfa_secret, b.code, u.mfa_last || 0);
+    const ctr = await verifyTotp(await openSecret(env, u.mfa_secret), b.code, u.mfa_last || 0);
     if (!ctr) fail(401, "Invalid code", { code: "mfa_invalid" });
     const id = uid();
     await env.DB.prepare("INSERT INTO mfa_requests (id, user_id, reason, status, created) VALUES (?, ?, ?, 'pending', ?)").bind(id, ctx.user.id, clip(b.reason, 300), now()).run();

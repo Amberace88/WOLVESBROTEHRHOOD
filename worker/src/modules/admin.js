@@ -246,7 +246,7 @@ export const routes = [
       logins: logins.results.map(ev), failures: fails.results.map(ev), newDevices: devices.results.map(ev), alerts: events.results.map(ev),
       topFailingIps: ips.results, sessions: sessions.results.map(s => ({ id: s.token_hash.slice(0, 16), name: s.name, role: s.role, created: s.created, lastSeen: s.last_seen, ip: s.ip, ua: s.ua, mfa: !!s.mfa_at })),
       backup: await getSetting(env, "last_backup", null),
-      webhook: !!env.SECURITY_WEBHOOK, turnstile: !!env.TURNSTILE_SECRET,
+      webhook: !!env.SECURITY_WEBHOOK, turnstile: !!env.TURNSTILE_SECRET, mfaKey: !!env.MFA_KEY,
       migrations: migr.results, ids: null, vulnerabilities: null
     });
   }),

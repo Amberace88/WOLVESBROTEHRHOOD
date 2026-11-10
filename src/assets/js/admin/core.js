@@ -206,6 +206,7 @@ A.register({ id: "security", title: "Security Center", order: 90, need: ["securi
       <section><h3 class="adm-sub">${esc(t("sc.status"))}</h3><ul class="rows sc-status">
         <li><span>${esc(t("sc.backup"))}</span><b>${s.backup ? esc(A.fmt(s.backup.at || s.backup)) : `<span class="badge warn">${esc(t("sc.noBackup"))}</span>`}</b></li>
         <li><span>${esc(t("sc.webhook"))}</span><b>${s.webhook ? `<span class="badge ok">${esc(t("sc.configured"))}</span>` : `<span class="badge warn">${esc(t("sc.notConfigured"))}</span>`}</b></li>
+        <li><span>${esc(t("sc.mfaKey"))}</span><b>${s.mfaKey ? `<span class="badge ok">${esc(t("sc.configured"))}</span>` : `<span class="badge warn">${esc(t("sc.notConfigured"))}</span>`}</b></li>
         <li><span>${esc(t("sc.bot"))}</span><b>${s.turnstile ? `<span class="badge ok">${esc(t("sc.configured"))}</span>` : `<span class="badge">${esc(t("sc.notConfigured"))}</span>`}</b></li>
         <li><span>${esc(t("sc.ids"))}</span><b><span class="badge">${esc(t("sc.notConnected"))}</span></b></li>
         <li><span>${esc(t("sc.vuln"))}</span><b><span class="badge">${esc(t("sc.notConnected"))}</span></b></li>

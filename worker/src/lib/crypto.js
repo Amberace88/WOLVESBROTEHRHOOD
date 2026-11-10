@@ -59,3 +59,28 @@ export function recoveryCodes(n = 10){
   return Array.from({ length: n }, () => { const b = crypto.getRandomValues(new Uint8Array(8)); let s = ""; for (let i = 0; i < 8; i++) { s += A[b[i] % A.length]; if (i === 3) s += "-"; } return s; });
 }
 export const normCode = s => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+/* ---- MFA atslēgu šifrēšana datubāzē (AES-256-GCM) ----
+   Ja Worker noslēpums MFA_KEY (base64, 32 baiti) ir iestatīts, jaunās TOTP atslēgas glabājas šifrētas: "enc1:<iv>:<ct>".
+   Bez MFA_KEY atslēgas glabājas kā līdz šim (atpakaļsaderīgi); Security Center to parāda. */
+const b64 = { enc: u => btoa(String.fromCharCode(...new Uint8Array(u))), dec: s => Uint8Array.from(atob(s), c => c.charCodeAt(0)) };
+let keyCache = null, keySrc = null;
+async function mfaKey(env){
+  if (!env.MFA_KEY) return null;
+  if (keySrc === env.MFA_KEY) return keyCache;
+  const raw = b64.dec(env.MFA_KEY);
+  if (raw.length !== 32) throw new Error("MFA_KEY must be 32 bytes (base64)");
+  keyCache = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["encrypt", "decrypt"]); keySrc = env.MFA_KEY;
+  return keyCache;
+}
+export async function sealSecret(env, s){
+  const k = await mfaKey(env); if (!k || !s) return s;
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  return `enc1:${b64.enc(iv)}:${b64.enc(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, enc.encode(s)))}`;
+}
+export async function openSecret(env, s){
+  if (!s || !String(s).startsWith("enc1:")) return s;
+  const k = await mfaKey(env); if (!k) throw new Error("MFA_KEY missing");
+  const [, iv, ct] = s.split(":");
+  return new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64.dec(iv) }, k, b64.dec(ct)));
+}
