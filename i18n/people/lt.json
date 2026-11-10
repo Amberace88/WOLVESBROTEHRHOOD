@@ -71,7 +71,7 @@
  "pa.showArchived": "Rodyti archyvuotus ({n})",
  "pa.account": "Susieta paskyra",
  "pa.noAccount": "— nesusieta —",
- "pa.accountHint": "Susiejimas leidžia broliams rašyti jam tiesiogiai (Klubo kanalas), o nariui matyti visą savo profilį.",
+ "pa.accountHint": "Susiejimas leidžia broliams rašyti jam tiesiogiai (Ryšys), o nariui matyti visą savo profilį.",
  "pa.accountNoPerm": "Susieti paskyrą gali rolė, turinti teisę „Paskyros: peržiūra“.",
  "pa.noProfiles": "Profilių dar nėra. Pridėk pirmąjį mygtuku „Pridėti brolį“.",
  "pa.rankManual": "Rangas ir statusas niekada nesikeičia automatiškai — tik šiuo rankiniu veiksmu, ir kiekvienas pakeitimas įrašomas į audito žurnalą (prieš / po).",
