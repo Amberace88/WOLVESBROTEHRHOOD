@@ -72,9 +72,9 @@
 /* partneri */
 .partner-strip{display:grid;gap:var(--s-5)}
 .logos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--s-3)}
-.logos a{display:grid;place-items:center;height:96px;border:1px solid var(--line);border-radius:var(--r);padding:var(--s-3);text-decoration:none;color:var(--silver);transition:border-color .2s}
+.logos a{display:grid;place-items:center;height:96px;border:1px solid var(--line);border-radius:var(--r);padding:var(--s-3);text-decoration:none;color:#000;background:var(--bone);transition:border-color .2s}
 .logos a:hover{border-color:var(--line-2)}
-.logos img{max-height:60px;width:auto;filter:grayscale(1) brightness(1.4);opacity:.85;transition:filter .2s,opacity .2s}
+.logos img{max-height:60px;max-width:100%;width:auto;object-fit:contain;filter:grayscale(1);opacity:.9;transition:filter .2s,opacity .2s}
 .logos a:hover img{filter:none;opacity:1}
 .partner-cta{display:flex;gap:var(--s-4);align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px dashed var(--line-2);border-radius:var(--r);padding:var(--s-5)}
 .partner-cta p{margin:0;color:var(--silver);max-width:60ch}

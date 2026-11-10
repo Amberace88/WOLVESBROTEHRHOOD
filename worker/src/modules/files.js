@@ -26,7 +26,7 @@ export const routes = [
   /* augšupielāde: neapstrādāts ķermenis; galvenes X-Context, X-Context-Id, X-Name */
   route("POST", "/files", async ctx => {
     const u = ctx.needUser();
-    await ctx.limit("upload:" + u.id, 30, 600);
+    await ctx.limit("upload:" + u.id, (await ctx.can("merch", "e")) ? 90 : 30, 600); /* 360° skatam vajag 24–36 kadrus */
     const ctxType = clip(ctx.req.headers.get("X-Context"), 20), ctxId = clip(ctx.req.headers.get("X-Context-Id"), 40) || null;
     const allow = UPLOAD[ctxType];
     if (!allow || !(await allow(ctx, ctxId))) fail(403, "Upload not allowed here", { code: "forbidden" });

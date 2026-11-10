@@ -279,3 +279,5 @@ html.js [data-reveal].rv-in{opacity:1;transform:none}
   html.js [data-reveal]{opacity:1;transform:none}
 }
 @media print{.nav,.drawer,footer.site,.toast,.lang-hint{display:none!important}body{background:#fff;color:#000}.page-head{padding-top:0}}
+
+.form label.check{display:flex}
