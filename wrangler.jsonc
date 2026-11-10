@@ -1,5 +1,5 @@
 {
-  // Wolves Brotherhood MC — viens Worker: statiskā lapa (dist/) + /api/*
+  // WBMC — viens Worker: statiskā lapa (dist/) + /api/*
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "wolvesbrotherhood",
   "main": "worker/src/index.js",
@@ -10,7 +10,10 @@
   ],
   "durable_objects": { "bindings": [ { "name": "ROOMS", "class_name": "Room" } ] },
   "migrations": [ { "tag": "v1", "new_sqlite_classes": ["Room"] } ],
-  "vars": { "ADMIN_EMAIL": "baropsedijs@gmail.com" },
+  // ADMIN_EMAIL: pirmā administratora e-pasts. Repozitorijā netiek glabāts — ieraksti savā lokālajā failā vai: npx wrangler secret put ADMIN_EMAIL
+  "vars": { "ADMIN_EMAIL": "" },
+  // ikdienas plānotais uzdevums (degvielas cenu atjaunošana u.c.)
+  "triggers": { "crons": ["17 6 * * *"] },
   "routes": [
     { "pattern": "wolvesbrotherhoodmc.com", "custom_domain": true },
     { "pattern": "www.wolvesbrotherhoodmc.com", "custom_domain": true }

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="{{@lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{meta.privatums.title}}</title>
+<meta name="description" content="{{meta.privatums.desc}}">
+{{@head}}
+
+</head>
+<body class="page-privatums">
+{{@nav}}
+<main id="main">
+<header class="page-head">
+  <div class="wrap">
+    <h1 class="rocker" data-rocker="{{privatums.rocker}}">{{privatums.title}}</h1>
+    <p class="lead">{{privatums.lead}}</p>
+  </div>
+</header>
+<div class="wrap narrow prose privacy">
+  <p class="muted">{{priv.updated}}</p>
+  <h2>{{priv.h.controller}}</h2><p>{{priv.controller}}</p>
+  <h2>{{priv.h.data}}</h2><p>{{priv.data}}</p>
+  <ul><li>{{priv.d.account}}</li><li>{{priv.d.security}}</li><li>{{priv.d.comms}}</li><li>{{priv.d.files}}</li><li>{{priv.d.location}}</li><li>{{priv.d.profiles}}</li><li>{{priv.d.local}}</li></ul>
+  <h2>{{priv.h.purpose}}</h2><p>{{priv.purpose}}</p>
+  <h2>{{priv.h.retention}}</h2><ul><li>{{priv.r.security}}</li><li>{{priv.r.sessions}}</li><li>{{priv.r.account}}</li><li>{{priv.r.location}}</li><li>{{priv.r.backups}}</li></ul>
+  <h2>{{priv.h.cookies}}</h2><p>{{priv.cookies}}</p>
+  <h2>{{priv.h.third}}</h2><p>{{priv.third}}</p>
+  <h2>{{priv.h.consent}}</h2><p>{{priv.consent}}</p>
+  <h2>{{priv.h.rights}}</h2><p>{{priv.rights}}</p>
+  <h2>{{priv.h.contact}}</h2><p>{{priv.contact}} <a href="mailto:wolvesmc@inbox.lv">wolvesmc@inbox.lv</a></p>
+</div>
+</main>
+{{@footer}}
+<script src="{{@base}}assets/js/common.js" defer></script>
+
+</body>
+</html>

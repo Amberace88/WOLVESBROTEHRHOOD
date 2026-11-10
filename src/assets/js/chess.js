@@ -420,7 +420,7 @@ function newGame(opt = {}){
   S.tc = opt.tc || S.tc;
   S.clk = { w: S.tc[0] * 60000, b: S.tc[0] * 60000, running: false, at: now(), elapsed: 0 };
   overEl.hidden = true; promoEl.hidden = true; clearSmoke();
-  if (location.hash.startsWith("#spele/g/")) history.replaceState(null, "", location.pathname + location.search + "#spele");
+  if (/^#(spele\/)?g\//.test(location.hash)) history.replaceState(null, "", location.pathname + location.search);
   buildSquares(); pieceEls.forEach(el => el.remove()); pieceEls = new Map();
   render(false); persist();
   if (S.mode === "ai" && S.myColor === "b") aiMove();
@@ -630,14 +630,8 @@ function onlineSetup(){
     <h4>${esc(t("chess.open"))}</h4>${gameList(open, "open")}`;
 }
 function loginForm(){
-  return `<p class="cb-note">${esc(t("chess.login"))}</p>
-    <form class="cb-login">
-      <label class="field"><span>${esc(t("chess.email"))}</span><input type="email" name="email" autocomplete="email" required></label>
-      <label class="field"><span>${esc(t("chess.pass"))}</span><input type="password" name="password" autocomplete="current-password" required minlength="8"></label>
-      <p class="cb-err" hidden></p>
-      <button class="btn">${esc(t("chess.signin"))}</button>
-      <a class="cb-reg" href="${WB.base}${WB.lang === "lv" ? "" : WB.lang + "/"}brali.html?auth=register&back=chess">${esc(t("chess.register"))} →</a>
-    </form>`;
+  const nxt = encodeURIComponent("spele.html");
+  return `<p class="cb-note">${esc(t("chess.login"))}</p><div class="btn-row"><a class="btn small" href="pieslegties.html?next=${nxt}">${esc(t("nav.login"))}</a><a class="btn ghost small" href="pieslegties.html?next=${nxt}#register">${esc(t("chess.register"))}</a></div>`;
 }
 playPane.addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
@@ -654,14 +648,6 @@ playPane.addEventListener("click", e => {
   if (d.cancelOpen) { cancelOpen(d.cancelOpen); return; }
 });
 playPane.addEventListener("change", e => { if (e.target.matches("[data-rated]")) S.rated = e.target.checked; });
-playPane.addEventListener("submit", async e => {
-  e.preventDefault();
-  const f = e.target, err = f.querySelector(".cb-err"), btn = f.querySelector("button");
-  btn.disabled = true; err.hidden = true;
-  try { await window.RHR.login(f.email.value.trim(), f.password.value); await loadLobby(); renderPlay(); bars(); }
-  catch (x) { err.textContent = x.message || "Error"; err.hidden = false; }
-  btn.disabled = false;
-});
 const scrollToBoard = () => { if (matchMedia("(max-width:980px)").matches) board.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); };
 
 /* ---- Klubs: reitings, notiekošās partijas ---- */
@@ -688,18 +674,12 @@ function renderClub(){
 clubPane.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.join) openGame(b.dataset.join); if (b.dataset.cancelOpen) cancelOpen(b.dataset.cancelOpen); });
 
 /* ---------------- tīkls ---------------- */
-const API = () => WB.api();
-const token = () => LS.get("wb-token", null);
-async function req(path, opt = {}){
-  const tok = token();
-  const r = await fetch(API() + path, { method: opt.body ? "POST" : opt.method || "GET", headers: { "Content-Type": "application/json", ...(tok ? { Authorization: "Bearer " + tok } : {}) }, body: opt.body ? JSON.stringify(opt.body) : undefined });
-  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || "HTTP " + r.status); return j;
-}
+const req = (path, opt) => WB.req(path, opt);
 let lobbyBusy = false, lobbyAt = 0;
 async function loadLobby(){
   if (!S.live || lobbyBusy) return;
   lobbyBusy = true;
-  try { S.lobby = await req("/chess/lobby"); S.me = S.lobby.me; lobbyAt = Date.now(); } catch (e) {}
+  try { S.lobby = await req("/chess/lobby"); S.me = S.lobby.members ? S.lobby.me : null; lobbyAt = Date.now(); } catch (e) {}
   lobbyBusy = false;
   if (S.tab === "club") renderClub();
   if (S.tab === "play" && S.setup === "online") renderPlay();
@@ -718,13 +698,13 @@ async function cancelOpen(id){
   if (S.on && S.on.id === id) { newGame({ mode: "ai" }); switchTab("play"); }
   loadLobby();
 }
-const shareLink = () => S.on ? `${location.origin}${location.pathname}#spele/g/${S.on.id}` : location.href;
+const shareLink = () => S.on ? `${location.origin}${location.pathname}#g/${S.on.id}` : location.href;
 function openGame(id){
   S.token++; S.busy = false; board.classList.remove("thinking");
   S.mode = "online"; S.on = { id, status: "connecting", tc: [0, 0] }; S.over = null; S.view = null; S.sel = null; S.targets = []; S.hint = null; S.game = new C.Game();
   S.clk = { w: 0, b: 0, running: false, at: now(), elapsed: 0 };
   overEl.hidden = true; clearSmoke();
-  history.replaceState(null, "", `${location.pathname}${location.search}#spele/g/${id}`);
+  history.replaceState(null, "", `${location.pathname}${location.search}#g/${id}`);
   net.connect(id);
   switchTab("game"); render(false); scrollToBoard();
 }
@@ -732,8 +712,8 @@ const net = {
   ws: null, id: null, closed: true, retry: 800, firstState: true, ping: null,
   connect(id){ this.close(); this.id = id; this.closed = false; this.firstState = true; this.open(); },
   open(){
-    const tok = token(), id = this.id;
-    const ws = this.ws = new WebSocket(WB.wsUrl(`/chess/games/${id}/ws`) + (tok ? `?token=${encodeURIComponent(tok)}` : ""));
+    const id = this.id;
+    const ws = this.ws = new WebSocket(WB.wsUrl(`/chess/games/${id}/ws`));
     ws.onopen = () => { this.retry = 800; root.classList.remove("cb-lost"); clearInterval(this.ping); this.ping = setInterval(() => this.send({ type: "ping", t: Date.now() }), 25000); };
     ws.onmessage = m => { let d; try { d = JSON.parse(m.data); } catch (e) { return; } if (id === this.id) onNet(d); };
     ws.onclose = () => { clearInterval(this.ping); if (this.closed || id !== this.id) return; root.classList.add("cb-lost"); setTimeout(() => { if (!this.closed && id === this.id) this.open(); }, this.retry = Math.min(this.retry * 1.8, 12000)); };
@@ -806,11 +786,10 @@ addEventListener("resize", () => { if (smoke) smoke.resize(); });
   // pēc atjaunošanas: ja dators gājienā — lai domā; ja pulkstenis — atsāk pēc nākamā gājiena
   if (!S.over && S.mode === "ai" && S.game.turn !== S.myColor) aiMove();
   if (!S.over && hasClock() && S.game.moves.length >= 2) { S.clk.running = true; S.clk.at = now(); }
-  const hashGame = () => { const m = location.hash.match(/^#spele\/g\/([\w]{6,32})$/); return m && m[1]; };
-  const R = window.RHR;
-  (R ? R.probe() : Promise.resolve(false)).then(async ok => {
+  const hashGame = () => { const m = location.hash.match(/^#(?:spele\/)?g\/([\w]{6,32})$/); return m && m[1]; };
+  WB.req("/health").then(() => true, () => false).then(async ok => {
     S.live = !!ok;
-    if (ok) { await loadLobby(); const id = hashGame(); if (id) { root.closest("section").scrollIntoView(); openGame(id); } }
+    if (ok) { await loadLobby(); const id = hashGame(); if (id) openGame(id); }
     if (S.tab === "play") renderPlay();
   });
   addEventListener("hashchange", () => { const id = hashGame(); if (id && S.live && (!S.on || S.on.id !== id)) openGame(id); });

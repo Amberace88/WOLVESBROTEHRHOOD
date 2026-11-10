@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="{{@lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{meta.klubs.title}}</title>
+<meta name="description" content="{{meta.klubs.desc}}">
+{{@head}}
+{{@css:leaflet,klubs}}
+</head>
+<body class="page-klubs">
+{{@nav}}
+<main id="main">
+<header class="page-head">
+  <div class="wrap">
+    <h1 class="rocker" data-rocker="{{klubs.rocker}}">{{klubs.title}}</h1>
+    <p class="lead">{{klubs.lead}}</p>
+    <nav class="tabs page-tabs" aria-label="{{klubs.title}}">
+      <a href="#hronika">{{chron.title}}</a><a href="#dienasgramata">{{diary.title}}</a><a href="#kalendars">{{cal.title}}</a><a href="#galerija">{{gal.title}}</a><a href="#pievienoties">{{klubs.contact}}</a>
+    </nav>
+  </div>
+</header>
+<!-- ŠODIEN -->
+<section id="sodien" class="cluster" aria-label="{{today.label}}">
+  <div class="wrap">
+    <div class="cluster-inner">
+      <div class="cell">
+        <h3>{{today.today}}</h3>
+        <div class="date-big" id="tDate">—<small></small></div>
+      </div>
+      <div class="cell">
+        <h3>{{today.nameday}}</h3>
+        <div class="names" id="tNames">—</div>
+        <div class="names-ext" id="tNamesExt"></div>
+      </div>
+      <div class="cell">
+        <h3>{{today.ride}}</h3>
+        <div class="gauge-wrap">
+          <svg class="gauge" viewBox="0 0 200 120" aria-hidden="true">
+            <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#E3120B"/><stop offset=".5" stop-color="#d6a23c"/><stop offset="1" stop-color="#ECE8DF"/></linearGradient></defs>
+            <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#2c2b29" stroke-width="14"/>
+            <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="url(#gg)" stroke-width="4"/>
+            <g stroke="#A3A098" stroke-width="2"><line x1="20" y1="100" x2="32" y2="100"/><line x1="43.4" y1="43.4" x2="51.9" y2="51.9"/><line x1="100" y1="20" x2="100" y2="32"/><line x1="156.6" y1="43.4" x2="148.1" y2="51.9"/><line x1="180" y1="100" x2="168" y2="100"/></g>
+            <g class="needle" id="needle"><line x1="100" y1="100" x2="100" y2="32" stroke="#ECE8DF" stroke-width="3" stroke-linecap="round"/><circle cx="100" cy="100" r="8" fill="#ECE8DF"/><circle cx="100" cy="100" r="3" fill="#000"/></g>
+          </svg>
+          <div><div class="gauge-val" id="tIdx">—</div><div class="gauge-txt" id="tIdxTxt">{{today.loading}}</div></div>
+        </div>
+        <div class="wx-row" id="tWx"></div>
+      </div>
+      <div class="cell next-day">
+        <h3>{{today.next}}</h3>
+        <div class="countdown" id="tNext">—</div>
+        <div class="what" id="tNextWhat"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHRONICLE -->
+<section class="section" id="hronika">
+  <div class="wrap">
+    <h2 class="sec-title">{{chron.title}}</h2>
+    <div class="chron">
+      <figure class="tintype" data-reveal="0">
+        <img src="{{@base}}assets/img/brotherhood.webp" alt="{{chron.photoAlt}}" width="1206" height="877" loading="lazy">
+        <figcaption>{{chron.caption}}</figcaption>
+      </figure>
+      <div>
+        <p class="lead">{{chron.lead}}</p>
+        <ol class="timeline" id="timeline"></ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIARY -->
+<section class="section" id="dienasgramata">
+  <div class="wrap">
+    <h2 class="sec-title">{{diary.title}}</h2>
+    <p class="sec-sub">{{diary.sub}}</p>
+    <div class="diary">
+      <div class="book-spread" id="book" data-reveal="0">
+        <article class="page left" id="pL"></article>
+        <article class="page right" id="pR"></article>
+      </div>
+      <div class="diary-ctrl">
+        <button class="icon-btn" id="prevPage" aria-label="{{a11y.prevPage}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="dots" id="dots" aria-hidden="true"></div>
+        <button class="icon-btn" id="nextPage" aria-label="{{a11y.nextPage}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALENDAR -->
+<section class="section" id="kalendars">
+  <div class="wrap">
+    <h2 class="sec-title">{{cal.title}}</h2>
+    <p class="sec-sub">{{cal.sub}}</p>
+    <div class="cal" data-reveal="0">
+      <div>
+        <div class="cal-head">
+          <h3 id="calTitle">—</h3>
+          <button class="icon-btn" id="calPrev" aria-label="{{a11y.prevMonth}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button class="btn ghost small" id="calToday">{{cal.today}}</button>
+          <button class="icon-btn" id="calNext" aria-label="{{a11y.nextMonth}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="legend">
+          <span><i class="m-valsts"></i>{{type.valsts}}</span><span><i class="m-atceres"></i>{{type.atceres}}</span><span><i class="m-tradicija"></i>{{type.tradicija}}</span><span><i class="m-moto"></i>{{type.moto}}</span><span><i class="m-klubs"></i>{{type.klubs}}</span>
+        </div>
+      </div>
+      <aside class="cal-side" aria-live="polite">
+        <div class="d" id="sDate">—</div>
+        <div class="muted" style="font-size:.95rem;margin-top:.4rem">{{cal.namedayLv}}</div>
+        <div class="names" id="sNames">—</div>
+        <div class="muted" id="sExt" style="font-size:.95rem"></div>
+        <ul id="sList"></ul>
+        <form class="search" id="nameSearch" role="search">
+          <label class="sr-only" for="nameQ">{{cal.searchLabel}}</label>
+          <input id="nameQ" placeholder="{{cal.searchPh}}" autocomplete="off">
+          <button class="btn small" type="submit">{{cal.searchBtn}}</button>
+        </form>
+        <div class="search-res" id="nameRes"></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="section" id="galerija">
+  <div class="wrap">
+    <h2 class="sec-title">{{gal.title}}</h2>
+    <div class="albums" id="albums"></div>
+    <div class="gallery" id="gallery"></div>
+  </div>
+</section>
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="{{gal.title}}">
+  <button class="icon-btn x" id="lbClose" aria-label="{{a11y.close}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <button class="icon-btn lb-nav prev" id="lbPrev" aria-label="{{a11y.prevPage}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <figure class="lb-fig"><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
+  <button class="icon-btn lb-nav next" id="lbNext" aria-label="{{a11y.nextPage}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+</div>
+
+<hr class="stitch">
+<!-- JOIN -->
+<section class="section" id="pievienoties">
+  <div class="wrap join">
+    <div data-reveal="0">
+      <h2 class="join-h">{{join.title}}</h2>
+      <p class="lead">{{join.lead}}</p>
+      <p class="muted">{{join.more}}</p>
+      <p><a href="mailto:wolvesmc@inbox.lv">wolvesmc@inbox.lv</a></p>
+    </div>
+    <form class="form" id="joinForm" data-reveal="2">
+      <div class="two">
+        <label>{{join.name}}<input name="name" required autocomplete="name"></label>
+        <label>{{join.phone}}<input name="phone" type="tel" autocomplete="tel"></label>
+      </div>
+      <label>{{join.email}}<input name="email" type="email" required autocomplete="email"></label>
+      <div class="two">
+        <label>{{join.topic}}<select name="topic"><option value="ride">{{join.t1}}</option><option value="collab">{{join.t2}}</option><option value="merch">{{join.t3}}</option><option value="other">{{join.t4}}</option></select></label>
+        <label>{{join.bike}}<input name="bike" placeholder="{{join.bikePh}}"></label>
+      </div>
+      <label>{{join.msg}}<textarea name="msg" rows="4"></textarea></label>
+      <button class="btn" type="submit">{{join.send}}</button>
+      <div class="form-ok" id="formOk" role="status">{{join.ok}}</div>
+    </form>
+  </div>
+</section>
+</main>
+{{@footer}}
+<script src="{{@base}}assets/vendor/leaflet/leaflet.js" defer></script>
+<script src="{{@base}}assets/js/data.js" defer></script>
+<script src="{{@base}}assets/js/namedays.js" defer></script>
+<script src="{{@base}}assets/js/common.js" defer></script>
+<script src="{{@base}}assets/js/klubs.js" defer></script>
+</body>
+</html>

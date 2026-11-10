@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="{{@lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{meta.admin.title}}</title>
+<meta name="description" content="{{meta.admin.desc}}">
+{{@head}}
+{{@css:admin}}
+</head>
+<body class="page-admin">
+{{@nav}}
+<main id="main" class="adm">
+  <div class="adm-shell" id="adm" hidden>
+    <aside class="adm-side" aria-label="{{adm.title}}">
+      <h1 class="adm-h">{{adm.title}}</h1>
+      <nav><ul id="admNav"></ul></nav>
+      <label class="adm-select"><span class="sr-only">{{adm.title}}</span><select id="admSelect"></select></label>
+    </aside>
+    <section class="adm-main" id="admMain" aria-live="polite"></section>
+  </div>
+  <div class="wrap" id="admGate"></div>
+</main>
+<script src="{{@base}}assets/vendor/qrcode.js" defer></script>
+<script src="{{@base}}assets/js/common.js" defer></script>
+<script src="{{@base}}assets/js/admin/core.js" defer></script>
+<script src="{{@base}}assets/js/admin/events.js" defer></script>
+<script src="{{@base}}assets/js/admin/ridehq.js" defer></script>
+<script src="{{@base}}assets/js/admin/comms.js" defer></script>
+<script src="{{@base}}assets/js/admin/people.js" defer></script>
+<script src="{{@base}}assets/js/admin/commerce.js" defer></script>
+</body>
+</html>

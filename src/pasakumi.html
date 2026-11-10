@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="{{@lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{meta.pasakumi.title}}</title>
+<meta name="description" content="{{meta.pasakumi.desc}}">
+{{@head}}
+{{@css:leaflet,pasakumi}}
+</head>
+<body class="page-pasakumi">
+{{@nav}}
+<main id="main">
+<header class="page-head">
+  <div class="wrap">
+    <h1 class="rocker" data-rocker="{{pasakumi.rocker}}">{{pasakumi.title}}</h1>
+    <p class="lead">{{pasakumi.lead}}</p>
+  </div>
+</header>
+<div class="wrap" id="app"></div>
+</main>
+{{@footer}}
+<script src="{{@base}}assets/js/common.js" defer></script>
+<script src="{{@base}}assets/vendor/leaflet/leaflet.js" defer></script>
+<script src="{{@base}}assets/js/eu-events.js" defer></script>
+<script src="{{@base}}assets/js/pasakumi.js" defer></script>
+</body>
+</html>

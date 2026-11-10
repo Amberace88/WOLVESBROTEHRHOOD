@@ -1,4 +1,4 @@
-/* WOLVES BROTHERHOOD MC — efekti: dūmu daļiņas (WB.Smoke), logo kustība, riepu sliedes */
+/* WBMC — efekti: dūmu daļiņas (WB.Smoke), logo kustība, riepu sliedes */
 (function(){
 const { $ } = WB;
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -41,22 +41,11 @@ const whenVisible = (el, on, off) => {
   new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? on() : off()), { threshold: .05 }).observe(el);
 };
 
-/* ---------- hero: patch tilt + ambient smoke ---------- */
+/* ---------- sākumlapa: viegli dūmi pie zemes (vienīgā fona kustība) ---------- */
 (function hero(){
-  const patch = $("#patch"), hero = $(".hero"); if (!patch) return;
-  patch.addEventListener("animationend", e => { if (e.animationName === "patchin") patch.classList.add("ready"); });
-  setTimeout(() => patch.classList.add("ready"), 3200);
-  if (!reduce && matchMedia("(pointer:fine)").matches) {
-    hero.addEventListener("pointermove", e => {
-      if (!patch.classList.contains("ready")) return;
-      const r = hero.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-      patch.classList.add("tilt"); patch.style.transform = `perspective(900px) rotateY(${x * 10}deg) rotateX(${-y * 8}deg)`;
-    });
-    hero.addEventListener("pointerleave", () => { patch.style.transform = ""; });
-  }
-  const cv = $("#heroSmoke"); if (!cv) return;
+  const hero = $(".hero"), cv = $("#heroSmoke"); if (!hero || !cv) return;
   const sm = new Smoke(cv);
-  sm.emitters.push(s => { if (Math.random() < .35) s.puff(Math.random() * s.w, s.h + 20, { vx: .15 + Math.random() * .25, vy: -(.15 + Math.random() * .35), s: 30 + Math.random() * 40, gs: .3, a: .22, max: 360 }); });
+  sm.emitters.push(s => { if (Math.random() < .3) s.puff(Math.random() * s.w, s.h + 20, { vx: .12 + Math.random() * .25, vy: -(.12 + Math.random() * .3), s: 30 + Math.random() * 40, gs: .3, a: .18, max: 260 + Math.random() * 180 }); });
   whenVisible(hero, () => sm.start(), () => sm.stop());
 })();
 

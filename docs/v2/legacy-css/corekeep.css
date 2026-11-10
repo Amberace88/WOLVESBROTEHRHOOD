@@ -1,0 +1,64 @@
+/* WBMC — Kopīgie palīgi no iepriekšējās versijas */
+/* reveal (only one: sections' rockers draw in) */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .patch,.hero-copy{opacity:1!important;filter:none!important;transform:none!important}
+  body::after{animation:none}
+}
+
+/* =========================================================
+   Valodas, palīgi
+   ========================================================= */
+.skip{position:absolute;left:-9999px;top:8px;z-index:999;background:var(--bone);color:#000;padding:.5rem 1rem;border-radius:3px}
+.skip:focus{left:8px}
+.lang{position:relative;margin-left:var(--s-3)}
+.lang-btn{display:flex;align-items:center;gap:.35rem;background:transparent;border:1px solid var(--steel);border-radius:3px;height:40px;padding:0 .6rem;cursor:pointer;font-weight:700;font-size:.95rem}
+.lang-btn:hover{border-color:var(--bone)}
+.lang-menu{position:absolute;right:0;top:calc(100% + 6px);list-style:none;margin:0;padding:6px;background:#0d0d0c;border:1px solid var(--steel);border-radius:4px;min-width:190px;display:none;z-index:120;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.lang.open .lang-menu{display:block;animation:fadein .15s}
+.lang-menu a{display:flex;gap:.6rem;padding:.5rem .6rem;text-decoration:none;border-radius:3px;color:var(--silver)}
+.lang-menu a b{color:var(--bone);width:1.8rem}
+.lang-menu a:hover,.lang-menu a[aria-current]{background:#1d1c1a;color:var(--bone)}
+.lang-hint{position:fixed;z-index:150;left:50%;bottom:16px;transform:translateX(-50%);display:flex;gap:.6rem;align-items:center;background:#0d0d0c;border:1px solid var(--steel);border-radius:6px;padding:.5rem .6rem .5rem 1rem;box-shadow:0 20px 50px rgba(0,0,0,.7);animation:fadein .4s}
+.lang-hint .icon-btn{width:34px;height:34px}
+@media (max-width:1080px){.lang{margin-left:auto}.nav .burger{margin-left:var(--s-2)}}
+@media (max-width:520px){.nav-cta{display:none}}
+.join-h{font-size:clamp(2.6rem,5vw,4.2rem);margin-bottom:var(--s-4)}
+.ev-actions{display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap}
+.live{display:inline-flex;align-items:center;gap:.4rem;color:#fff;background:var(--eye);font-weight:700;font-size:.85rem;padding:.1rem .5rem;border-radius:2px;letter-spacing:.04em}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:#fff;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.2}}
+.small{font-size:.92rem}
+.btn.danger{background:var(--eye);border-color:var(--eye);color:#fff}
+.link-btn{background:none;border:0;color:var(--silver);cursor:pointer;padding:.2rem 0;text-align:left;font-weight:600}
+.link-btn:hover{color:var(--bone)}
+.copy{background:none;border:1px solid var(--steel);border-radius:3px;color:var(--bone);padding:.2rem .5rem;cursor:pointer;font-size:.85rem}
+
+/* =========================================================
+   Pieslīpēšana v2 — ritms, mikrointerakcijas, parādīšanās
+   ========================================================= */
+html.js [data-reveal]{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease) var(--rv-d,0ms),transform .8s var(--ease) var(--rv-d,0ms)}
+html.js [data-reveal].rv-in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){html.js [data-reveal]{opacity:1;transform:none;transition:none}}
+
+/* pogas: vienots fokuss un spiediens */
+.btn:active{transform:translateY(1px) scale(.98)}
+.btn.ghost{border-color:rgba(236,232,223,.55)}
+.btn.ghost:hover{border-color:var(--bone)}
+.icon-btn{transition:border-color .2s,background .2s}
+.icon-btn:hover{background:#151514}
+.icon-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ikonas */
+.ico-svg{flex:none;display:inline-block;vertical-align:-3px}
+.btn .ico-svg{width:16px;height:16px}
+
+/* formas */
+.field > span{display:block}
+.form > .btn{justify-content:center}
+.donate-card .field{gap:.4rem}
+
+/* tumšā karte no OSM flīzēm */
+.tiles-dark{filter:grayscale(1) invert(1) brightness(1.25) contrast(1.05)}
+.leaflet-container{background:#1b1b1a!important}
+

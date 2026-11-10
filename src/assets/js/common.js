@@ -1,4 +1,4 @@
-/* WOLVES BROTHERHOOD MC — kopīgās funkcijas visām lapām */
+/* WBMC — kopīgās funkcijas visām lapām */
 (function(){
 const W = window.WB = {};
 const LANG = W.lang = window.LANG || "lv";
@@ -117,10 +117,10 @@ W.specialDays = function(y){
   if (C.founded && C.founded.date) { const [m,d] = C.founded.date.split("-").map(Number); add(D2(m,d), H("clubday") + (C.founded.year ? ` — ${y - C.founded.year}.` : ""), "klubs"); }
   if (C.legal && C.legal.registered) { const r = W.parseISO(C.legal.registered); if (y > r.getFullYear()) add(D2(r.getMonth()+1, r.getDate()), W.t("hol.regday", { n: y - r.getFullYear() }), "klubs"); }
   (window.EVENTS || []).forEach(ev => { if (ev.date.startsWith(String(y))) add(W.parseISO(ev.date), W.L(ev.title), "klubs", W.L(ev.place)); });
-  (window.MEMBERS || []).forEach(m => { if (!m.name) return; for (const r of W.findName(m.name)) if (!r.ext) { const [mm,dd] = r.k.split("-").map(Number); add(D2(mm,dd), W.t("hol.membername", { who: m.road || m.name }), "klubs"); } });
   return cache[y] = L;
 };
 W.typeLabel = t => W.t("type." + t);
+W.clearSpecial = () => { for (const k in cache) delete cache[k]; };
 W.nextSpecial = from => {
   const t0 = W.day0(from);
   return [...W.specialDays(t0.getFullYear()), ...W.specialDays(t0.getFullYear()+1)].filter(x => x.date > t0 && x.type !== "tradicija").sort((a,b) => a.date - b.date)[0];
@@ -201,50 +201,193 @@ W.initReveal = (root = document) => {
 };
 W.cap = s => s ? s.charAt(0).toLocaleUpperCase(LOCALE) + s.slice(1) : s;
 W.initRockers = () => {
-  const els = W.$$("[data-rocker]"); els.forEach(W.rocker);
+  const els = W.$$("[data-rocker]").filter(e => !e.dataset.rk); els.forEach(e => { e.dataset.rk = "1"; W.rocker(e); });
   if (!("IntersectionObserver" in window)) return els.forEach(e => e.classList.add("in"));
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .4 });
   els.forEach(el => io.observe(el));
 };
 
-/* ---------- nav + language menu ---------- */
+/* ---------- galvene: valodas izvēle, ☰ izvēlne, konta stāvoklis ---------- */
 W.initNav = () => {
-  const nav = W.$("#nav"); if (!nav) return;
-  const burger = W.$("#burger");
+  const nav = W.$("#nav"); if (!nav || nav.dataset.init) return; nav.dataset.init = "1";
   const bar = W.$("#navProgress");
   const onScroll = () => {
-    nav.classList.toggle("solid", scrollY > 40 || nav.classList.contains("open") || document.body.classList.contains("app"));
-    if (bar) { const h = document.documentElement.scrollHeight - innerHeight; bar.style.transform = `scaleX(${h > 0 ? Math.min(1, scrollY / h) : 0})`; }
+    nav.classList.toggle("scrolled", scrollY > 8);
+    if (bar) { const h = document.documentElement.scrollHeight - innerHeight; bar.style.setProperty("--p", (h > 0 ? Math.min(100, scrollY / h * 100) : 0) + "%"); }
   };
   addEventListener("scroll", onScroll, { passive: true }); onScroll();
-  burger && burger.addEventListener("click", () => { const o = nav.classList.toggle("open"); burger.setAttribute("aria-expanded", o); onScroll(); });
-  W.$$(".nav-links a").forEach(a => a.addEventListener("click", () => { nav.classList.remove("open"); burger && burger.setAttribute("aria-expanded", false); }));
+  // valodas izvēle saglabājas nākamajām sesijām (2. sadaļa)
+  W.$$("a[data-lang]").forEach(a => a.addEventListener("click", () => { try { localStorage.setItem("wb-lang", a.dataset.lang); } catch (e) {} }));
   const lb = W.$("#langBtn"), lm = W.$("#lang");
   if (lb) {
-    lb.addEventListener("click", e => { e.stopPropagation(); const o = lm.classList.toggle("open"); lb.setAttribute("aria-expanded", o); });
-    document.addEventListener("click", () => { lm.classList.remove("open"); lb.setAttribute("aria-expanded", false); });
-    addEventListener("keydown", e => { if (e.key === "Escape") { lm.classList.remove("open"); lb.setAttribute("aria-expanded", false); } });
-    W.$$("#langMenu a").forEach(a => a.addEventListener("click", () => { try { localStorage.setItem("wb-lang", a.hreflang); } catch(e) {} }));
+    const close = () => { lm.classList.remove("open"); lb.setAttribute("aria-expanded", "false"); };
+    lb.addEventListener("click", e => { e.stopPropagation(); const o = lm.classList.toggle("open"); lb.setAttribute("aria-expanded", o); if (o) { const c = W.$("#langMenu [aria-current]") || W.$("#langMenu a"); c && c.focus(); } });
+    document.addEventListener("click", e => { if (!lm.contains(e.target)) close(); });
+    addEventListener("keydown", e => { if (e.key === "Escape" && lm.classList.contains("open")) { close(); lb.focus(); } });
   }
-  const links = W.$$('.nav-links a[href^="#"]');
-  const secs = links.map(a => W.$(a.getAttribute("href"))).filter(Boolean);
-  if ("IntersectionObserver" in window && secs.length) {
-    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + e.target.id)); }), { rootMargin: "-45% 0px -50% 0px" });
-    secs.forEach(s => io.observe(s));
+  // ☰ izvēlne
+  const dr = W.$("#drawer"), mb = W.$("#menuBtn");
+  if (dr && mb) {
+    let last = null;
+    const open = () => { last = document.activeElement; dr.classList.add("open"); document.body.classList.add("locked"); mb.setAttribute("aria-expanded", "true"); requestAnimationFrame(() => { dr.classList.add("on"); const f = W.$(".drawer-nav a", dr); f && f.focus(); }); };
+    const shut = () => { dr.classList.remove("on"); mb.setAttribute("aria-expanded", "false"); document.body.classList.remove("locked"); setTimeout(() => dr.classList.remove("open"), 320); last && last.focus && last.focus(); };
+    mb.addEventListener("click", open);
+    W.$$("[data-close]", dr).forEach(x => x.addEventListener("click", shut));
+    dr.addEventListener("keydown", e => {
+      if (e.key === "Escape") return shut();
+      if (e.key !== "Tab") return;
+      const f = W.$$("a,button", dr).filter(x => x.offsetParent !== null); if (!f.length) return;
+      if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+    });
   }
-  // pirmā apmeklējuma valodas ieteikums (tikai saknē, bez piespiedu pārvirzes)
+  // pirmā apmeklējuma ieteikums pēc pārlūka valodas — bez piespiedu pārvirzes, bez ģeolokācijas
   try {
-    if (LANG === "lv" && !localStorage.getItem("wb-lang") && !document.body.classList.contains("app")) {
-      const pref = (navigator.languages || [navigator.language || ""]).map(x => x.slice(0,2).toLowerCase()).map(x => x === "nb" || x === "nn" ? "no" : x)[0];
-      if (pref && pref !== "lv" && ["en","ru","de","lt","et","no","fr"].includes(pref)) {
-        const a = W.$(`#langMenu a[hreflang="${pref}"]`);
-        if (a) { const bar = document.createElement("div"); bar.className = "lang-hint";
-          bar.innerHTML = `<span>${W.esc(a.textContent.trim().slice(3))}?</span><a class="btn small" href="${a.getAttribute("href")}">${pref.toUpperCase()}</a><button class="icon-btn" aria-label="×">×</button>`;
-          bar.querySelector("button").onclick = () => { bar.remove(); try { localStorage.setItem("wb-lang", "lv"); } catch(e) {} };
-          document.body.appendChild(bar); }
+    if (!localStorage.getItem("wb-lang") && !document.body.classList.contains("app")) {
+      const pref = (navigator.languages || [navigator.language || ""]).map(x => x.slice(0, 2).toLowerCase()).map(x => x === "nb" || x === "nn" ? "no" : x)[0];
+      if (pref && pref !== LANG && ["lv", "en", "ru", "de", "lt", "et", "no", "fr"].includes(pref)) {
+        const a = W.$(`#langMenu a[data-lang="${pref}"]`);
+        if (a) {
+          const hint = document.createElement("div"); hint.className = "lang-hint"; hint.setAttribute("role", "status");
+          hint.innerHTML = `<span lang="${pref}">${W.esc(a.textContent.trim().slice(2))}?</span><a class="btn small" href="${a.getAttribute("href")}" data-lang="${pref}">${pref.toUpperCase()}</a><button class="icon-btn" aria-label="${W.esc(W.t("a11y.close"))}">${W.icon("close")}</button>`;
+          hint.querySelector("a").addEventListener("click", () => { try { localStorage.setItem("wb-lang", pref); } catch (e) {} });
+          hint.querySelector("button").onclick = () => { hint.remove(); try { localStorage.setItem("wb-lang", LANG); } catch (e) {} };
+          document.body.appendChild(hint);
+        }
       }
     }
-  } catch(e) {}
+  } catch (e) {}
+  W.session().then(W.paintAccount);
+  W.applyOverrides();
+};
+
+/* ---------- API klients (HttpOnly sesijas sīkdatne + CSRF galvene) ---------- */
+W.api = () => "/api";
+W.wsUrl = path => (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/api" + path;
+W.ApiError = class extends Error { constructor(status, body){ super((body && body.error) || "HTTP " + status); this.status = status; this.code = body && body.code; this.body = body; } };
+W.req = async (path, opt = {}) => {
+  const o = { method: opt.method || (opt.body !== undefined ? "POST" : "GET"), headers: { "X-WBMC": "1" }, credentials: "same-origin" };
+  if (opt.body !== undefined) { o.headers["Content-Type"] = "application/json"; o.body = JSON.stringify(opt.body); }
+  let r;
+  try { r = await fetch("/api" + path, o); } catch (e) { throw new W.ApiError(0, { error: W.t("api.offline"), code: "offline" }); }
+  if (opt.raw) return r;
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const err = new W.ApiError(r.status, j);
+    // administrācijas darbībām vajag svaigu MFA kodu → jautājam un atkārtojam vienreiz
+    if (err.code === "mfa_stepup" && !opt._retry) { if (await W.stepUp()) return W.req(path, { ...opt, _retry: true }); }
+    throw err;
+  }
+  return j;
+};
+W.upload = async (file, context, contextId) => {
+  const r = await fetch("/api/files", { method: "POST", credentials: "same-origin", headers: { "X-WBMC": "1", "X-Context": context, "X-Context-Id": contextId || "", "X-Name": encodeURIComponent(file.name || "file") }, body: file });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new W.ApiError(r.status, j);
+  return j;
+};
+/* attēlu saspiešana pirms augšupielādes (≤ 1600 px, JPEG) */
+W.shrinkImage = (file, max = 1600, q = .82) => new Promise((res, rej) => {
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return rej(new Error(W.t("api.badtype")));
+  const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => {
+    const k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement("canvas");
+    c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+    c.toBlob(b => b ? res(new File([b], (file.name || "image").replace(/\.\w+$/, "") + ".jpg", { type: "image/jpeg" })) : rej(new Error("image")), "image/jpeg", q);
+  };
+  img.onerror = () => rej(new Error(W.t("api.badtype")));
+  img.src = url;
+});
+let _sess = null;
+W.session = (force) => {
+  if (_sess && !force) return _sess;
+  return _sess = W.req("/me").then(j => (W.me = j.user ? { ...j.user, perms: j.perms || {}, stepupFresh: j.stepupFresh } : null)).catch(() => (W.me = null));
+};
+W.can = (module, action = "v") => !!(W.me && W.me.status === "active" && (W.me.role === "admin" || (W.me.perms[module] || "").includes(action)));
+W.paintAccount = me => {
+  const acc = W.$("#accountBtn"), comms = W.$("#commsBtn");
+  if (!acc) return;
+  const active = me && me.status === "active";
+  W.$$("[data-need]").forEach(el => { const n = el.dataset.need; el.hidden = !(active && (n === "member" || (n === "admin" && (me.role === "admin" || Object.keys(me.perms || {}).some(m => ["users", "roles", "invites", "audit", "security", "settings", "i18n"].includes(m) || /[ceda]/.test(me.perms[m] || "")))))); });
+  if (comms) comms.hidden = !active;
+  if (me) {
+    acc.href = "profils.html";
+    acc.innerHTML = `<span class="av">${W.esc((me.name || "?").trim()[0].toUpperCase())}</span><span class="account-label">${W.esc(me.status === "pending" ? W.t("acc.pending") : me.name)}</span>`;
+    acc.setAttribute("aria-label", W.t("acc.profile"));
+  }
+};
+W.logout = async () => { try { await W.req("/auth/logout", { body: {} }); } catch (e) {} try { sessionStorage.clear(); } catch (e) {} location.href = W.base || "./"; };
+
+/* ---------- paziņojumi, dialogi ---------- */
+let toastEl;
+W.toast = (msg, bad) => {
+  if (!toastEl) { toastEl = document.createElement("div"); toastEl.className = "toast"; toastEl.setAttribute("role", "status"); toastEl.setAttribute("aria-live", "polite"); document.body.appendChild(toastEl); }
+  toastEl.textContent = msg; toastEl.classList.toggle("bad", !!bad); toastEl.classList.add("show");
+  clearTimeout(toastEl._t); toastEl._t = setTimeout(() => toastEl.classList.remove("show"), bad ? 4200 : 2600);
+};
+W.errMsg = e => (e && e.code && W.t("err." + e.code) !== "err." + e.code ? W.t("err." + e.code) : (e && e.message) || W.t("err.generic"));
+/* modālais dialogs: W.modal({ title, body (HTML), actions:[{label, value, primary, danger}] }) → Promise<value|null> */
+W.modal = ({ title, body, actions = [], onOpen, wide }) => new Promise(resolve => {
+  const d = document.createElement("dialog"); d.className = "modal"; if (wide) d.style.width = "min(820px, calc(100% - 24px))";
+  d.innerHTML = `<form method="dialog"><div class="modal-head"><h2>${W.esc(title)}</h2><button class="icon-btn" value="" aria-label="${W.esc(W.t("a11y.close"))}">${W.icon("close")}</button></div><div class="modal-body">${body || ""}</div>${actions.length ? `<div class="modal-foot">${actions.map((a, i) => `<button class="btn small ${a.primary ? "" : a.danger ? "danger" : "ghost"}" value="${W.esc(a.value ?? i)}">${W.esc(a.label)}</button>`).join("")}</div>` : ""}</form>`;
+  document.body.appendChild(d);
+  d.addEventListener("close", () => { const v = d.returnValue; W.lastModalData = Object.fromEntries(new FormData(d.querySelector("form"))); d.remove(); resolve(v === "" ? null : v); });
+  d.showModal(); onOpen && onOpen(d);
+});
+/* forma dialogā: atgriež lauku vērtības vai null */
+W.prompt = (title, body, okLabel) => W.modal({ title, body: `<div class="form">${body}</div>`, actions: [{ label: W.t("btn.cancel"), value: "" }, { label: okLabel || W.t("btn.save"), value: "ok", primary: true }],
+  onOpen: d => { const f = d.querySelector("input,select,textarea"); f && f.focus(); } }).then(v => v === "ok" ? W.lastModalData : null);
+W.confirm = (title, text, label, danger = true) => W.modal({ title, body: `<p>${W.esc(text)}</p>`, actions: [{ label: W.t("btn.cancel"), value: "" }, { label, value: "ok", danger, primary: !danger }] }).then(v => v === "ok");
+/* svaigs MFA apstiprinājums administrācijas darbībām */
+W.stepUp = () => new Promise(resolve => {
+  W.modal({ title: W.t("mfa.stepupTitle"), body: `<p class="muted">${W.esc(W.t("mfa.stepupText"))}</p><label class="field"><span>${W.esc(W.t("mfa.code"))}</span><input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" required></label><p class="form-err" id="suErr"></p>`,
+    actions: [{ label: W.t("btn.cancel"), value: "" }, { label: W.t("mfa.confirm"), value: "ok", primary: true }],
+    onOpen: d => {
+      const f = d.querySelector("form"), inp = d.querySelector("input[name=code]"); inp.focus();
+      f.addEventListener("submit", async e => {
+        if (e.submitter && e.submitter.value !== "ok") return;
+        e.preventDefault();
+        try { await W.req("/auth/stepup", { body: { code: inp.value }, _retry: true }); d.close("ok"); resolve(true); }
+        catch (x) { d.querySelector("#suErr").textContent = W.errMsg(x); inp.select(); }
+      });
+    } }).then(v => { if (v !== "ok") resolve(false); });
+});
+/* biedru zonas vārti: atgriež lietotāju vai parāda paziņojumu elementā */
+W.gate = async (el, { module, action = "v" } = {}) => {
+  const me = await W.session();
+  const box = (h, p, btns) => { el.innerHTML = `<div class="gate"><h2>${W.esc(h)}</h2><p>${W.esc(p)}</p><div class="btn-row">${btns}</div></div>`; return null; };
+  if (!me) return box(W.t("gate.loginTitle"), W.t("gate.loginText"), `<a class="btn" href="pieslegties.html?next=${encodeURIComponent(location.pathname.split("/").pop() + location.search + location.hash)}">${W.esc(W.t("nav.login"))}</a>`);
+  if (me.status === "pending") return box(W.t("gate.pendingTitle"), W.t("gate.pendingText"), `<a class="btn ghost" href="profils.html">${W.esc(W.t("acc.profile"))}</a>`);
+  if (me.status !== "active") return box(W.t("gate.inactiveTitle"), W.t("gate.inactiveText"), "");
+  if (module && !W.can(module, action)) return box(W.t("gate.noAccessTitle"), W.t("gate.noAccessText"), `<a class="btn ghost" href="./">${W.esc(W.t("nav.home"))}</a>`);
+  return me;
+};
+
+/* ---------- administratora tulkojumu pārrakstīšana (izpildlaikā) ---------- */
+W.applyOverrides = () => {
+  const key = "wb-i18n-" + LANG;
+  const apply = map => {
+    if (!map || !Object.keys(map).length) return;
+    Object.assign(D, map);
+    const it = document.createNodeIterator(document.body, NodeFilter.SHOW_COMMENT);
+    let c; const marks = [];
+    while ((c = it.nextNode())) if (c.data.startsWith("t:")) marks.push(c);
+    for (const m of marks) {
+      const k = m.data.slice(2); if (!(k in map)) continue;
+      const nodes = []; let n = m.nextSibling;
+      while (n && !(n.nodeType === 8 && n.data === "/t")) { nodes.push(n); n = n.nextSibling; }
+      nodes.forEach(x => x.remove());
+      const span = document.createElement("template");
+      span.innerHTML = W.esc(map[k]).replace(/&lt;(\/?)(b|i|br)&gt;/g, "<$1$2>");
+      m.after(span.content);
+    }
+  };
+  try { apply(JSON.parse(localStorage.getItem(key) || "null")); } catch (e) {}
+  fetch("/api/i18n/" + LANG, { credentials: "same-origin" }).then(r => r.ok ? r.json() : null).then(map => {
+    if (!map) return;
+    try { const prev = localStorage.getItem(key); localStorage.setItem(key, JSON.stringify(map)); if (prev !== JSON.stringify(map)) apply(map); } catch (e) { apply(map); }
+  }).catch(() => {});
 };
 
 /* ---------- maps (shared) ---------- */
@@ -260,10 +403,8 @@ W.osrm = async pts => {
   const j = await r.json(); if (j.code !== "Ok") throw new Error("route");
   return j.routes[0];
 };
-W.api = () => ((window.CLUB && CLUB.api) || "").replace(/\/$/, "");
-W.wsUrl = path => { const a = W.api(); return (a.startsWith("/") ? (location.protocol === "https:" ? "wss://" : "ws://") + location.host + a : a.replace(/^http/, "ws")) + path; };
 W.hav = (a, b) => { const R = 6371, t = x => x * Math.PI / 180, dLa = t(b[0]-a[0]), dLo = t(b[1]-a[1]);
   const h = Math.sin(dLa/2)**2 + Math.cos(t(a[0]))*Math.cos(t(b[0]))*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); };
 
-document.addEventListener("DOMContentLoaded", () => { const y = W.$("#yr"); if (y) y.textContent = new Date().getFullYear(); });
+document.addEventListener("DOMContentLoaded", () => { W.initNav(); W.initRockers(); W.initReveal(); });
 })();

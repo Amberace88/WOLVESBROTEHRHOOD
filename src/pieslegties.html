@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="{{@lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{meta.pieslegties.title}}</title>
+<meta name="description" content="{{meta.pieslegties.desc}}">
+{{@head}}
+{{@css:account}}
+</head>
+<body class="page-auth">
+{{@nav}}
+<main id="main" class="auth-main">
+<div class="wrap narrow auth-wrap">
+  <header class="auth-head">
+    <img src="{{@base}}assets/img/logo-600.png" alt="" width="96" height="96">
+    <h1>{{auth.title}}</h1>
+    <p class="muted">{{auth.lead}}</p>
+  </header>
+  <div class="tabs" role="tablist" aria-label="{{auth.title}}">
+    <button role="tab" aria-selected="true" data-tab="login" id="tab-login" aria-controls="p-login">{{auth.login}}</button>
+    <button role="tab" aria-selected="false" data-tab="register" id="tab-register" aria-controls="p-register">{{auth.register}}</button>
+    <button role="tab" aria-selected="false" data-tab="reset" id="tab-reset" aria-controls="p-reset">{{auth.reset}}</button>
+  </div>
+  <section class="auth-pane" id="p-login" role="tabpanel" aria-labelledby="tab-login">
+    <form class="form" id="loginForm" novalidate>
+      <label class="field"><span>{{auth.email}}</span><input type="email" name="email" autocomplete="username" required></label>
+      <label class="field"><span>{{auth.password}}</span><input type="password" name="password" autocomplete="current-password" required></label>
+      <p class="form-err" role="alert"></p>
+      <button class="btn">{{auth.loginBtn}}</button>
+    </form>
+    <form class="form" id="mfaForm" hidden novalidate>
+      <p>{{auth.mfaText}}</p>
+      <label class="field"><span>{{mfa.code}}</span><input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required></label>
+      <details class="recovery"><summary>{{auth.useRecovery}}</summary><label class="field"><span>{{auth.recoveryCode}}</span><input name="recovery" autocomplete="off" maxlength="12"></label></details>
+      <p class="form-err" role="alert"></p>
+      <button class="btn">{{mfa.confirm}}</button>
+    </form>
+  </section>
+  <section class="auth-pane" id="p-register" role="tabpanel" aria-labelledby="tab-register" hidden>
+    <p class="muted">{{auth.registerText}}</p>
+    <form class="form" id="registerForm" novalidate>
+      <label class="field"><span>{{auth.invite}}</span><input name="invite" autocomplete="off" placeholder="WBMC-XXXX-XXXX-XXXX" spellcheck="false"></label>
+      <label class="field"><span>{{auth.name}}</span><input name="name" autocomplete="nickname" required maxlength="40"></label>
+      <label class="field"><span>{{auth.email}}</span><input type="email" name="email" autocomplete="email" required></label>
+      <label class="field"><span>{{auth.password}}</span><input type="password" name="password" autocomplete="new-password" minlength="10" required><small class="hint">{{auth.pwHint}}</small></label>
+      <label class="check"><input type="checkbox" name="privacy" required><span>{{auth.privacyAgree}}</span></label>
+      <p class="form-err" role="alert"></p>
+      <button class="btn">{{auth.registerBtn}}</button>
+    </form>
+  </section>
+  <section class="auth-pane" id="p-reset" role="tabpanel" aria-labelledby="tab-reset" hidden>
+    <p class="muted">{{auth.resetText}}</p>
+    <form class="form" id="resetForm" novalidate>
+      <label class="field"><span>{{auth.resetCode}}</span><input name="code" autocomplete="off" spellcheck="false" required></label>
+      <label class="field"><span>{{auth.newPassword}}</span><input type="password" name="password" autocomplete="new-password" minlength="10" required></label>
+      <p class="form-err" role="alert"></p>
+      <button class="btn">{{auth.resetBtn}}</button>
+    </form>
+  </section>
+</div>
+</main>
+{{@footer}}
+<script src="{{@base}}assets/js/common.js" defer></script>
+<script src="{{@base}}assets/js/auth.js" defer></script>
+</body>
+</html>

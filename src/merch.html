@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="{{@lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{meta.merch.title}}</title>
+<meta name="description" content="{{meta.merch.desc}}">
+{{@head}}
+{{@css:commerce}}
+</head>
+<body class="page-merch">
+{{@nav}}
+<main id="main">
+<header class="page-head">
+  <div class="wrap">
+    <h1 class="rocker" data-rocker="{{merch.rocker}}">{{merch.title}}</h1>
+    <p class="lead">{{merch.lead}}</p>
+  </div>
+</header>
+<div class="wrap" id="app"></div>
+</main>
+{{@footer}}
+<script src="{{@base}}assets/js/common.js" defer></script>
+<script src="{{@base}}assets/js/merch.js" defer></script>
+</body>
+</html>

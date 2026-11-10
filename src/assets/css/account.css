@@ -1,0 +1,27 @@
+/* WBMC — pieteikšanās un konts */
+.auth-main{min-height:100svh;padding:calc(var(--nav-h) + var(--s-7)) 0 var(--s-7)}
+.auth-wrap{max-width:480px}
+.auth-head{text-align:center;margin-bottom:var(--s-5)}
+.auth-head img{width:96px;height:96px;margin:0 auto var(--s-3)}
+.auth-head h1{font-size:clamp(2.4rem,6vw,3.2rem)}
+.auth-head p{margin:.5rem auto 0;max-width:40ch}
+.auth-main .tabs{margin-bottom:var(--s-5);justify-content:center}
+.auth-pane > p{margin-bottom:var(--s-4)}
+.auth-pane .btn{width:100%}
+.recovery summary{cursor:pointer;color:var(--silver);font-size:.95rem}
+.recovery[open] summary{margin-bottom:.5rem}
+.account{display:grid;gap:var(--s-5);padding-bottom:var(--s-7)}
+.account .panel h2{font-size:1.8rem;margin-bottom:.4rem}
+.warn-box{border-color:rgba(214,162,60,.6)}
+.mfa-steps{padding-left:1.2rem;display:grid;gap:var(--s-4);margin:var(--s-4) 0 0}
+.mfa-qr{width:200px;height:200px;background:#fff;padding:8px;border-radius:6px;margin:var(--s-3) 0}
+.mfa-qr svg{width:100%;height:100%;display:block}
+.secret{font-size:.95rem;letter-spacing:.06em;word-break:break-all;background:#000;border:1px solid var(--line);padding:.1rem .4rem;border-radius:3px}
+.inline-form{display:flex;gap:.6rem;align-items:end;flex-wrap:wrap;margin-top:.5rem}
+.inline-form input{max-width:160px}
+.inline-form .grow{flex:1 1 220px}
+.inline-form .grow input{max-width:none}
+.codes{columns:2;font-size:1.05rem;padding-left:1.4rem;margin:var(--s-4) 0}
+.codes code{letter-spacing:.06em}
+.sessions .session{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.75rem 0}
+.big-code code{display:inline-block;font-size:1.25rem;letter-spacing:.08em;padding:.4rem .7rem;border:1px dashed var(--line-2);border-radius:4px;user-select:all}

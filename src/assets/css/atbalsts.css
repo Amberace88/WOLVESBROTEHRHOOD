@@ -1,0 +1,60 @@
+/* WBMC — Atbalsts (pārnests no style.css) */
+/* =========================================================
+   Ziedojumi
+   ========================================================= */
+.donate{display:grid;grid-template-columns:1.25fr 1fr;gap:var(--s-6);align-items:start}
+.tanks{display:grid;gap:var(--s-4)}
+.tank{display:grid;grid-template-columns:96px 1fr;gap:var(--s-5);align-items:center;padding:var(--s-4) var(--s-5);background:var(--leather);border:1px solid var(--steel-2);border-radius:4px;cursor:pointer;text-align:left;width:100%}
+.tank:hover,.tank.on{border-color:var(--steel)}
+.tank.on{box-shadow:inset 3px 0 0 var(--bone)}
+.tank svg{width:96px;height:auto}
+.tank h3{font-size:1.6rem;margin-bottom:.3rem}
+.tank p{color:var(--silver);font-size:1rem;margin:0 0 .5rem}
+.tank .nums{font-family:var(--f-display);font-weight:800;font-size:1.25rem}
+.tank .nums span{color:var(--silver);font-weight:700}
+.tank .level{transition:transform 2s var(--ease)}
+.tank .wave{animation:wave 3s linear infinite}
+@keyframes wave{to{transform:translateX(-40px)}}
+.donate-card{background:var(--leather);border:1px solid var(--steel);border-radius:6px;padding:var(--s-5);display:grid;gap:var(--s-4);position:sticky;top:calc(var(--nav-h) + 16px)}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--steel);border-radius:4px;padding:3px;gap:3px}
+.seg button{background:transparent;border:0;padding:.6rem;border-radius:2px;cursor:pointer;font-weight:700;color:var(--silver);font-size:1.05rem}
+.seg button.on{background:var(--bone);color:#000}
+.amounts{border:0;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.amounts label{position:relative}
+.amounts input[type=radio]{position:absolute;opacity:0;inset:0;cursor:pointer}
+.amounts span{display:grid;place-items:center;height:54px;border:1px solid var(--steel);border-radius:3px;font-family:var(--f-display);font-weight:900;font-size:1.5rem;transition:background .15s,color .15s}
+.amounts input:checked+span{background:var(--bone);color:#000;border-color:var(--bone)}
+.amounts input:focus-visible+span{outline:2px solid var(--bone);outline-offset:2px}
+.amounts .custom{grid-column:1/-1}
+.amounts .custom input{width:100%;height:50px;background:#000;border:1px solid var(--steel);border-radius:3px;color:var(--bone);padding:0 .8rem;font:inherit;font-size:1.15rem}
+.field{display:grid;gap:.35rem;font-weight:600;font-size:1rem;color:var(--silver)}
+.field input,.field select{background:#000;border:1px solid var(--steel);border-radius:3px;color:var(--bone);padding:.7rem .8rem;font:inherit;font-size:1.05rem}
+.fuel-note{margin:0;color:var(--silver);font-size:.98rem}
+.fuel-note b{color:var(--bone)}
+.btn.wide{width:100%;justify-content:center;font-size:1.35rem;padding:1rem}
+.tiers{display:grid;gap:8px}
+.tier{display:grid;grid-template-columns:1fr auto;gap:.2rem 1rem;padding:var(--s-4);border:1px solid var(--steel);border-radius:4px;cursor:pointer;text-align:left;background:transparent;width:100%}
+.tier.on{border-color:var(--bone);background:#1d1c1a}
+.tier b{font-family:var(--f-display);font-weight:800;font-size:1.4rem}
+.tier .p{font-family:var(--f-display);font-weight:900;font-size:1.4rem}
+.tier ul{grid-column:1/-1;margin:.3rem 0 0;padding-left:1.1rem;color:var(--silver);font-size:.95rem}
+.pay-panel{border:1px dashed var(--steel);border-radius:4px;padding:var(--s-4);display:grid;gap:.7rem;font-size:1rem;animation:fadein .3s}
+.pay-panel .row{display:flex;justify-content:space-between;gap:1rem;align-items:center;border-bottom:1px solid var(--steel-2);padding-bottom:.5rem}
+.pay-panel .row span{color:var(--silver)}
+.pay-panel .row b{font-weight:700;word-break:break-all;text-align:right}
+.pay-panel .copy{background:none;border:1px solid var(--steel);border-radius:3px;color:var(--bone);padding:.2rem .5rem;cursor:pointer;font-size:.85rem;margin-left:.4rem}
+.pay-panel .qr{display:grid;place-items:center;background:#fff;padding:10px;border-radius:4px;width:max-content;margin:0 auto}
+.legal-line{margin:0;font-size:.88rem;color:#7d7a73}
+.wall{margin-top:var(--s-7);text-align:center}
+.wall h3{font-size:1.5rem;margin-bottom:var(--s-4)}
+.wall ul{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem}
+.wall li{border:1px solid var(--steel);border-radius:999px;padding:.35rem .9rem;font-weight:600}
+.wall li i{font-style:normal;color:var(--silver);font-weight:500;margin-left:.4rem}
+@media (max-width:980px){.donate{grid-template-columns:1fr}.donate-card{position:static}}
+@media (max-width:520px){.tank{grid-template-columns:70px 1fr;gap:var(--s-4);padding:var(--s-4)}.tank svg{width:70px}.amounts span{height:48px;font-size:1.3rem}}
+.reqs{margin-bottom:.5rem!important;color:#8a877f!important}
+
+/* ziedojumi */
+.tank{transition:border-color .25s,background .25s}
+.tank:hover{background:#171716}
+

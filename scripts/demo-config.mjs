@@ -4,4 +4,5 @@ const src = fs.readFileSync("wrangler.jsonc", "utf8").replace(/^\s*\/\/.*$/gm, "
 const c = JSON.parse(src);
 delete c.routes; delete c.$schema;
 c.workers_dev = true;
+c.triggers = c.triggers || { crons: ["17 6 * * *"] };
 fs.writeFileSync("wrangler.demo.json", JSON.stringify(c, null, 2));

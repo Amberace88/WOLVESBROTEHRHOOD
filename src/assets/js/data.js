@@ -1,43 +1,22 @@
 /* =====================================================================
-   WOLVES BROTHERHOOD MC — kluba saturs (viss rediģējamais saturs šeit)
+   WBMC — kluba saturs (viss rediģējamais saturs šeit)
    Teksti var būt vienkārša virkne vai objekts pa valodām:
      { lv:"…", en:"…", ru:"…", de:"…", lt:"…", et:"…", no:"…", fr:"…" }
    Trūkstošā valodā rāda EN, tad LV.
    `sample: true` = paraugs (lapā redzama atzīme). Kad ieraksts īsts — izdzēs.
    ===================================================================== */
 window.CLUB = {
-  name: "Wolves Brotherhood MC",
-  email: "info@wolvesbrotherhoodmc.com",
-  founded: { date: null, year: null },          // TODO: kluba dibināšanas datums "MM-DD" un gads
+  name: "WBMC",
+  email: "wolvesmc@inbox.lv",                    // publiskā kontaktadrese (info@wbmc.com netiek publicēta, kamēr nav apstiprinātas domēna īpašumtiesības)
+  founded: { date: null, year: 1999 },          // TODO: precīzs dibināšanas datums "MM-DD"
   homeBase: { name: "Rīga", lat: 56.9496, lon: 24.1052 },
   api: "/api",                                   // Cloudflare Worker API. Ja neatbild — lapa strādā demo režīmā
-  socials: { instagram: "", facebook: "", youtube: "" },
-  legal: { name: "Biedrība WBMC", regNo: "40008360087", registered: "2026-05-12", address: "Jaunciema gatve 147-1, Rīga, LV-1023" }
+  socials: { instagram: "", facebook: "https://www.facebook.com/WolvesBrotherhoodMc/about", youtube: "" },
+  legal: { name: "WBMC BIEDRĪBA", regNo: "40008360087", registered: "2026-05-12", address: "Jaunciema gatve 147-1, Rīga, LV-1023" }
 };
 
 /* ---------------- Kluba pasākumi ---------------- */
-window.EVENTS = [
-  { date: "2026-10-24", time: "11:00", route: "gauja", kind: "ride", sample: true,
-    title: { lv: "Sezonas noslēguma brauciens", en: "Season closing ride", ru: "Поездка закрытия сезона", de: "Saisonabschlussfahrt", lt: "Sezono uždarymo važiavimas", et: "Hooaja lõpusõit", no: "Sesongavslutningstur", fr: "Balade de clôture de saison" },
-    place: "Rīga → Sigulda → Cēsis",
-    text: { lv: "Pēdējie siltie kilometri pirms ziemas. Kopīgs starts no kluba mājām, pusdienas Cēsīs.", en: "The last warm miles before winter. Joint start from the clubhouse, lunch in Cēsis.", ru: "Последние тёплые километры перед зимой. Общий старт от клуба, обед в Цесисе.", de: "Die letzten warmen Kilometer vor dem Winter. Gemeinsamer Start am Clubhaus, Mittagessen in Cēsis." } },
-  { date: "2026-11-11", time: "17:00", kind: "memorial", sample: true,
-    title: { lv: "Lāčplēša dienas sveču brauciens", en: "Lāčplēsis Day candle ride", ru: "Поездка со свечами в День Лачплесиса", de: "Kerzenfahrt zum Lāčplēsis-Tag", lt: "Lāčplēsio dienos žvakių važiavimas", et: "Lāčplēsise päeva küünlasõit", no: "Lyskjøring på Lāčplēsis-dagen", fr: "Balade aux bougies du jour de Lāčplēsis" },
-    place: { lv: "Rīga, Krastmala", en: "Riga, embankment", ru: "Рига, набережная", de: "Riga, Uferpromenade" },
-    text: { lv: "Kopā ar brāļiem nolieksim sveces pie Rīgas pils mūra.", en: "Together with the brothers we will lay candles at the Riga Castle wall.", ru: "Вместе с братьями зажжём свечи у стены Рижского замка.", de: "Gemeinsam legen wir Kerzen an der Mauer des Rigaer Schlosses nieder." } },
-  { date: "2026-12-19", time: "19:00", kind: "club", sample: true,
-    title: { lv: "Kluba Ziemassvētku vakars", en: "Club Christmas night", ru: "Рождественский вечер клуба", de: "Weihnachtsabend des Clubs", lt: "Klubo Kalėdų vakaras", et: "Klubi jõuluõhtu", no: "Klubbens julekveld", fr: "Soirée de Noël du club" },
-    place: { lv: "Kluba mājas", en: "Clubhouse", ru: "Клуб", de: "Clubhaus", lt: "Klubo namai", et: "Klubimaja", no: "Klubbhuset", fr: "Local du club" },
-    text: { lv: "Gada noslēgums, apbalvojumi par sezonas kilometriem un jaunie ieraksti dienasgrāmatā.", en: "End of the year, awards for the season's miles and new entries in the diary.", ru: "Итоги года, награды за километры сезона и новые записи в дневнике.", de: "Jahresabschluss, Ehrungen für die Saisonkilometer und neue Tagebucheinträge." } },
-  { date: "2027-04-24", time: "12:00", kind: "ride", sample: true,
-    title: { lv: "Moto sezonas atklāšana 2027", en: "2027 season opening", ru: "Открытие мотосезона 2027", de: "Saisoneröffnung 2027", lt: "2027 m. sezono atidarymas", et: "Hooaja avamine 2027", no: "Sesongåpning 2027", fr: "Ouverture de la saison 2027" },
-    place: "Rīga",
-    text: { lv: "Pirmais kopīgais izbrauciens sezonā. Tehniskā apskate pirms starta.", en: "First group ride of the season. Technical check before the start.", ru: "Первый совместный выезд сезона. Техосмотр перед стартом.", de: "Erste gemeinsame Ausfahrt der Saison. Technikcheck vor dem Start." } },
-  { date: "2027-06-19", time: "10:00", route: "kolka", kind: "ride", sample: true,
-    title: { lv: "Kurzemes krasta brauciens uz Kolku", en: "Courland coast ride to Kolka", ru: "Поездка по побережью Курземе в Колку", de: "Kurland-Küstenfahrt nach Kolka", lt: "Kuršo pakrantės važiavimas į Kolką", et: "Kuramaa rannikusõit Kolkasse", no: "Kurland-kysttur til Kolka", fr: "Balade sur la côte de Courlande jusqu'à Kolka" },
-    place: "Rīga → Kolka → Ventspils",
-    text: { lv: "Divu dienu brauciens gar jūru ar nakšņošanu Ventspilī.", en: "Two-day ride along the sea with an overnight stay in Ventspils.", ru: "Двухдневная поездка вдоль моря с ночёвкой в Вентспилсе.", de: "Zweitägige Fahrt am Meer mit Übernachtung in Ventspils." } }
-];
+window.EVENTS = []; // kluba pasākumi tagad tiek pārvaldīti admin panelī (Moto pasākumi)
 
 /* ---------------- Svētā dienasgrāmata ---------------- */
 window.DIARY = [
@@ -69,18 +48,12 @@ window.DIARY = [
 
 /* ---------------- Hronika ---------------- */
 window.HISTORY = [
-  { year: { lv: "Sākums", en: "Beginning", ru: "Начало", de: "Anfang", lt: "Pradžia", et: "Algus", no: "Begynnelsen", fr: "Origines" }, sample: true,
-    title: { lv: "Bars sanāk kopā", en: "The pack comes together", ru: "Стая собирается", de: "Das Rudel findet sich", lt: "Gauja susiburia", et: "Kari tuleb kokku", no: "Flokken samles", fr: "La meute se forme" },
-    text: { lv: "Draugi ar vienu kaislību — ceļš, motocikli un uzticība.", en: "Friends with one passion — the road, motorcycles and trust.", ru: "Друзья с одной страстью — дорога, мотоциклы и доверие.", de: "Freunde mit einer Leidenschaft — die Straße, Motorräder und Vertrauen.", lt: "Draugai su viena aistra — kelias, motociklai ir pasitikėjimas.", et: "Sõbrad ühe kirega — tee, mootorrattad ja usaldus.", no: "Venner med én lidenskap — veien, motorsykler og tillit.", fr: "Des amis unis par une passion : la route, la moto et la confiance." } },
-  { year: { lv: "Krāsas", en: "Colours", ru: "Цвета", de: "Farben", lt: "Spalvos", et: "Värvid", no: "Fargene", fr: "Les couleurs" }, sample: true,
-    title: { lv: "Pirmās uzšuves", en: "The first patches", ru: "Первые нашивки", de: "Die ersten Patches", lt: "Pirmieji antsiuvai", et: "Esimesed embleemid", no: "De første merkene", fr: "Les premiers écussons" },
-    text: { lv: "Dzelzs krusts un vilks ar sarkano aci — zīme, ko nopelna, nevis nopērk.", en: "The iron cross and the wolf with the red eye — a sign you earn, not buy.", ru: "Железный крест и волк с красным глазом — знак, который заслуживают, а не покупают.", de: "Das Eiserne Kreuz und der Wolf mit dem roten Auge — ein Zeichen, das man sich verdient, nicht kauft.", lt: "Geležinis kryžius ir vilkas raudona akimi — ženklas, kurį užsitarnauji, o ne nusiperki.", et: "Raudrist ja punase silmaga hunt — märk, mis teenitakse välja, mitte ei osteta.", no: "Jernkorset og ulven med det røde øyet — et merke du gjør deg fortjent til, ikke kjøper.", fr: "La croix de fer et le loup à l'œil rouge : un signe qui se mérite, pas qui s'achète." } },
-  { year: "2026", sample: false,
-    title: { lv: "Biedrība WBMC", en: "WBMC association", ru: "Общество WBMC", de: "Verein WBMC", lt: "Asociacija WBMC", et: "Ühing WBMC", no: "Foreningen WBMC", fr: "Association WBMC" },
-    text: { lv: "12. maijā klubs reģistrēts kā biedrība WBMC (reģ. nr. 40008360087).", en: "On 12 May the club was registered as the WBMC association (reg. no. 40008360087).", ru: "12 мая клуб зарегистрирован как общество WBMC (рег. № 40008360087).", de: "Am 12. Mai wurde der Club als Verein WBMC eingetragen (Reg.-Nr. 40008360087).", lt: "Gegužės 12 d. klubas įregistruotas kaip asociacija WBMC (reg. Nr. 40008360087).", et: "12. mail registreeriti klubi ühinguna WBMC (reg-nr 40008360087).", no: "12. mai ble klubben registrert som foreningen WBMC (reg.nr. 40008360087).", fr: "Le 12 mai, le club a été enregistré comme association WBMC (n° 40008360087)." } },
-  { year: { lv: "Šodien", en: "Today", ru: "Сегодня", de: "Heute", lt: "Šiandien", et: "Täna", no: "I dag", fr: "Aujourd'hui" }, sample: true,
-    title: { lv: "Brālība uz ceļa", en: "Brotherhood on the road", ru: "Братство в пути", de: "Bruderschaft auf der Straße", lt: "Brolija kelyje", et: "Vennaskond teel", no: "Brorskap på veien", fr: "La fraternité sur la route" },
-    text: { lv: "Kopīgi braucieni pa visu Latviju un tālāk, piemiņas dienas, labdarība un savējie, kas vienmēr atbrauc palīgā.", en: "Rides across Latvia and beyond, memorial days, charity — and brothers who always come to help.", ru: "Поездки по всей Латвии и дальше, дни памяти, благотворительность — и свои, которые всегда приедут на помощь.", de: "Fahrten durch ganz Lettland und darüber hinaus, Gedenktage, Wohltätigkeit — und Brüder, die immer zur Hilfe kommen.", lt: "Važiavimai po visą Latviją ir toliau, atminimo dienos, labdara — ir savi, kurie visada atvažiuoja padėti.", et: "Sõidud üle Läti ja kaugemale, mälestuspäevad, heategevus — ja omad, kes alati appi tulevad.", no: "Turer over hele Latvia og videre, minnedager, veldedighet — og brødre som alltid kommer for å hjelpe.", fr: "Des balades à travers la Lettonie et au-delà, des jours de mémoire, de la solidarité — et des frères qui viennent toujours aider." } }
+  { year: "1999",
+    title: { lv: "Klubs dibināts", en: "The club is founded", ru: "Основание клуба", de: "Gründung des Clubs", lt: "Klubas įkurtas", et: "Klubi asutamine", no: "Klubben grunnlegges", fr: "Fondation du club" },
+    text: { lv: "WBMC — Latvijas motociklu klubs kopš 1999. gada.", en: "WBMC — a Latvian motorcycle club since 1999.", ru: "WBMC — латвийский мотоклуб с 1999 года.", de: "WBMC — ein lettischer Motorradclub seit 1999.", lt: "WBMC — Latvijos motociklų klubas nuo 1999 metų.", et: "WBMC — Läti mootorrattaklubi aastast 1999.", no: "WBMC — en latvisk motorsykkelklubb siden 1999.", fr: "WBMC — club de moto letton depuis 1999." } },
+  { year: "2026",
+    title: { lv: "WBMC biedrība", en: "WBMC association", ru: "Общество WBMC", de: "Verein WBMC", lt: "WBMC draugija", et: "WBMC ühing", no: "WBMC-foreningen", fr: "Association WBMC" },
+    text: { lv: "Klubs reģistrēts kā biedrība (reģ. nr. 40008360087).", en: "The club is registered as an association (reg. no. 40008360087).", ru: "Клуб зарегистрирован как общество (рег. № 40008360087).", de: "Der Club ist als Verein eingetragen (Reg.-Nr. 40008360087).", lt: "Klubas įregistruotas kaip draugija (reg. nr. 40008360087).", et: "Klubi on registreeritud ühinguna (reg-nr 40008360087).", no: "Klubben er registrert som forening (org.nr. 40008360087).", fr: "Le club est enregistré comme association (n° 40008360087)." } }
 ];
 
 /* ---------------- Biedri ---------------- */
@@ -142,7 +115,8 @@ window.MERCH = [
 /* ---------------- Ziedojumi ----------------
    Aizpildi vismaz vienu maksājuma veidu (tukšs = netiek rādīts). */
 window.DONATE = {
-  iban: "", bank: "", bic: "",      // piem. "LV00HABA0000000000000", "Swedbank", "HABALV22"
+  // 9. sadaļa: rekvizīti no specifikācijas melnraksta — pirms publicēšanas jāpārbauda pie biedrības un bankas
+  recipient: "WBMC BIEDRĪBA", iban: "LV87RIKO0002930404914", bank: "Luminor Bank AS Latvijas filiāle", bic: "RIKOLV2X", bankAddress: "Skanstes iela 12, Rīga, LV-1013",
   stripeLink: "", stripeMonthly: "", paypal: "",
   goals: [
     { id: "home", target: 5000, raised: 0,

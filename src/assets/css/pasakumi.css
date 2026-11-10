@@ -1,0 +1,122 @@
+/* WBMC — Moto pasākumi (pārnests no style.css) */
+/* =========================================================
+   Eiropas pasākumi
+   ========================================================= */
+.eu-hero{padding:calc(var(--nav-h) + var(--s-7)) 0 var(--s-6);background:radial-gradient(ellipse 60% 80% at 50% 0,rgba(236,232,223,.06),transparent 70%)}
+.eu-now{display:grid;grid-template-columns:1.2fr 1fr;gap:var(--s-4)}
+.eu-live,.eu-next{background:var(--leather);border:1px solid var(--steel-2);border-radius:6px;padding:var(--s-5)}
+.eu-live ul{list-style:none;margin:var(--s-3) 0 0;padding:0;display:grid;gap:.4rem}
+.eu-live a{text-decoration:none}
+.eu-live a:hover b{text-decoration:underline}
+.now-h{font-size:1.6rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.eu-next{display:grid;gap:.3rem;align-content:start}
+.nx-name{font-family:var(--f-display);font-weight:900;font-size:1.9rem;line-height:1.05;text-decoration:none}
+.clock{display:flex;gap:.5rem;margin-top:var(--s-3)}
+.clock span{display:grid;justify-items:center;background:#000;border:1px solid var(--steel);border-radius:4px;padding:.4rem .2rem;min-width:62px}
+.clock b{font-family:var(--f-display);font-weight:900;font-size:2rem;line-height:1;font-variant-numeric:tabular-nums}
+.clock small{font-size:.8rem;color:var(--silver)}
+.eu-body{padding-bottom:var(--s-9)}
+.eu-toolbar{position:sticky;top:var(--nav-h);z-index:30;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);padding:var(--s-4) 0;display:grid;gap:var(--s-3);border-bottom:1px solid var(--steel-2)}
+.chips{display:flex;gap:.4rem;flex-wrap:wrap}
+.chip i{font-style:normal;color:#7d7a73;margin-left:.2rem;font-weight:500}
+.chip .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:.4rem}
+.eu-filters{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.eu-filters input[type=search],.eu-filters select{background:#000;border:1px solid var(--steel);border-radius:3px;color:var(--bone);padding:.55rem .7rem;font:inherit;font-size:1rem;color-scheme:dark}
+.eu-filters input[type=search]{flex:1;min-width:180px}
+.toggle{display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;color:var(--silver);font-weight:600;font-size:.98rem;padding:.3rem .2rem}
+.toggle input{accent-color:var(--bone);width:18px;height:18px}
+.views{max-width:420px;grid-template-columns:repeat(3,1fr)}
+.eu-count{margin:var(--s-4) 0}
+.month-h{font-size:2.2rem;margin:var(--s-7) 0 var(--s-4);color:var(--silver)}
+.month-h:first-child{margin-top:var(--s-4)}
+.ev-card{display:grid;grid-template-columns:86px 1fr 90px;gap:var(--s-5);padding:var(--s-5);background:var(--leather);border:1px solid var(--steel-2);border-radius:6px;margin-bottom:10px;scroll-margin-top:200px;transition:border-color .3s,box-shadow .3s}
+.ev-card.is-live{border-color:var(--eye);box-shadow:inset 3px 0 0 var(--eye)}
+.ev-card.flash{border-color:var(--bone);box-shadow:0 0 0 3px rgba(236,232,223,.25)}
+.ec-date{text-align:center;font-family:var(--f-display);font-weight:800;line-height:.9;border:2px solid var(--bone);border-radius:4px;padding:.6rem .2rem;align-self:start}
+.ec-date b{display:block;font-size:2.6rem}
+.ec-date span{font-size:1rem;letter-spacing:.05em}
+.ec-date small{display:block;font-family:var(--f-ui);font-weight:500;font-size:.8rem;color:var(--silver);margin-top:.35rem}
+.ec-tags{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem}
+.ttag{font-weight:700;font-size:.8rem;padding:.1rem .5rem;border-radius:2px;color:#000}
+.ec-main h3{font-size:1.85rem;margin-bottom:.3rem}
+.ec-where{color:var(--silver);margin:0 0 .5rem;font-size:1.02rem}
+.ec-desc{margin:0 0 .8rem;max-width:70ch}
+.ec-facts{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:.3rem 2rem;margin:0 0 1rem}
+.ec-facts dt{font-size:.82rem;color:#7d7a73}
+.ec-facts dd{margin:0;font-weight:600;font-size:.98rem}
+.ec-actions{display:flex;gap:.4rem;flex-wrap:wrap}
+.save.on{background:var(--bone);color:#000}
+.ec-count{text-align:right}
+.ec-count b{display:block;font-family:var(--f-display);font-weight:900;font-size:2.4rem;line-height:1}
+.ec-count small{color:var(--silver);font-size:.85rem}
+/* type colours */
+.t-rally{background:#ECE8DF}.t-festival{background:#d6a23c}.t-expo{background:#7fb4d6}.t-race{background:#E3120B}.t-ride{background:#8fb07a}.t-custom-show{background:#c58fd6}.t-season{background:#b8b2a6}
+.ttag.t-race{color:#fff}
+.dot.t-rally{background:#ECE8DF}
+.eu-map{height:70vh;min-height:460px;border:1px solid var(--steel-2);border-radius:6px;overflow:hidden;position:relative}
+#euMap{position:absolute;inset:0;background:#0a0a0a}
+.eu-pin{display:grid!important;place-items:center;background:transparent!important}
+.eu-pin i{width:14px;height:14px;border-radius:50%;border:2px solid #000;background:inherit;display:block}
+.eu-pin.t-rally i{background:#ECE8DF}.eu-pin.t-festival i{background:#d6a23c}.eu-pin.t-expo i{background:#7fb4d6}.eu-pin.t-race i{background:#E3120B}.eu-pin.t-ride i{background:#8fb07a}.eu-pin.t-custom-show i{background:#c58fd6}.eu-pin.t-season i{background:#b8b2a6}
+.eu-pin{background:none!important}
+.eu-pin b{position:absolute;top:16px;font-size:.72rem;background:rgba(0,0,0,.8);padding:0 .2rem;border-radius:2px;white-space:nowrap}
+.eu-pin.is-live i{animation:pulse3 1.4s infinite}
+@keyframes pulse3{50%{box-shadow:0 0 0 8px rgba(227,18,11,.35)}}
+.tl{position:relative;border:1px solid var(--steel-2);border-radius:6px;background:var(--leather);overflow-x:auto;padding-bottom:var(--s-3)}
+.tl-head{display:grid;grid-template-columns:repeat(var(--cols),minmax(70px,1fr));position:sticky;top:0;background:#0d0d0c;border-bottom:1px solid var(--steel-2);min-width:calc(var(--cols) * 70px)}
+.tl-head span{padding:.5rem;font-family:var(--f-display);font-weight:800;border-left:1px solid var(--steel-2);font-size:1rem}
+.tl-head small{display:block;color:var(--silver);font-family:var(--f-ui);font-weight:500;font-size:.75rem;min-height:1em}
+.tl-row{display:block;position:relative;height:30px;min-width:calc(var(--cols) * 70px);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.03)}
+.tl-row:hover{background:#1a1918}
+.tl-bar{position:absolute;top:8px;height:14px;border-radius:3px}
+.tl-label{position:absolute;top:5px;margin-left:12px;padding-left:4px;white-space:nowrap;font-size:.88rem;color:var(--silver)}
+.tl-row:hover .tl-label{color:var(--bone)}
+.tl-today{position:absolute;top:0;bottom:0;width:2px;background:var(--eye);z-index:2;opacity:.7}
+.empty-state{text-align:center;padding:var(--s-8) 0}
+.eu-note{margin-top:var(--s-6);font-size:.92rem}
+@media (max-width:900px){.eu-now{grid-template-columns:1fr}}
+@media (max-width:720px){
+  .ev-card{grid-template-columns:64px 1fr;gap:var(--s-4);padding:var(--s-4)}
+  .ec-date b{font-size:2rem}
+  .ec-count{grid-column:2;text-align:left}.ec-count b{display:inline;font-size:1.4rem;margin-right:.3rem}
+  .ec-facts{grid-template-columns:1fr 1fr}
+  .ec-main h3{font-size:1.5rem}
+  .eu-toolbar{position:static}
+  .clock span{min-width:54px}
+}
+.patch.ready{animation:none!important;opacity:1;filter:none;transform:none}
+.hero.lit .patch.ready{animation:none!important}
+
+/* Eiropa: kartītes darbības */
+.ec-actions{align-items:center}
+.ec-tools{display:inline-flex;gap:4px;margin-left:auto}
+.tool{width:40px;height:40px;display:inline-grid;place-items:center;border:1px solid var(--steel-2);border-radius:999px;background:transparent;color:var(--silver);cursor:pointer;transition:color .2s,border-color .2s,background .2s}
+.tool:hover{color:var(--bone);border-color:var(--bone)}
+.tool.save.on{color:#000;background:var(--bone);border-color:var(--bone)}
+.tool.save.on svg{fill:currentColor}
+.ev-card{transition:border-color .3s,box-shadow .3s,transform .3s}
+.ev-card:hover{border-color:var(--steel)}
+.ec-facts{background:rgba(0,0,0,.35);border:1px solid var(--steel-2);border-radius:4px;padding:.6rem .9rem;display:flex;flex-wrap:wrap;gap:.4rem 2rem;width:fit-content}
+@media (max-width:720px){.ec-tools{margin-left:0}}
+
+/* Eiropa rīkjosla — kompakta */
+.eu-toolbar{padding:var(--s-3) 0;gap:var(--s-3)}
+.chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;-webkit-mask:linear-gradient(90deg,#000 92%,transparent);mask:linear-gradient(90deg,#000 92%,transparent)}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;flex:none}
+.eu-filters .views{margin-left:auto;width:auto;max-width:none;display:inline-grid;grid-template-columns:repeat(3,auto)}
+.eu-filters .views button{padding:.45rem .9rem}
+.kpis b{white-space:nowrap;font-size:1.3rem}
+@media (max-width:900px){.eu-filters .views{margin-left:0;width:100%;grid-template-columns:repeat(3,1fr)}}
+
+.sheet-grip{order:-2}
+@media (max-width:720px){
+  .ev .count{justify-self:start;font-size:1rem}
+  .roster{grid-template-columns:repeat(2,1fr);gap:var(--s-3)}
+  .member{padding:var(--s-4) var(--s-3)}
+  .member svg{max-width:170px}
+  .member .desc{font-size:.9rem}
+  .rocker{max-width:92%}
+  .ev-actions .btn{font-size:.95rem}
+}
+

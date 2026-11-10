@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="{{@lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>{{meta.profils.title}}</title>
+<meta name="description" content="{{meta.profils.desc}}">
+{{@head}}
+{{@css:account}}
+</head>
+<body class="page-profile">
+{{@nav}}
+<main id="main">
+<header class="page-head left"><div class="wrap narrow"><h1>{{acc.title}}</h1><p class="lead" id="accLead"></p></div></header>
+<div class="wrap narrow account" id="account">
+  <section class="panel" id="statusBox" hidden></section>
+  <section class="panel">
+    <h2>{{mfa.title}}</h2>
+    <p class="muted">{{mfa.text}}</p>
+    <div id="mfaBox"></div>
+  </section>
+  <section class="panel">
+    <h2>{{acc.sessions}}</h2>
+    <p class="muted">{{acc.sessionsText}}</p>
+    <ul class="rows sessions" id="sessions"></ul>
+    <div class="btn-row"><button class="btn ghost small" id="revokeOthers">{{acc.revokeOthers}}</button></div>
+  </section>
+  <section class="panel">
+    <h2>{{acc.password}}</h2>
+    <form class="form" id="pwForm" novalidate>
+      <label class="field"><span>{{acc.currentPw}}</span><input type="password" name="current" autocomplete="current-password" required></label>
+      <label class="field"><span>{{auth.newPassword}}</span><input type="password" name="next" autocomplete="new-password" minlength="10" required><small class="hint">{{auth.pwHint}}</small></label>
+      <p class="form-err" role="alert"></p>
+      <button class="btn small">{{acc.changePw}}</button>
+    </form>
+  </section>
+  <div class="btn-row"><button class="btn ghost" id="logoutBtn">{{acc.logout}}</button></div>
+</div>
+</main>
+{{@footer}}
+<script src="{{@base}}assets/vendor/qrcode.js" defer></script>
+<script src="{{@base}}assets/js/common.js" defer></script>
+<script src="{{@base}}assets/js/profile.js" defer></script>
+</body>
+</html>
