@@ -96,7 +96,7 @@ p{margin:0 0 1em}
 .field{display:grid;gap:.35rem}
 .field > span,.form label > span{font-size:.92rem;font-weight:500;color:var(--silver)}
 .form label{display:grid;gap:.35rem}
-input[type=text],input[type=email],input[type=password],input[type=search],input[type=url],input[type=tel],input[type=number],input[type=date],input[type=time],input[type=datetime-local],select,textarea{
+input:not([type]),input[type=text],input[type=email],input[type=password],input[type=search],input[type=url],input[type=tel],input[type=number],input[type=date],input[type=time],input[type=datetime-local],select,textarea{
   width:100%;background:#000;border:1px solid var(--line-2);border-radius:4px;color:var(--bone);padding:.7rem .8rem;font-size:1rem;line-height:1.3;min-height:46px}
 textarea{min-height:110px;resize:vertical;line-height:1.5}
 input:focus,select:focus,textarea:focus{border-color:var(--bone);outline:none;box-shadow:0 0 0 3px rgba(236,232,223,.12)}

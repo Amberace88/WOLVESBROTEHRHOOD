@@ -309,7 +309,7 @@ W.paintAccount = me => {
   const acc = W.$("#accountBtn"), comms = W.$("#commsBtn");
   if (!acc) return;
   const active = me && me.status === "active";
-  W.$$("[data-need]").forEach(el => { const n = el.dataset.need; el.hidden = !(active && (n === "member" || (n === "admin" && (me.role === "admin" || Object.keys(me.perms || {}).some(m => ["users", "roles", "invites", "audit", "security", "settings", "i18n"].includes(m) || /[ceda]/.test(me.perms[m] || "")))))); });
+  W.$$("[data-need]").forEach(el => { const n = el.dataset.need; el.hidden = !(active && (n === "member" || (n === "admin" && (me.role === "admin" || Object.keys(me.perms || {}).some(m => ["users", "roles", "invites", "audit", "security", "settings", "i18n"].includes(m) || /[eda]/.test(me.perms[m] || "")))))); });
   if (comms) { comms.hidden = !active; if (active) W.pollUnread(); }
   if (me) {
     acc.href = "profils.html";
