@@ -40,7 +40,6 @@ $$("[data-auth]").forEach(b => b.addEventListener("click", () => {
   $$("#authForm [data-reg]").forEach(x => x.hidden = authMode !== "register");
   $("#authBtn").textContent = t(authMode === "login" ? "rhr.auth.login" : "rhr.auth.register");
   $("#authForm").password.autocomplete = authMode === "login" ? "current-password" : "new-password";
-  $("#authForm").invite.required = authMode === "register";
 }));
 $("#authForm").addEventListener("submit", async e => {
   e.preventDefault(); const f = e.target; $("#authErr").textContent = "";
