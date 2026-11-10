@@ -31,9 +31,12 @@ const seedInsert = e => `INSERT OR IGNORE INTO events (${COLS.join(", ")}) VALUE
 const REPLACED_BY_RESEARCH = { "mxgp-latvia-2027": "mxgp-latvia-2027", "sgp-riga-2027": "sgp2-latvia-riga-2027 + speedwaygp-latvia-riga-2027", "outdoor-riga-moto-velo-2027": "outdoor-riga-2027-moto-bikes" };
 const EU_ROWS = EU_SEED.filter(e => !REPLACED_BY_RESEARCH[e.id]).map(e => {
   const estimated = e.status !== "confirmed";
-  const status = estimated ? "review" : e.end < SEED_DAY ? "ended" : "published";
+  /* provizoriski sacīkšu kalendāri (MotoGP/WSBK/MXGP 2027) — datums vēl var mainīties, tāpēc arī tie iet pārbaudē */
+  const provisional = !estimated && /provisional/i.test(e.note || "");
+  const status = estimated || provisional ? "review" : e.end < SEED_DAY ? "ended" : "published";
   const note = [
     estimated ? "NAV PUBLICĒTS: datums aprēķināts pēc iepriekšējo gadu prakses — organizators vēl nav paziņojis oficiālo datumu. Pārbaudi oficiālajā lapā un tikai tad publicē." : "",
+    provisional ? "NAV PUBLICĒTS: sacīkšu kalendārs ir provizorisks. Publicē, kad organizators apstiprina galīgo kalendāru." : "",
     `Imports no WBMC pētījuma (eu-events.json, 2026-11): ${e.note || ""}`.trim()
   ].filter(Boolean).join("\n");
   return { id: e.id, category: e.cc === "LV" ? "lv-moto" : "eu-moto", type: TYPES.includes(e.type) ? e.type : "other", title: { lv: e.name, en: e.name }, description: e.desc,
