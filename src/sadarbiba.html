@@ -14,10 +14,95 @@
 <header class="page-head">
   <div class="wrap">
     <h1 class="rocker" data-rocker="{{sadarbiba.rocker}}">{{sadarbiba.title}}</h1>
-    <p class="lead">{{sadarbiba.lead}}</p>
+    <p class="lead">{{cm.ad.lead}}</p>
   </div>
 </header>
-<div class="wrap" id="app"></div>
+
+<div class="wrap">
+  <dl class="sd-facts" data-reveal>
+    <div><dt>{{cm.ad.factPrice}}</dt><dd>{{cm.ad.byAgreement}}</dd></div>
+    <div><dt>{{cm.ad.factLabel}}</dt><dd>{{ads.sponsored}}</dd></div>
+    <div><dt>{{cm.ad.factAudience}}</dt><dd>{{cm.ad.audienceOnRequest}}</dd></div>
+  </dl>
+</div>
+
+<section class="section" aria-labelledby="sdFormats">
+  <div class="wrap">
+    <div class="section-head"><h2 id="sdFormats">{{cm.ad.formatsTitle}}</h2><p>{{cm.ad.formatsText}}</p></div>
+    <ol class="sd-list" id="sdList">
+      <li class="sd-item">
+        <span class="sd-n" aria-hidden="true">01</span>
+        <div class="sd-main"><h3>{{cm.ad.o1.title}}</h3><p>{{cm.ad.o1.text}}</p>
+          <dl class="sd-dl"><div><dt>{{cm.ad.includes}}</dt><dd>{{cm.ad.o1.includes}}</dd></div><div><dt>{{cm.ad.where}}</dt><dd>{{cm.ad.o1.where}}</dd></div><div><dt>{{cm.ad.labelling}}</dt><dd>{{cm.ad.labelSponsored}}</dd></div><div><dt>{{cm.ad.price}}</dt><dd>{{cm.ad.byAgreement}}</dd></div></dl></div>
+        <label class="sd-pick"><input type="checkbox" value="o1"><span>{{cm.ad.interested}}</span></label>
+      </li>
+      <li class="sd-item">
+        <span class="sd-n" aria-hidden="true">02</span>
+        <div class="sd-main"><h3>{{cm.ad.o2.title}}</h3><p>{{cm.ad.o2.text}}</p>
+          <dl class="sd-dl"><div><dt>{{cm.ad.includes}}</dt><dd>{{cm.ad.o2.includes}}</dd></div><div><dt>{{cm.ad.where}}</dt><dd>{{cm.ad.o2.where}}</dd></div><div><dt>{{cm.ad.labelling}}</dt><dd>{{cm.ad.o2.label}}</dd></div><div><dt>{{cm.ad.price}}</dt><dd>{{cm.ad.byAgreement}}</dd></div></dl></div>
+        <label class="sd-pick"><input type="checkbox" value="o2"><span>{{cm.ad.interested}}</span></label>
+      </li>
+      <li class="sd-item">
+        <span class="sd-n" aria-hidden="true">03</span>
+        <div class="sd-main"><h3>{{cm.ad.o3.title}}</h3><p>{{cm.ad.o3.text}}</p>
+          <dl class="sd-dl"><div><dt>{{cm.ad.includes}}</dt><dd>{{cm.ad.o3.includes}}</dd></div><div><dt>{{cm.ad.where}}</dt><dd>{{cm.ad.o3.where}}</dd></div><div><dt>{{cm.ad.labelling}}</dt><dd>{{cm.ad.labelSponsored}}</dd></div><div><dt>{{cm.ad.price}}</dt><dd>{{cm.ad.byAgreement}}</dd></div></dl></div>
+        <label class="sd-pick"><input type="checkbox" value="o3"><span>{{cm.ad.interested}}</span></label>
+      </li>
+      <li class="sd-item">
+        <span class="sd-n" aria-hidden="true">04</span>
+        <div class="sd-main"><h3>{{cm.ad.o4.title}}</h3><p>{{cm.ad.o4.text}}</p>
+          <dl class="sd-dl"><div><dt>{{cm.ad.includes}}</dt><dd>{{cm.ad.o4.includes}}</dd></div><div><dt>{{cm.ad.where}}</dt><dd>{{cm.ad.o4.where}}</dd></div><div><dt>{{cm.ad.labelling}}</dt><dd>{{cm.ad.o4.label}}</dd></div><div><dt>{{cm.ad.price}}</dt><dd>{{cm.ad.byAgreement}}</dd></div></dl></div>
+        <label class="sd-pick"><input type="checkbox" value="o4"><span>{{cm.ad.interested}}</span></label>
+      </li>
+      <li class="sd-item">
+        <span class="sd-n" aria-hidden="true">05</span>
+        <div class="sd-main"><h3>{{cm.ad.o5.title}}</h3><p>{{cm.ad.o5.text}}</p>
+          <dl class="sd-dl"><div><dt>{{cm.ad.includes}}</dt><dd>{{cm.ad.o5.includes}}</dd></div><div><dt>{{cm.ad.where}}</dt><dd>{{cm.ad.o5.where}}</dd></div><div><dt>{{cm.ad.labelling}}</dt><dd>{{cm.ad.labelSponsored}}</dd></div><div><dt>{{cm.ad.price}}</dt><dd>{{cm.ad.byAgreement}}</dd></div></dl></div>
+        <label class="sd-pick"><input type="checkbox" value="o5"><span>{{cm.ad.interested}}</span></label>
+      </li>
+      <li class="sd-item">
+        <span class="sd-n" aria-hidden="true">06</span>
+        <div class="sd-main"><h3>{{cm.ad.o6.title}}</h3><p>{{cm.ad.o6.text}}</p>
+          <dl class="sd-dl"><div><dt>{{cm.ad.includes}}</dt><dd>{{cm.ad.o6.includes}}</dd></div><div><dt>{{cm.ad.where}}</dt><dd>{{cm.ad.o6.where}}</dd></div><div><dt>{{cm.ad.labelling}}</dt><dd>{{cm.ad.labelSponsored}}</dd></div><div><dt>{{cm.ad.price}}</dt><dd>{{cm.ad.byAgreement}}</dd></div></dl></div>
+        <label class="sd-pick"><input type="checkbox" value="o6"><span>{{cm.ad.interested}}</span></label>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="sdProcess">
+  <div class="wrap">
+    <h2 id="sdProcess" class="sd-h2">{{cm.ad.processTitle}}</h2>
+    <ol class="cm-steps four">
+      <li><b>{{cm.ad.p1}}</b><p>{{cm.ad.p1t}}</p></li>
+      <li><b>{{cm.ad.p2}}</b><p>{{cm.ad.p2t}}</p></li>
+      <li><b>{{cm.ad.p3}}</b><p>{{cm.ad.p3t}}</p></li>
+      <li><b>{{cm.ad.p4}}</b><p>{{cm.ad.p4t}}</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="sdRules">
+  <div class="wrap sd-two">
+    <div>
+      <h2 id="sdRules" class="sd-h2">{{cm.ad.rulesTitle}}</h2>
+      <ul class="rows sd-rules">
+        <li>{{cm.ad.r1}}</li>
+        <li>{{cm.ad.r2}}</li>
+        <li>{{cm.ad.r3}}</li>
+        <li>{{cm.ad.r4}}</li>
+        <li>{{cm.ad.r5}}</li>
+      </ul>
+    </div>
+    <div class="cm-cta-card" id="contact">
+      <h2>{{cm.ad.contactTitle}}</h2>
+      <p class="muted">{{cm.ad.contactText}}</p>
+      <p class="sd-picked" id="sdPicked" aria-live="polite">{{cm.ad.pickHint}}</p>
+      <div class="btn-row"><a class="btn" id="sdMail" href="mailto:wolvesmc@inbox.lv">{{cm.ad.contactBtn}}</a></div>
+      <p class="small dim">{{cm.ad.contactOr}} <a href="mailto:wolvesmc@inbox.lv">wolvesmc@inbox.lv</a></p>
+    </div>
+  </div>
+</section>
 </main>
 {{@footer}}
 <script src="{{@base}}assets/js/common.js" defer></script>

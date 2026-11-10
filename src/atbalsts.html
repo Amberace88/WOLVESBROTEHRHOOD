@@ -14,10 +14,64 @@
 <header class="page-head">
   <div class="wrap">
     <h1 class="rocker" data-rocker="{{atbalsts.rocker}}">{{atbalsts.title}}</h1>
-    <p class="lead">{{atbalsts.lead}}</p>
+    <p class="lead">{{cm.sup.lead}}</p>
   </div>
 </header>
-<div class="wrap" id="app"></div>
+
+<div class="wrap sp-layout">
+  <div class="sp-text">
+    <section class="sp-sec" aria-labelledby="spWho">
+      <h2 id="spWho">{{cm.sup.whoTitle}}</h2>
+      <p class="sp-recipient" id="spRecipient"></p>
+      <p class="muted">{{cm.sup.whoText}}</p>
+    </section>
+
+    <section class="sp-sec" aria-labelledby="spUse">
+      <h2 id="spUse">{{cm.sup.useTitle}}</h2>
+      <p class="muted">{{cm.sup.useText}}</p>
+      <ul class="rows sp-goals" id="spGoals"></ul>
+    </section>
+  </div>
+
+  <aside class="sp-card" id="bank" aria-labelledby="spBank">
+    <h2 id="spBank">{{cm.sup.bankTitle}}</h2>
+    <form class="sp-form" id="spForm" novalidate>
+      <label class="field"><span>{{cm.sup.goal}}</span><select name="goal" id="spGoal"></select></label>
+      <label class="field"><span>{{cm.sup.amount}} <small class="dim">{{cm.sup.optional}}</small></span>
+        <span class="sp-amount"><input name="amount" id="spAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-describedby="spAmountHint"><b aria-hidden="true">€</b></span>
+        <small class="hint" id="spAmountHint">{{cm.sup.amountHint}}</small></label>
+      <p class="form-err" id="spErr" role="alert"></p>
+    </form>
+    <dl class="sp-fields" id="spFields"></dl>
+    <div class="sp-qr">
+      <div class="sp-qr-code" id="spQr" role="img" aria-label="{{cm.sup.qrAlt}}"></div>
+      <p class="small muted">{{cm.sup.qrText}}</p>
+    </div>
+    <p class="sp-verify" id="spVerify" aria-live="polite"></p>
+  </aside>
+
+  <div class="sp-text sp-after">
+    <section class="sp-sec" aria-labelledby="spConfirm">
+      <h2 id="spConfirm">{{cm.sup.confirmTitle}}</h2>
+      <p>{{cm.sup.confirmText}}</p>
+      <p class="muted">{{cm.sup.noOnline}}</p>
+    </section>
+
+    <section class="sp-sec" aria-labelledby="spOther">
+      <h2 id="spOther">{{cm.sup.otherTitle}}</h2>
+      <ul class="rows sp-ways">
+        <li><a href="merch.html"><b>{{cm.sup.wayMerch}}</b><span>{{cm.sup.wayMerchT}}</span></a></li>
+        <li><a href="sadarbiba.html"><b>{{cm.sup.wayPartner}}</b><span>{{cm.sup.wayPartnerT}}</span></a></li>
+        <li><a href="mailto:wolvesmc@inbox.lv" data-mail="cm.sup.volunteerSubject"><b>{{cm.sup.wayVolunteer}}</b><span>{{cm.sup.wayVolunteerT}}</span></a></li>
+      </ul>
+    </section>
+
+    <section class="sp-sec" aria-labelledby="spContact">
+      <h2 id="spContact">{{cm.sup.contactTitle}}</h2>
+      <p>{{cm.sup.contactText}} <a href="mailto:wolvesmc@inbox.lv" data-mail="cm.sup.contactSubject">wolvesmc@inbox.lv</a></p>
+    </section>
+  </div>
+</div>
 </main>
 {{@footer}}
 <script src="{{@base}}assets/js/common.js" defer></script>

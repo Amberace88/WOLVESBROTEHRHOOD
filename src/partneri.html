@@ -17,7 +17,22 @@
     <p class="lead">{{partneri.lead}}</p>
   </div>
 </header>
-<div class="wrap" id="app"></div>
+<div class="wrap" id="app" aria-live="polite"><p class="muted cm-loading">{{cm.loading}}</p></div>
+<section class="section">
+  <div class="wrap">
+    <div class="cm-cta-band">
+      <div>
+        <h2>{{cm.partners.ctaTitle}}</h2>
+        <p class="muted">{{cm.partners.ctaText}}</p>
+      </div>
+      <div class="btn-row">
+        <a class="btn" href="sadarbiba.html">{{cm.partners.ctaBtn}}</a>
+        <a class="btn ghost" href="mailto:wolvesmc@inbox.lv" data-mail="cm.partners.mailSubject">wolvesmc@inbox.lv</a>
+      </div>
+    </div>
+    <p class="small dim cm-consent-note">{{cm.partners.consentNote}}</p>
+  </div>
+</section>
 </main>
 {{@footer}}
 <script src="{{@base}}assets/js/common.js" defer></script>
