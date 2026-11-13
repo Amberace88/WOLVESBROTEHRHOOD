@@ -11,7 +11,9 @@ export const LANGS = ["lv", "en", "ru", "de", "lt", "et", "no", "fr"];
 export const DATA_KEYS = ["CLUB", "EVENTS", "DIARY", "HISTORY", "MEMBERS", "ROUTES", "GALLERY", "MERCH", "DONATE", "EU_EVENTS"];
 const KEY_RE = new RegExp(`^(i18n:(${LANGS.join("|")})|data:(${DATA_KEYS.join("|")})|ui|forumCats)$`);
 const MAX_VALUE = 900 * 1024;
-const FILE_MAX = 6 * 1024 * 1024;
+const FILE_MAX = 10 * 1024 * 1024;
+const PART = 1800000;               // D1 vienā rindā glabā līdz ~2 MB, tāpēc lielāki faili tiek sadalīti daļās
+const toBytes = d => d instanceof ArrayBuffer ? new Uint8Array(d) : d instanceof Uint8Array ? d : Uint8Array.from(d || []);
 
 const json = (data, status = 200, headers = {}) => new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...headers } });
 const err = (msg, status = 400) => json({ error: msg }, status);
@@ -58,9 +60,15 @@ export async function cmsApi(ctx){
 
   // publiski faili (attēli, PDF)
   if ((mm = p.match(/^\/files\/([a-z0-9]{16})$/)) && m === "GET") {
-    const f = await env.DB.prepare("SELECT type, data, name FROM files WHERE id = ?").bind(mm[1]).first();
+    const f = await env.DB.prepare("SELECT type, data, name, size FROM media WHERE id = ?").bind(mm[1]).first();
     if (!f) return err("Not found", 404);
-    const bytes = f.data instanceof ArrayBuffer ? new Uint8Array(f.data) : Uint8Array.from(f.data);
+    let bytes = toBytes(f.data);
+    if (bytes.length < f.size) {
+      const { results } = await env.DB.prepare("SELECT data FROM media_parts WHERE id = ? ORDER BY n").bind(mm[1]).all();
+      const all = new Uint8Array(f.size); all.set(bytes, 0); let off = bytes.length;
+      for (const r of results) { const b = toBytes(r.data); all.set(b.subarray(0, Math.max(0, f.size - off)), off); off += b.length; }
+      bytes = all;
+    }
     return new Response(bytes, { headers: { "Content-Type": f.type, "Cache-Control": "public, max-age=31536000, immutable", "X-Content-Type-Options": "nosniff",
       "Content-Security-Policy": "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox", "Content-Disposition": `inline; filename="${encodeURIComponent(f.name || "fails")}"` } });
   }
@@ -195,22 +203,25 @@ Rules: target selectors precisely (use the selected element's selector when the 
   if (p === "/admin/files" && m === "POST") {
     need("admin");
     const buf = new Uint8Array(await req.arrayBuffer());
-    if (!buf.length || buf.length > FILE_MAX) return err("File too large (max 6 MB)");
+    if (!buf.length || buf.length > FILE_MAX) return err("Fails ir par lielu (līdz 10 MB)");
     const type = sniff(buf);
-    if (!type) return err("Only JPG, PNG, WebP, GIF, AVIF or PDF");
-    const fid = uid(), name = String(req.headers.get("X-Name") || "fails").replace(/[^\p{L}\p{N}._ -]/gu, "").slice(0, 120);
-    await env.DB.prepare("INSERT INTO files (id, name, type, size, data, created, by_name) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(fid, name, type, buf.length, buf, now(), user.name).run();
+    if (!type) return err("Der tikai JPG, PNG, WebP, GIF, AVIF vai PDF");
+    let rawName = String(req.headers.get("X-Name") || "fails"); try { rawName = decodeURIComponent(rawName); } catch (e) {}
+    const fid = uid(), name = rawName.replace(/[^\p{L}\p{N}._ -]/gu, "").slice(0, 120) || "fails";
+    const stmts = [env.DB.prepare("INSERT INTO media (id, name, type, size, data, created, by_name) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(fid, name, type, buf.length, buf.slice(0, PART), now(), user.name)];
+    for (let off = PART, n = 1; off < buf.length; off += PART, n++) stmts.push(env.DB.prepare("INSERT INTO media_parts (id, n, data) VALUES (?, ?, ?)").bind(fid, n, buf.slice(off, off + PART)));
+    await env.DB.batch(stmts);
     await audit(env, user, "file.upload", fid, { name, size: buf.length });
     return json({ id: fid, url: "/api/files/" + fid, type, name });
   }
   if (p === "/admin/files" && m === "GET") {
     need("admin");
-    const { results } = await env.DB.prepare("SELECT id, name, type, size, created, by_name FROM files ORDER BY created DESC LIMIT 500").all();
+    const { results } = await env.DB.prepare("SELECT id, name, type, size, created, by_name FROM media ORDER BY created DESC LIMIT 500").all();
     return json({ files: results.map(f => ({ ...f, url: "/api/files/" + f.id })) });
   }
   if ((mm = p.match(/^\/admin\/files\/([a-z0-9]{16})$/)) && m === "DELETE") {
     need("admin");
-    await env.DB.prepare("DELETE FROM files WHERE id = ?").bind(mm[1]).run();
+    await env.DB.batch([env.DB.prepare("DELETE FROM media WHERE id = ?").bind(mm[1]), env.DB.prepare("DELETE FROM media_parts WHERE id = ?").bind(mm[1])]);
     await audit(env, user, "file.delete", mm[1]);
     return json({ ok: true });
   }
@@ -226,7 +237,7 @@ Rules: target selectors precisely (use the selected element's selector when the 
       messages: await q("SELECT COUNT(*) AS n FROM messages"), sosOpen: await q("SELECT COUNT(*) AS n FROM sos WHERE resolved = 0"),
       hazards: await q(`SELECT COUNT(*) AS n FROM hazards WHERE created > ${now() - 7 * 864e5}`), helpers: await q("SELECT COUNT(*) AS n FROM helpers"),
       invitesOpen: await q("SELECT COUNT(*) AS n FROM invites WHERE used_by IS NULL"), cms: await q("SELECT COUNT(*) AS n FROM cms"),
-      files: await q("SELECT COUNT(*) AS n FROM files"), chessGames: await q("SELECT COUNT(*) AS n FROM chess_games WHERE status = 'over'")
+      files: await q("SELECT COUNT(*) AS n FROM media"), chessGames: await q("SELECT COUNT(*) AS n FROM chess_games WHERE status = 'over'")
     });
   }
   if (p === "/admin/audit" && m === "GET") {

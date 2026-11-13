@@ -351,7 +351,29 @@ async function dataView(arg){
 }
 
 /* ---------------- faili: augšupielāde un izvēle ---------------- */
+/* Attēlus pirms augšupielādes samazina (līdz 2560 px, WebP) — telefona bildes kļūst ~10× vieglākas un lapa ielādējas ātrāk.
+   iPhone HEIC bildes pārvērš, ja pārlūks tās spēj atvērt (Safari spēj). */
+async function optimizeImage(file){
+  const isHeic = /hei[cf]$/i.test(file.name) || /hei[cf]/i.test(file.type);
+  if (!/^image\//.test(file.type) && !isHeic) return file;
+  if (/gif|svg/.test(file.type)) return file;
+  let bmp;
+  try { bmp = await createImageBitmap(file, { imageOrientation: "from-image" }); }
+  catch (e) {
+    if (isHeic) throw new Error("Šis pārlūks nevar atvērt iPhone HEIC bildi. Augšupielādē no Safari vai iPhone iestatījumos izvēlies Kamera → Formāti → „Saderīgākais”.");
+    return file;
+  }
+  const MAX = 2560, k = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
+  if (k === 1 && file.size < 900 * 1024 && /jpe?g|png|webp|avif/.test(file.type)) { bmp.close && bmp.close(); return file; }
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height); bmp.close && bmp.close();
+  const blob = await new Promise(res => c.toBlob(res, "image/webp", 0.86));
+  if (!blob || blob.type !== "image/webp") { const j = await new Promise(res => c.toBlob(res, "image/jpeg", 0.86)); return j ? new File([j], file.name.replace(/\.\w+$/, "") + ".jpg", { type: "image/jpeg" }) : file; }
+  return blob.size < file.size || isHeic ? new File([blob], file.name.replace(/\.\w+$/, "") + ".webp", { type: "image/webp" }) : file;
+}
 async function uploadFile(file){
+  file = await optimizeImage(file);
+  if (file.size > 10 * 1024 * 1024) throw new Error("Fails ir par lielu (līdz 10 MB)");
   const buf = await file.arrayBuffer();
   const r = await fetch("/api/admin/files", { method: "POST", headers: { Authorization: "Bearer " + token, "X-Name": encodeURIComponent(file.name).slice(0, 200) }, body: buf });
   const j = await r.json().catch(() => ({}));
@@ -359,7 +381,7 @@ async function uploadFile(file){
   return j;
 }
 function pickUpload(cb){
-  const i = document.createElement("input"); i.type = "file"; i.accept = "image/*,application/pdf";
+  const i = document.createElement("input"); i.type = "file"; i.accept = "image/*,.heic,.heif,application/pdf";
   i.addEventListener("change", async () => { const f = i.files[0]; if (!f) return; try { toast("Augšupielādē…"); const j = await uploadFile(f); toast("Augšupielādēts"); cb(j.url); } catch (e) { toast(e.message, true); } });
   i.click();
 }
@@ -935,14 +957,16 @@ async function accounts(){
 /* ================= FAILI ================= */
 async function files(){
   const { files: list } = await api("/admin/files");
-  head("Attēli un faili", "JPG, PNG, WebP, GIF, AVIF vai PDF līdz 6 MB. Saiti var ielikt jebkurā satura laukā.", `<button class="btn small" id="fUp">Augšupielādēt</button>`);
-  view.innerHTML = `<div class="adm-drop" id="drop">Ievelc failus šeit vai spied „Augšupielādēt”</div>
+  head("Attēli un faili", "Bildes (arī no telefona) un PDF līdz 10 MB. Lielas bildes automātiski tiek samazinātas. Saiti var ielikt jebkurā satura laukā.", `<button class="btn small" id="fUp">Augšupielādēt</button>`);
+  view.innerHTML = `<button type="button" class="adm-drop" id="drop">Ievelc bildes šeit vai <u>spied, lai izvēlētos</u></button>
     <div class="adm-files">${list.map(f => `<div class="adm-file">${f.type.startsWith("image/") ? `<img src="${esc(f.url)}" alt="" loading="lazy">` : `<span class="adm-pdf">PDF</span>`}
-      <span class="small">${esc(decodeURIComponent(f.name || ""))}</span><span class="muted small">${kb(f.size)} · ${esc(fmt(f.created))}</span>
+      <span class="small">${esc((() => { try { return decodeURIComponent(f.name || ""); } catch (e) { return f.name || ""; } })())}</span><span class="muted small">${kb(f.size)} · ${esc(fmt(f.created))}</span>
       <span><button class="btn ghost small" data-cp="${esc(f.url)}">Kopēt saiti</button><button class="btn ghost small danger" data-del="${esc(f.id)}">Dzēst</button></span></div>`).join("") || `<p class="muted">Vēl nav failu.</p>`}</div>`;
-  const up = async fl => { for (const f of fl) { try { toast("Augšupielādē " + f.name + "…"); await uploadFile(f); } catch (e) { toast(f.name + ": " + e.message, true); } } files(); };
-  $("#fUp").addEventListener("click", () => { const i = document.createElement("input"); i.type = "file"; i.multiple = true; i.accept = "image/*,application/pdf"; i.addEventListener("change", () => up([...i.files])); i.click(); });
-  const dz = $("#drop");
+  const up = async fl => { let ok = 0, bad = 0; for (const [n, f] of fl.entries()) { try { toast(`Augšupielādē ${n + 1}/${fl.length}: ${f.name}…`); await uploadFile(f); ok++; } catch (e) { bad++; toast(f.name + ": " + e.message, true); await new Promise(r => setTimeout(r, 2500)); } }
+    await files(); if (ok) toast(ok === 1 ? "Augšupielādēts" : `Augšupielādēti ${ok} faili`, false); };
+  const pick = () => { const i = document.createElement("input"); i.type = "file"; i.multiple = true; i.accept = "image/*,.heic,.heif,application/pdf"; i.addEventListener("change", () => up([...i.files])); i.click(); };
+  $("#fUp").addEventListener("click", pick);
+  const dz = $("#drop"); dz.addEventListener("click", pick);
   ["dragenter", "dragover"].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.add("on"); }));
   ["dragleave", "drop"].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.remove("on"); }));
   dz.addEventListener("drop", ev => up([...ev.dataTransfer.files]));

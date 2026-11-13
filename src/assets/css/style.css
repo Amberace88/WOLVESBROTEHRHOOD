@@ -1282,7 +1282,8 @@ footer{background:radial-gradient(ellipse 50% 80% at 50% 0,rgba(236,232,223,.05)
 .adm-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
 .adm-tabs a{padding:8px 12px;border:1px solid var(--steel-2);border-radius:4px;color:var(--silver);text-decoration:none;font-weight:600}
 .adm-tabs a.on{background:var(--bone);color:#000;border-color:var(--bone)}
-.adm-drop{border:2px dashed var(--steel);border-radius:8px;padding:28px;text-align:center;color:var(--silver);margin-bottom:14px}
+.adm-drop{display:block;width:100%;background:none;font:inherit;font-size:1.05rem;cursor:pointer;border:2px dashed var(--steel);border-radius:8px;padding:34px 20px;text-align:center;color:var(--silver);margin-bottom:14px}
+.adm-drop:hover,.adm-drop:focus-visible{border-color:var(--bone);color:var(--bone)}
 .adm-drop.on{border-color:var(--bone);color:var(--bone)}
 .adm-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
 .adm-file{display:grid;gap:6px;border:1px solid var(--steel-2);border-radius:6px;padding:8px;background:var(--leather);color:var(--bone);text-align:left;font:inherit;word-break:break-word}

@@ -45,6 +45,8 @@ Ceļa brīdinājumi — ziņo par granti, bedrēm, eļļu vai remontdarbiem. Br�
 CREATE TABLE IF NOT EXISTS cms (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated INTEGER NOT NULL, by_name TEXT);
 CREATE TABLE IF NOT EXISTS cms_history (id TEXT PRIMARY KEY, key TEXT NOT NULL, value TEXT, at INTEGER NOT NULL, by_name TEXT);
 CREATE INDEX IF NOT EXISTS cms_history_key ON cms_history(key, at DESC);
-CREATE TABLE IF NOT EXISTS files (id TEXT PRIMARY KEY, name TEXT, type TEXT NOT NULL, size INTEGER NOT NULL, data BLOB NOT NULL, created INTEGER NOT NULL, by_name TEXT);
+-- "files" nosaukumu jau aizņem vecā v2 tabula ar citām kolonnām, tāpēc attēli glabājas "media"
+CREATE TABLE IF NOT EXISTS media (id TEXT PRIMARY KEY, name TEXT, type TEXT NOT NULL, size INTEGER NOT NULL, data BLOB NOT NULL, created INTEGER NOT NULL, by_name TEXT);
+CREATE TABLE IF NOT EXISTS media_parts (id TEXT NOT NULL, n INTEGER NOT NULL, data BLOB NOT NULL, PRIMARY KEY (id, n));
 CREATE TABLE IF NOT EXISTS audit (id TEXT PRIMARY KEY, at INTEGER NOT NULL, user_id TEXT, user_name TEXT, action TEXT NOT NULL, target TEXT, detail TEXT);
 CREATE INDEX IF NOT EXISTS audit_at ON audit(at DESC);
